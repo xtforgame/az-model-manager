@@ -1,7 +1,7 @@
 {
-  "name": "az-dev-base",
+  "name": "az-model-manager",
   "version": "1.0.0",
-  "description": "A general purpose seed project base",
+  "description": "Az Model Manager",
   "main": "dist/library/index.js",
   "repository": {
     "type": "git"
@@ -48,7 +48,9 @@
     "gulp": "^4.0.1",
     "gulp-typescript": "^5.0.1",
     "mocha": "^5.2.0",
+    "pg": "^8.4.1",
     "rimraf": "^2.5.4",
+    "sequelize": "^6.3.5",
     "sinon": "^4.3.0",
     "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
