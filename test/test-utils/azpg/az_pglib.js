@@ -4,12 +4,6 @@ import pg from 'pg';
 
 // import az_pgdef_lib from './az_pgdef_lib';
 
-if (process.platform === 'linux') {
-  console.log(process.env.POSTGRESQL_PORT_5432_TCP_ADDR);
-  console.log(process.env.POSTGRESQL_PORT_5432_TCP_PORT);
-}
-
-
 export class ErrorTypes {
   static Connection = "connection";
 

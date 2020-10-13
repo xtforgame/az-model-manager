@@ -39,8 +39,8 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 const { expect } = chai;
 
 class AzRdbmsMgr {
-  constructor(asuModelDefs) {
-    this.asuModelDefs = asuModelDefs;
+  constructor(asuSchemas) {
+    this.asuSchemas = asuSchemas;
     this.sequelizeDb = new Sequelize(getConnectString(postgresUser), {
       dialect: 'postgres',
       logging: databaseLogger,
@@ -54,7 +54,7 @@ class AzRdbmsMgr {
       },
     });
 
-    this.asuOrm = new AsuOrm(this.sequelizeDb, this.asuModelDefs);
+    this.asuOrm = new AsuOrm(this.sequelizeDb, this.asuSchemas);
   }
 
   sync(force = true) {

@@ -6,7 +6,7 @@
   },
   "include": [
     "./**/*.ts",
-    "../tsd/node.d.ts",
+    // "../tsd/node.d.ts",
     "../tsd/library/**/*"
   ]
 }
