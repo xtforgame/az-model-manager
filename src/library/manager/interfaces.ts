@@ -21,17 +21,17 @@ export type AzModelAttributes<M extends Model = Model, TCreationAttributes = any
   [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, AzModelAttributeColumnOptions<M>>;
 };
 
-export type Schema = {
+export type AzSchema = {
   columns: AzModelAttributes;
   options?: ModelOptions;
 };
 
-export type Schemas = {
-  models: { [s: string]: Schema; },
-  associationModels?: { [s: string]: Schema; }
+export type AzSchemas = {
+  models: { [s: string]: AzSchema; },
+  associationModels?: { [s: string]: AzSchema; }
 };
 
-// const p : Schemas = {
+// const p : AzSchemas = {
 //   models: {
 //     x: {
 //       columns: {
