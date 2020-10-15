@@ -3,6 +3,7 @@
 import chai from 'chai';
 import Sequelize from 'sequelize';
 import AmmOrm from 'library/core';
+import AmManager from 'library/manager';
 import fs from 'fs';
 import path from 'path';
 import getLogFileNamefrom from '../test-utils/getLogFileName';
@@ -66,7 +67,7 @@ class AzRdbmsMgr {
   }
 }
 
-describe('AmmOrm test 01', () => {
+describe('AmmOrm test 04', () => {
   describe('Basic', () => {
     let ammMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
@@ -76,82 +77,74 @@ describe('AmmOrm test 01', () => {
 
     afterEach(() => ammMgr.close());
 
-    it('should able to do CRUD', function () {
+    it('should able to do CRUD for has-many association ', async function () {
       this.timeout(900000);
       const User = ammMgr.ammOrm.getSqlzModel('user');
-      const AccountLink = ammMgr.ammOrm.getSqlzModel('accountLink');
+      const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
 
-      return ammMgr.sync()
-      .then(() => User.create({
+      await ammMgr.sync();
+      let user = await User.create({
         username: 'xxxx',
-        accountLinks: [{
-          provider_id: 'basic',
-          provider_user_id: 'user1',
-          provider_user_access_info: {},
+        userGroups: [{
+          name: 'group 1',
         }],
       }, {
         // include: [{
-        //   model: AccountLink,
-        //   as: 'accountLinks',
+        //   model: UserGroup,
+        //   as: 'userGroups',
         // }],
-      })
-        .then((user) => {
-          // console.log('user :', user.dataValues);
-        }))
-      .then(() => User.findOne({
+      });
+      // console.log('user :', JSON.stringify(user));
+      user = await User.findOne({
         where: {
           username: 'xxxx',
         },
         include: [{
-          model: AccountLink,
-          as: 'accountLinks',
+          model: UserGroup,
+          as: 'userGroups',
         }],
-      })
-        .then((user) => {
-          // console.log('user :', user && user.dataValues);
-        }))
-      .then(() => AccountLink.findOne({
+      });
+      // console.log('user :', JSON.stringify(user));
+      let userGroup = await UserGroup.findOne({
         where: {
-          provider_id: 'basic',
-          provider_user_id: 'user1',
+          name: 'group 1',
         },
         include: [{
           model: User,
-          as: 'owner',
+          as: 'users',
         }],
-      })
-        .then((accountLink) => {
-          // console.log('accountLink :', accountLink && accountLink.dataValues);
-        }))
-      .then(() => AccountLink.create({
-        provider_id: 'basic',
-        provider_user_id: 'user2',
-        owner: {
+      });
+      // console.log('userGroup :', userGroup && userGroup.dataValues);
+
+      userGroup = await UserGroup.create({
+        name: 'group 2',
+        users: [{
           username: 'oooo',
-          accountLinks: [{
-            provider_id: 'third-party-1',
-            provider_user_id: 'user2',
+          userGroups: [{
+            name: 'group 3',
           }],
-        },
+        }],
       }, {
         // include: [{
         //   model: User,
-        //   as: 'owner',
+        //   as: 'users',
         //   include: [{
-        //     model: AccountLink,
-        //     as: 'accountLinks',
+        //     model: UserGroup,
+        //     as: 'userGroups',
         //   }],
         // }],
-      })
-        .then((accountLink) => {
-          // console.log('accountLink :', accountLink && accountLink.dataValues);
-        }));
+      });
+      // console.log('userGroup :', userGroup && userGroup.dataValues);
+
+      // https://www.pg-structure.com/nav.01.guide/guide--nc/examples.html#connection
+      const amMgr = new AmManager(getConnectString(postgresUser));
+      return amMgr.reportDb();
     });
 
     it('should able to do CRUD with transaction', function () {
       this.timeout(900000);
       const User = ammMgr.ammOrm.getSqlzModel('user');
-      const AccountLink = ammMgr.ammOrm.getSqlzModel('accountLink');
+      const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
 
       return ammMgr.sync()
       .then(() => ammMgr.sequelizeDb.transaction({
@@ -159,16 +152,20 @@ describe('AmmOrm test 01', () => {
         // deferrable: Sequelize.Deferrable.SET_DEFERRED(['mn_user_user_group_user_id_fkey']),
         // deferrable: Sequelize.Deferrable.SET_DEFERRED,
       })
-        .then(t => AccountLink.create({
-          provider_id: 'basic',
-          provider_user_id: 'user2',
-          owner: {
+        .then(t => UserGroup.create({
+          name: 'group 2',
+          users: [{
             username: 'oooo',
-            accountLinks: [{
-              provider_id: 'third-party-1',
-              provider_user_id: 'user2',
+            userGroups: [{
+              name: 'group 3',
+              [AmmOrm.ThroughValues]: {
+                role: 'group 3',
+              },
             }],
-          },
+            [AmmOrm.ThroughValues]: {
+              role: 'group 2',
+            },
+          }],
         }, {
           transaction: t,
         })
@@ -183,16 +180,21 @@ describe('AmmOrm test 01', () => {
         // deferrable: Sequelize.Deferrable.SET_DEFERRED(['mn_user_user_group_user_id_fkey']),
         // deferrable: Sequelize.Deferrable.SET_DEFERRED,
       })
-        .then(t => AccountLink.create({
-          provider_id: 'basic',
-          provider_user_id: 'user2',
-          owner: {
+        .then(t => UserGroup.create({
+          name: 'group 2',
+          users: [{
             username: 'oooo',
-            accountLinks: [{
-              provider_id: 'basic',
-              provider_user_id: 'user2',
+            userGroups: [{
+              id: 1,
+              name: 'group 3',
+              [AmmOrm.ThroughValues]: {
+                role: 'group 3',
+              },
             }],
-          },
+            [AmmOrm.ThroughValues]: {
+              role: 'group 2',
+            },
+          }],
         }, {
           transaction: t,
         })

@@ -10,7 +10,13 @@ import {
   ModelDefined,
 } from 'sequelize';
 
-export type AssociationType = 'hasOne' | 'hasMany' | 'belongsTo' | 'belongsToMany';
+
+export type AssociationTypeHasOne = 'hasOne';
+export type AssociationTypeHasMany = 'hasMany';
+export type AssociationTypeBelongsTo = 'belongsTo';
+export type AssociationTypeBelongsToMany = 'belongsToMany';
+
+export type AssociationType = AssociationTypeHasOne | AssociationTypeHasMany | AssociationTypeBelongsTo | AssociationTypeBelongsToMany;
 
 export const associations : AssociationType[] = [
   'hasOne',
@@ -22,8 +28,8 @@ export const associations : AssociationType[] = [
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 export type ThroughOptions = Overwrite<TO, {
+  ammModelName: string;
   ammThroughAs?: string;
-  ammModelName?: string;
   model?: {
     name : string;
   };

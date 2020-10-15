@@ -1,4 +1,4 @@
-import AmmOrm from './core/AmmOrm';
+import AmManager from './manager';
 export * from './core';
 
-export default AmmOrm;
+export default AmManager;

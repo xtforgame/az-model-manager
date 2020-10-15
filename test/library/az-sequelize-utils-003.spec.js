@@ -66,7 +66,7 @@ class AzRdbmsMgr {
   }
 }
 
-describe('AmmOrm test', () => {
+describe('AmmOrm test 03', () => {
   describe('Basic', () => {
     let ammMgr = null;
     beforeEach(() => resetTestDbAndTestRole()

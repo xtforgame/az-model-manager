@@ -23,10 +23,10 @@ export interface AmmModelI {
 
 export type Schema = {
   columns: ModelAttributes;
-  options: ModelOptions;
+  options?: ModelOptions;
 };
 
 export type Schemas = {
   models: { [s: string]: Schema; },
-  associationModels: { [s: string]: Schema; }
+  associationModels?: { [s: string]: Schema; }
 };

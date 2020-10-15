@@ -68,7 +68,7 @@ class AzRdbmsMgr {
   }
 }
 
-describe('AmmOrm test', () => {
+describe('AmmOrm test 02', () => {
   describe('Basic', () => {
     let ammMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
@@ -140,7 +140,7 @@ describe('AmmOrm test', () => {
       // https://www.pg-structure.com/nav.01.guide/guide--nc/examples.html#connection
       const r = await az_pglib.create_connection(getConnectString(postgresUser));
       const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
-      console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
+      // console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
       const table = db.get('tbl_account_link');
       const columnNames = table.columns.map(c => c.name);
       console.log('columnNames :', columnNames);

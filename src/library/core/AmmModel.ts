@@ -13,7 +13,7 @@ import sequelize, {
   HasManyOptions,
 } from 'sequelize';
 import * as columnTypes from './columnTypes';
-import { AmmOrmI } from './interfaces';
+import { AmmOrmI, Schema } from './interfaces';
 // import {
 //   defaultCallbackPromise,
 //   isFunction,
@@ -83,7 +83,7 @@ export default class AzuModel {
 
   ammOrm : AmmOrmI;
   db : Sequelize;
-  tableDefine : any;
+  tableDefine : Schema;
   tablePrefix : string;
   sqlzModel : ModelDefined<Model, any>;
   sqlzOptions : ModelOptions;
@@ -95,7 +95,7 @@ export default class AzuModel {
 
   associations : { [s : string] : columnTypes.AssociationColumn };
 
-  constructor(ammOrm : AmmOrmI, modelName : string, tableDefine, tablePrefix : string = 'tbl_') {
+  constructor(ammOrm : AmmOrmI, modelName : string, tableDefine : Schema, tablePrefix : string = 'tbl_') {
     this.ammOrm = ammOrm;
     this.db = this.ammOrm.db;
     this.tableDefine = tableDefine;
@@ -225,7 +225,7 @@ export default class AzuModel {
   getNormalizedSettings(modelName) {
     const {
       columns: inputColumns,
-      options,
+      options = {},
     } = this.tableDefine;
 
     const associations = {};
@@ -233,15 +233,15 @@ export default class AzuModel {
     const columns = {};
     Object.keys(inputColumns).forEach((columnName) => {
       const column = inputColumns[columnName];
-      if (column.type && columnTypes.isAssociationColumn(column.type)) {
-        associations[columnName] = column.type;
+      if ((<any>column).type && columnTypes.isAssociationColumn((<any>column).type)) {
+        associations[columnName] = (<any>column).type;
         associations[columnName].setAs(columnName);
       } else {
         columns[columnName] = column;
       }
     });
 
-    const sqlzOptions : ModelOptions = sequelize.Utils.mergeDefaults({
+    const sqlzOptions : ModelOptions = sequelize.Utils.mergeDefaults(<any>{
       timestamps: true,
       paranoid: true,
       underscored: true,

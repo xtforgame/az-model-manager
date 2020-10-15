@@ -52,7 +52,7 @@
     "gulp-typescript": "^5.0.1",
     "mocha": "^5.2.0",
     "pg": "^8.4.1",
-    "pg-structure": "7.2.1",
+    "pg-structure": "git+https://github.com/xtforgame/pg-structure.git#master",
     "rimraf": "^2.5.4",
     "sequelize": "^6.3.5",
     "sinon": "^4.3.0",
