@@ -23,7 +23,9 @@
     "build": "cross-env NODE_ENV=production gulp library:build",
     "start": "cross-env NODE_ENV=development gulp library:watch:dev",
     "test": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --require ./test/babel-register.js './test/library/**/*.spec.js'",
-    "test-watch": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --watch ./test --watch-extensions js,ts --require ./test/babel-register.js './test/library/**/*.spec.js'"
+    "test-watch": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --watch ./test --watch-extensions js,ts --require ./test/babel-register.js './test/library/**/*.spec.js'",
+    "start-db": "docker-compose -f dev.yml up -d",
+    "stop-db": "docker-compose -f dev.yml down"
   },
   "license": "MIT",
   "dependencies": {},
@@ -32,6 +34,7 @@
     "@babel/plugin-proposal-class-properties": "^7.4.0",
     "@babel/plugin-proposal-decorators": "^7.6.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
+    "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-typescript": "^7.3.3",
     "@babel/register": "^7.4.0",
@@ -49,6 +52,7 @@
     "gulp-typescript": "^5.0.1",
     "mocha": "^5.2.0",
     "pg": "^8.4.1",
+    "pg-structure": "7.2.1",
     "rimraf": "^2.5.4",
     "sequelize": "^6.3.5",
     "sinon": "^4.3.0",

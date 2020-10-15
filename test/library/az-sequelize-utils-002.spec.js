@@ -5,7 +5,9 @@ import Sequelize from 'sequelize';
 import AsuOrm from 'library/AsuOrm';
 import fs from 'fs';
 import path from 'path';
+import pgStructure from 'pg-structure';
 import getLogFileNamefrom from '../test-utils/getLogFileName';
+import az_pglib from '../test-utils/azpg/az_pglib';
 
 import {
   postgresPort,
@@ -76,13 +78,13 @@ describe('AsuOrm test', () => {
 
     afterEach(() => asuMgr.close());
 
-    it('should able to do CRUD for has-many association ', function () {
+    it('should able to do CRUD for has-many association ', async function () {
       this.timeout(900000);
       const User = asuMgr.asuOrm.getSqlzModel('user');
       const UserGroup = asuMgr.asuOrm.getSqlzModel('userGroup');
 
-      return asuMgr.sync()
-      .then(() => User.create({
+      await asuMgr.sync();
+      let user = await User.create({
         username: 'xxxx',
         userGroups: [{
           name: 'group 1',
@@ -92,11 +94,9 @@ describe('AsuOrm test', () => {
         //   model: UserGroup,
         //   as: 'userGroups',
         // }],
-      })
-        .then((user) => {
-          // console.log('user :', JSON.stringify(user));
-        }))
-      .then(() => User.findOne({
+      });
+      // console.log('user :', JSON.stringify(user));
+      user = await User.findOne({
         where: {
           username: 'xxxx',
         },
@@ -104,11 +104,9 @@ describe('AsuOrm test', () => {
           model: UserGroup,
           as: 'userGroups',
         }],
-      })
-        .then((user) => {
-          // console.log('user :', JSON.stringify(user));
-        }))
-      .then(() => UserGroup.findOne({
+      });
+      // console.log('user :', JSON.stringify(user));
+      let userGroup = await UserGroup.findOne({
         where: {
           name: 'group 1',
         },
@@ -116,11 +114,10 @@ describe('AsuOrm test', () => {
           model: User,
           as: 'users',
         }],
-      })
-        .then((userGroup) => {
-          // console.log('userGroup :', userGroup && userGroup.dataValues);
-        }))
-      .then(() => UserGroup.create({
+      });
+      // console.log('userGroup :', userGroup && userGroup.dataValues);
+
+      userGroup = await UserGroup.create({
         name: 'group 2',
         users: [{
           username: 'oooo',
@@ -137,10 +134,30 @@ describe('AsuOrm test', () => {
         //     as: 'userGroups',
         //   }],
         // }],
-      })
-        .then((userGroup) => {
-          // console.log('userGroup :', userGroup && userGroup.dataValues);
-        }));
+      });
+      // console.log('userGroup :', userGroup && userGroup.dataValues);
+
+      // https://www.pg-structure.com/nav.01.guide/guide--nc/examples.html#connection
+      const r = await az_pglib.create_connection(getConnectString(postgresUser));
+      const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
+      console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
+      const table = db.get('tbl_account_link');
+      const columnNames = table.columns.map(c => c.name);
+      console.log('columnNames :', columnNames);
+      // const constraintNames = table.constraints.map((c) => {
+      //   console.log('c :', c);
+      //   return c.name;
+      // });
+      // console.log('constraintNames :', constraintNames);
+      const indexNames = table.indexes.map((c) => {
+        console.log('c.columnsAndExpressions :', c.columnsAndExpressions.map(col => col.name).join(', '));
+        return c.name;
+      });
+      console.log('indexNames :', indexNames);
+      // const columnTypeName = table.columns.get('owner_id').type.name;
+      // const indexColumnNames = table.indexes.get('ix_mail').columns;
+      const relatedTables = table.hasManyTables;
+      await r.client.end();
     });
 
     it('should able to do CRUD with transaction', function () {
