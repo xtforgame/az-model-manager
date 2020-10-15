@@ -138,6 +138,8 @@ describe('AmmOrm test 04', () => {
 
       // https://www.pg-structure.com/nav.01.guide/guide--nc/examples.html#connection
       const amMgr = new AmManager(getConnectString(postgresUser));
+      const testResult = amMgr.testParseSchema();
+      console.log('testResult :', testResult);
       return amMgr.reportDb();
     });
 

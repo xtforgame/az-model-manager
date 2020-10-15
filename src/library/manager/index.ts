@@ -4,6 +4,8 @@ import pgStructure, {
   Index,
 } from 'pg-structure';
 import az_pglib from './azpg/az_pglib';
+import { Schemas } from '../core/interfaces';
+import { AzSchemas, typeConfigs } from './azColumnTypes';
 
 export default class AmmModelManager {
   connectString : string;
@@ -54,11 +56,113 @@ export default class AmmModelManager {
   }
 
   async reportDb() {
-    const r = await az_pglib.create_connection(this.connectString);
-    const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
-    await r.client.end();
-    // console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
-    const table = db.get('tbl_account_link') as Table;
-    return this.reportTable(table);
+    // const r = await az_pglib.create_connection(this.connectString);
+    // const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
+    // await r.client.end();
+    // // console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
+    // const table = db.get('tbl_account_link') as Table;
+    // return this.reportTable(table);
+  }
+
+  // =============
+
+  testParseSchema() : Schemas | Error {
+    // const rawSchemas : AzSchemas = {
+    const rawSchemas : AzSchemas = {
+      models: {
+        table1: {
+          columns: {
+            hasOne: {
+              type: ['hasOne', 'x', {}],
+            },
+            hasMany: {
+              type: ['hasMany', 'x', {}],
+            },
+            belongsTo: {
+              type: ['belongsTo', 'x', {}],
+            },
+            belongsToMany: {
+              type: ['belongsToMany', 'x', { through: '' }],
+            },
+            ccc: {
+              type: 'decimal',
+            },
+          },
+          options: {},
+        },
+      },
+      associationModels: {
+        aTable1: {
+          columns: {
+            hasOne: {
+              type: ['hasOne', 'x', {}],
+            },
+            hasMany: {
+              type: ['hasMany', 'x', {}],
+            },
+            belongsTo: {
+              type: ['belongsTo', 'x', {}],
+            },
+            belongsToMany: {
+              type: ['belongsToMany', 'x', { through: '' }],
+            },
+            ccc: {
+              type: 'decimal',
+            },
+          },
+          options: {},
+        },
+      },
+    };
+    const result : Schemas = {
+      models: {},
+      associationModels: {},
+    };
+    Object.keys(rawSchemas.models).forEach((tableName) => {
+      const table = rawSchemas.models[tableName];
+      result.models[tableName] = {
+        columns: {},
+        options: table.options,
+      };
+      const rawColumns = table.columns;
+      Object.keys(rawColumns).forEach((columnName) => {
+        const column = rawColumns[columnName];
+        if (!column.type) {
+          return Error(`no type name: table(${table}), column(${columnName})`);
+        }
+        if (typeof column.type === 'string') {
+          column.type = <any>[column.type];
+        }
+        if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
+          return Error(`bad type name: table(${table}), column(${columnName})`);
+        }
+      });
+    });
+
+    Object.keys(rawSchemas.models).forEach((tableName) => {
+      const table = rawSchemas.models[tableName];
+      const rawColumns = table.columns;
+      Object.keys(rawColumns).forEach((columnName) => {
+        const column = rawColumns[columnName];
+        const typeName = column.type[0];
+        const typeConfig = typeConfigs[typeName];
+        if (!typeConfig) {
+          return Error(`unknown type name: table(${table}), column(${columnName}), type(${typeName})`);
+        }
+        const parseResult = typeConfig.parseColumnSchema({
+          schemas: <any>rawSchemas,
+          table: <any>table,
+          tableType: 'model',
+          tableName,
+          column,
+          columnName,
+        });
+        if (parseResult instanceof Error) {
+          return Error(`parse type error: table(${table}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
+        }
+        result.models[tableName].columns[columnName] = parseResult;
+      });
+    });
+    return result;
   }
 }

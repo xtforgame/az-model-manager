@@ -12,28 +12,3 @@ import {
 } from './azColumnTypes';
 
 export * from './azColumnTypes';
-
-const p : AzSchemas = {
-  models: {
-    x: {
-      columns: {
-        hasOne: {
-          type: ['hasOne', 'x', {}],
-        },
-        hasMany: {
-          type: ['hasMany', 'x', {}],
-        },
-        belongsTo: {
-          type: ['belongsTo', 'x', {}],
-        },
-        belongsToMany: {
-          type: ['belongsToMany', 'x', { through: '' }],
-        },
-        ccc: {
-          type: 'decimal',
-        },
-      },
-      options: {},
-    },
-  },
-};

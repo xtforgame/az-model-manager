@@ -30,6 +30,10 @@ import {
   ASSOCIATION,
 } from '../core/columnTypes';
 
+import {
+  Schema,
+} from '../core';
+
 // ======== Associations ========
 
 export type AzModelAttributeHasOne = [
@@ -203,9 +207,17 @@ export type AzSchemas = {
   associationModels?: { [s: string]: AzSchema; };
 };
 
+export interface RawModelAttributeColumnOptions<M extends Model = Model> {
+  type : [string, ...any[]];
+}
+
+export type RawModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
+  [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, RawModelAttributeColumnOptions<M>>;
+};
+
 type RawSchema = {
-  columns: { [s: string]: any; };
-  options?: { [s: string]: any; };
+  columns: RawModelAttributes;
+  options?: ModelOptions;
 };
 
 type RawSchemas = {
@@ -217,17 +229,18 @@ type RawSchemaType = 'model' | 'associationModel';
 
 type SchemaFuncArgs = {
   schemas : RawSchemas;
-  schema : RawSchema;
-  name: string;
-  schemaType : RawSchemaType;
+  table : RawSchema;
+  tableType : RawSchemaType;
+  tableName : string;
+  column : any;
+  columnName : string;
 };
 
 // =========================================
 export type TypeConfig = {
   sequleizeDataType?: AbstractDataTypeConstructor,
   associationType?: AssociationType,
-  validateSchema(args : SchemaFuncArgs) : Error | null;
-  getType(args : SchemaFuncArgs) : DataType;
+  parseColumnSchema(args : SchemaFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
 };
 
 export type TypeConfigs = {
@@ -237,103 +250,83 @@ export type TypeConfigs = {
 export const typeConfigs : TypeConfigs = {
   hasOne: {
     associationType: 'hasOne',
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   hasMany: {
     associationType: 'hasMany',
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   belongsTo: {
     associationType: 'belongsTo',
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   belongsToMany: {
     associationType: 'belongsToMany',
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
 
   integer: { // AzModelTypeInteger
     sequleizeDataType: sequelize.INTEGER,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   bigint: { // AzModelTypeBigint
     sequleizeDataType: sequelize.BIGINT,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   decimal: { // AzModelTypeDecimal
     sequleizeDataType: sequelize.DECIMAL,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   real: { // AzModelTypeReal
     sequleizeDataType: sequelize.REAL,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   float: { // AzModelTypeFloat
     sequleizeDataType: sequelize.FLOAT,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   double: { // AzModelTypeDouble
     sequleizeDataType: sequelize.DOUBLE,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   boolean: { // AzModelTypeBoolean
     sequleizeDataType: sequelize.BOOLEAN,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   string: { // AzModelTypeString
     sequleizeDataType: sequelize.STRING,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   binary: { // AzModelTypeBinary
     sequleizeDataType: sequelize.BLOB,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   text: { // AzModelTypeText
     sequleizeDataType: sequelize.TEXT,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   date: { // AzModelTypeDate
     sequleizeDataType: sequelize.DATE,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   dateonly: { // AzModelTypeDateOnly
     sequleizeDataType: sequelize.DATEONLY,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   uuid: { // AzModelTypeUuid
     sequleizeDataType: sequelize.UUID,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   range: { // AzModelTypeRange
     sequleizeDataType: sequelize.RANGE,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   json: { // AzModelTypeJson
     sequleizeDataType: sequelize.JSON,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
   jsonb: { // AzModelTypeJsonb
     sequleizeDataType: sequelize.JSONB,
-    validateSchema: (args : SchemaFuncArgs) => null,
-    getType: (args : SchemaFuncArgs) => sequelize.INTEGER,
+    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
   },
 };
