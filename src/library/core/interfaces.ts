@@ -27,6 +27,6 @@ export type Schema = {
 };
 
 export type Schemas = {
-  models: { [s: string]: Schema; },
-  associationModels?: { [s: string]: Schema; }
+  models: { [s: string]: Schema; };
+  associationModels?: { [s: string]: Schema; };
 };

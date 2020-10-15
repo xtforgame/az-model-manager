@@ -10,6 +10,12 @@ import {
   ModelDefined,
 } from 'sequelize';
 
+export {
+  HasOneOptions,
+  BelongsToOptions,
+  HasManyOptions,
+} from 'sequelize';
+
 
 export type AssociationTypeHasOne = 'hasOne';
 export type AssociationTypeHasMany = 'hasMany';
