@@ -13,7 +13,7 @@ import sequelize, {
   HasManyOptions,
 } from 'sequelize';
 import * as columnTypes from './columnTypes';
-import { AsuOrmI } from './interfaces';
+import { AmmOrmI } from './interfaces';
 // import {
 //   defaultCallbackPromise,
 //   isFunction,
@@ -36,22 +36,22 @@ export const ThroughValues = Symbol('through-values');
 //   }
 // }
 
-const autoInclude = (asuOrm : AsuOrmI, modelName : string, values, inputInclude : any[] | undefined = undefined) => {
-  const asuModel = asuOrm.getAsuModel(modelName);
+const autoInclude = (ammOrm : AmmOrmI, modelName : string, values, inputInclude : any[] | undefined = undefined) => {
+  const ammModel = ammOrm.getAmmModel(modelName);
 
   const includeMap = {};
   let include = inputInclude;
   (include || []).map(incl => incl.as && (includeMap[incl.as] = incl));
 
 
-  if (asuModel && values) {
-    Object.keys(asuModel.associations).forEach((associationName) => {
+  if (ammModel && values) {
+    Object.keys(ammModel.associations).forEach((associationName) => {
       if (values[associationName] !== undefined) {
-        const association = asuModel.associations[associationName];
+        const association = ammModel.associations[associationName];
         if (!includeMap[associationName]) {
           include = include || [];
           const childValue = Array.isArray(values[associationName]) ? values[associationName][0] : values[associationName];
-          const childInclude = autoInclude(asuOrm, (association.targetModel as ModelDefined<Model, any>).name, childValue);
+          const childInclude = autoInclude(ammOrm, (association.targetModel as ModelDefined<Model, any>).name, childValue);
           const includeToAdd : {
             model: any,
             as: any,
@@ -81,7 +81,7 @@ export default class AzuModel {
 
   static ThroughValues = ThroughValues;
 
-  asuOrm : AsuOrmI;
+  ammOrm : AmmOrmI;
   db : Sequelize;
   tableDefine : any;
   tablePrefix : string;
@@ -95,9 +95,9 @@ export default class AzuModel {
 
   associations : { [s : string] : columnTypes.AssociationColumn };
 
-  constructor(asuOrm : AsuOrmI, modelName : string, tableDefine, tablePrefix : string = 'tbl_') {
-    this.asuOrm = asuOrm;
-    this.db = this.asuOrm.db;
+  constructor(ammOrm : AmmOrmI, modelName : string, tableDefine, tablePrefix : string = 'tbl_') {
+    this.ammOrm = ammOrm;
+    this.db = this.ammOrm.db;
     this.tableDefine = tableDefine;
     this.tablePrefix = tablePrefix;
     this.modelName = modelName;
@@ -156,7 +156,7 @@ export default class AzuModel {
     (<any>this.sqlzModel).build = (values, options : any = {}) => {
       let { include } = options;
       if (options.isNewRecord) {
-        include = autoInclude(this.asuOrm, this.modelName, values, options.include);
+        include = autoInclude(this.ammOrm, this.modelName, values, options.include);
       }
 
       const result = originalBuild(values, {
@@ -211,7 +211,7 @@ export default class AzuModel {
               return (<any>include).association.throughModel.create(values, includeOptions);
             })
             .then((throughInstance) => {
-              const throughAs = This.associations[(<any>include).as].extraOptions.asuThroughAs!;
+              const throughAs = This.associations[(<any>include).as].extraOptions.ammThroughAs!;
               instance.dataValues[throughAs] = throughInstance;
               // console.log('instance :', JSON.stringify(instance));
             });
@@ -263,13 +263,13 @@ export default class AzuModel {
       const association = this.associations[associationName];
       let TargetModel = association.targetModel;
       if (typeof TargetModel === 'string') {
-        TargetModel = association.targetModel = this.asuOrm.getSqlzModel(TargetModel)!;
+        TargetModel = association.targetModel = this.ammOrm.getSqlzModel(TargetModel)!;
       }
 
       let throughModel;
       let options;
       if (association.type === 'belongsToMany') {
-        throughModel = this.asuOrm.getSqlzAssociationModel(((<BelongsToManyOptions>association.options).through as columnTypes.ThroughOptions).asuModelName!);
+        throughModel = this.ammOrm.getSqlzAssociationModel(((<BelongsToManyOptions>association.options).through as columnTypes.ThroughOptions).ammModelName!);
         options = sequelize.Utils.mergeDefaults({
           through: {
             model: throughModel,

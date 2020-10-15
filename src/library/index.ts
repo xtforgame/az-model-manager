@@ -1,8 +1,4 @@
-import AsuOrm from './AsuOrm';
+import AmmOrm from './core/AmmOrm';
+export * from './core';
 
-export * from './interfaces';
-export * from './AsuOrm';
-export * from './AsuModel';
-export * from './columnTypes';
-
-export default AsuOrm;
+export default AmmOrm;

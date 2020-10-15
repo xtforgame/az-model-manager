@@ -2,7 +2,7 @@
 
 import chai from 'chai';
 import Sequelize from 'sequelize';
-import AsuOrm from 'library/AsuOrm';
+import AmmOrm from 'library/core';
 import fs from 'fs';
 import path from 'path';
 import pgStructure from 'pg-structure';
@@ -41,8 +41,8 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 const { expect } = chai;
 
 class AzRdbmsMgr {
-  constructor(asuSchemas) {
-    this.asuSchemas = asuSchemas;
+  constructor(ammSchemas) {
+    this.ammSchemas = ammSchemas;
     this.sequelizeDb = new Sequelize(getConnectString(postgresUser), {
       dialect: 'postgres',
       logging: databaseLogger,
@@ -56,34 +56,34 @@ class AzRdbmsMgr {
       },
     });
 
-    this.asuOrm = new AsuOrm(this.sequelizeDb, this.asuSchemas);
+    this.ammOrm = new AmmOrm(this.sequelizeDb, this.ammSchemas);
   }
 
   sync(force = true) {
-    return this.asuOrm.sync({ force });
+    return this.ammOrm.sync({ force });
   }
 
   close() {
-    return this.asuOrm.db.close();
+    return this.ammOrm.db.close();
   }
 }
 
-describe('AsuOrm test', () => {
+describe('AmmOrm test', () => {
   describe('Basic', () => {
-    let asuMgr = null;
+    let ammMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
       .then(() => {
-        asuMgr = new AzRdbmsMgr(getModelDefs01());
+        ammMgr = new AzRdbmsMgr(getModelDefs01());
       }));
 
-    afterEach(() => asuMgr.close());
+    afterEach(() => ammMgr.close());
 
     it('should able to do CRUD for has-many association ', async function () {
       this.timeout(900000);
-      const User = asuMgr.asuOrm.getSqlzModel('user');
-      const UserGroup = asuMgr.asuOrm.getSqlzModel('userGroup');
+      const User = ammMgr.ammOrm.getSqlzModel('user');
+      const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
 
-      await asuMgr.sync();
+      await ammMgr.sync();
       let user = await User.create({
         username: 'xxxx',
         userGroups: [{
@@ -162,11 +162,11 @@ describe('AsuOrm test', () => {
 
     it('should able to do CRUD with transaction', function () {
       this.timeout(900000);
-      const User = asuMgr.asuOrm.getSqlzModel('user');
-      const UserGroup = asuMgr.asuOrm.getSqlzModel('userGroup');
+      const User = ammMgr.ammOrm.getSqlzModel('user');
+      const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
 
-      return asuMgr.sync()
-      .then(() => asuMgr.sequelizeDb.transaction({
+      return ammMgr.sync()
+      .then(() => ammMgr.sequelizeDb.transaction({
         isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
         // deferrable: Sequelize.Deferrable.SET_DEFERRED(['mn_user_user_group_user_id_fkey']),
         // deferrable: Sequelize.Deferrable.SET_DEFERRED,
@@ -177,11 +177,11 @@ describe('AsuOrm test', () => {
             username: 'oooo',
             userGroups: [{
               name: 'group 3',
-              [AsuOrm.ThroughValues]: {
+              [AmmOrm.ThroughValues]: {
                 role: 'group 3',
               },
             }],
-            [AsuOrm.ThroughValues]: {
+            [AmmOrm.ThroughValues]: {
               role: 'group 2',
             },
           }],
@@ -194,7 +194,7 @@ describe('AsuOrm test', () => {
             return t.rollback()
             .then(() => Promise.reject(error));
           })))
-      .then(() => asuMgr.sequelizeDb.transaction({
+      .then(() => ammMgr.sequelizeDb.transaction({
         isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
         // deferrable: Sequelize.Deferrable.SET_DEFERRED(['mn_user_user_group_user_id_fkey']),
         // deferrable: Sequelize.Deferrable.SET_DEFERRED,
@@ -206,11 +206,11 @@ describe('AsuOrm test', () => {
             userGroups: [{
               id: 1,
               name: 'group 3',
-              [AsuOrm.ThroughValues]: {
+              [AmmOrm.ThroughValues]: {
                 role: 'group 3',
               },
             }],
-            [AsuOrm.ThroughValues]: {
+            [AmmOrm.ThroughValues]: {
               role: 'group 2',
             },
           }],

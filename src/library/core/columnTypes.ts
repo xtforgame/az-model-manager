@@ -22,8 +22,8 @@ export const associations : AssociationType[] = [
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 export type ThroughOptions = Overwrite<TO, {
-  asuThroughAs?: string;
-  asuModelName?: string;
+  ammThroughAs?: string;
+  ammModelName?: string;
   model?: {
     name : string;
   };
@@ -36,7 +36,7 @@ export type BelongsToManyOptions = Overwrite<BTMO, {
 export type AssociationColumnOption = BelongsToManyOptions | HasOneOptions | BelongsToOptions | HasManyOptions;
 
 export interface AssociationColumnExtraOption {
-  asuThroughAs? : string;
+  ammThroughAs? : string;
 }
 
 export class AssociationColumn {
@@ -88,14 +88,14 @@ export const BELONGS_TO_MANY = (targetModel : string, o : BelongsToManyOptions) 
 
   const extraOptions : AssociationColumnExtraOption = {};
   if (typeof options.through === 'string') {
-    extraOptions.asuThroughAs = options.through;
-  } else if ((options.through as ThroughOptions).asuThroughAs) {
-    extraOptions.asuThroughAs = (options.through as ThroughOptions).asuThroughAs;
-    delete (options.through as ThroughOptions).asuThroughAs;
-  } else if ((options.through as ThroughOptions).asuModelName) {
-    extraOptions.asuThroughAs = (options.through as ThroughOptions).asuModelName;
+    extraOptions.ammThroughAs = options.through;
+  } else if ((options.through as ThroughOptions).ammThroughAs) {
+    extraOptions.ammThroughAs = (options.through as ThroughOptions).ammThroughAs;
+    delete (options.through as ThroughOptions).ammThroughAs;
+  } else if ((options.through as ThroughOptions).ammModelName) {
+    extraOptions.ammThroughAs = (options.through as ThroughOptions).ammModelName;
   } else {
-    extraOptions.asuThroughAs = (options.through as ThroughOptions).model!.name;
+    extraOptions.ammThroughAs = (options.through as ThroughOptions).model!.name;
   }
   return ASSOCIATION(BELONGS_TO_MANY.type, targetModel, options, extraOptions);
 };

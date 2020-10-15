@@ -8,15 +8,15 @@ import {
 } from 'sequelize';
 import { AssociationColumn } from './columnTypes';
 
-export interface AsuOrmI {
+export interface AmmOrmI {
   db : Sequelize;
-  getAsuModel(modelName : string) : AsuModelI | undefined;
-  getAsuAssociationModel(modelName : string) : AsuModelI | undefined;
+  getAmmModel(modelName : string) : AmmModelI | undefined;
+  getAmmAssociationModel(modelName : string) : AmmModelI | undefined;
   getSqlzModel(modelName : string) : ModelDefined<Model, any> | undefined;
   getSqlzAssociationModel(modelName : string) : ModelDefined<Model, any> | undefined;
 }
 
-export interface AsuModelI {
+export interface AmmModelI {
   sqlzModel: ModelDefined<Model, any>;
   associations : { [s: string]: AssociationColumn; };
 }

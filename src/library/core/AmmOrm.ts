@@ -1,30 +1,30 @@
 /* eslint-disable no-param-reassign, import/no-named-as-default-member */
 import { Sequelize, ModelDefined, Model } from 'sequelize';
-import { AsuOrmI, AsuModelI, Schemas } from './interfaces';
-import AsuModel from './AsuModel';
+import { AmmOrmI, AmmModelI, Schemas } from './interfaces';
+import AmmModel from './AmmModel';
 import AssociationModel from './AssociationModel';
 
-export default class AsuOrm {
-  static ThroughValues = AsuModel.ThroughValues;
+export default class AmmOrm {
+  static ThroughValues = AmmModel.ThroughValues;
 
-  static columnTypes = AsuModel.columnTypes;
+  static columnTypes = AmmModel.columnTypes;
 
   db : Sequelize;
-  asuSchemas : Schemas;
-  tableInfo : { [name : string] : AsuModel };
-  associationModelInfo : { [name : string] : AsuModelI };
+  ammSchemas : Schemas;
+  tableInfo : { [name : string] : AmmModel };
+  associationModelInfo : { [name : string] : AmmModelI };
 
-  constructor(sequelizeDb : Sequelize, asuSchemas : Schemas) {
+  constructor(sequelizeDb : Sequelize, ammSchemas : Schemas) {
     this.db = sequelizeDb;
-    this.asuSchemas = asuSchemas;
+    this.ammSchemas = ammSchemas;
     this.tableInfo = {};
     this.associationModelInfo = {};
 
-    const { models = {}, associationModels = {} } = this.asuSchemas;
+    const { models = {}, associationModels = {} } = this.ammSchemas;
 
     Object.keys(associationModels).forEach(name => (this.associationModelInfo[name] = new AssociationModel(this, name, associationModels[name])));
 
-    Object.keys(models).forEach(name => (this.tableInfo[name] = new AsuModel(this, name, models[name])));
+    Object.keys(models).forEach(name => (this.tableInfo[name] = new AmmModel(this, name, models[name])));
 
     Object.keys(this.tableInfo).forEach(name => this.tableInfo[name].setupAssociations());
   }
@@ -33,25 +33,25 @@ export default class AsuOrm {
     return this.db.sync({ force });
   }
 
-  getAsuModel(name) : AsuModelI | undefined {
+  getAmmModel(name) : AmmModelI | undefined {
     return this.tableInfo[name];
   }
 
   getSqlzModel(name) : ModelDefined<Model, any> | undefined {
-    const model = this.getAsuModel(name);
+    const model = this.getAmmModel(name);
     return model && model.sqlzModel;
   }
 
-  getAsuAssociationModel(name) : AsuModelI | undefined {
+  getAmmAssociationModel(name) : AmmModelI | undefined {
     return this.associationModelInfo[name];
   }
 
   getSqlzAssociationModel(name) : ModelDefined<Model, any> | undefined {
-    const model = this.getAsuAssociationModel(name);
+    const model = this.getAmmAssociationModel(name);
     return model && model.sqlzModel;
   }
 }
 
-Object.keys(AsuModel.columnTypes).forEach((name) => {
-  AsuOrm[name] = AsuModel.columnTypes[name];
+Object.keys(AmmModel.columnTypes).forEach((name) => {
+  AmmOrm[name] = AmmModel.columnTypes[name];
 });

@@ -1,5 +1,5 @@
 import Sequelize from 'sequelize';
-import AsuOrm, { Schemas } from 'library';
+import AmmOrm, { Schemas } from 'library';
 
 const getModelDefs00 : () => Schemas = () => ({
   models: {
@@ -17,7 +17,7 @@ const getModelDefs00 : () => Schemas = () => ({
           comment: 'Username',
         },
         accountLinks: {
-          type: AsuOrm.columnTypes.HAS_MANY('accountLink', {
+          type: AmmOrm.columnTypes.HAS_MANY('accountLink', {
             foreignKey: 'owner_id',
           }),
         },
@@ -52,7 +52,7 @@ const getModelDefs00 : () => Schemas = () => ({
           // unique: true,
         },
         owner: {
-          type: AsuOrm.columnTypes.BELONGS_TO('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO('user', {
             foreignKey: 'owner_id',
           }),
         },
@@ -96,16 +96,16 @@ const getModelDefs01 : () => Schemas = () => ({
           comment: 'Username',
         },
         accountLinks: {
-          type: AsuOrm.columnTypes.HAS_MANY('accountLink', {
+          type: AmmOrm.columnTypes.HAS_MANY('accountLink', {
             foreignKey: 'owner_id',
           }),
         },
         privilege: Sequelize.STRING,
         userGroups: {
-          type: AsuOrm.columnTypes.BELONGS_TO_MANY('userGroup', {
+          type: AmmOrm.columnTypes.BELONGS_TO_MANY('userGroup', {
             through: {
-              asuModelName: 'userUserGroup',
-              asuThroughAs: 'relationship',
+              ammModelName: 'userUserGroup',
+              ammThroughAs: 'relationship',
             },
             foreignKey: 'u_id',
             otherKey: 'g_id',
@@ -141,7 +141,7 @@ const getModelDefs01 : () => Schemas = () => ({
           // unique: true,
         },
         owner: {
-          type: AsuOrm.columnTypes.BELONGS_TO('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO('user', {
             foreignKey: 'owner_id',
           }),
         },
@@ -174,9 +174,9 @@ const getModelDefs01 : () => Schemas = () => ({
         },
         name: Sequelize.STRING(900),
         users: {
-          type: AsuOrm.columnTypes.BELONGS_TO_MANY('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO_MANY('user', {
             through: {
-              asuModelName: 'userUserGroup',
+              ammModelName: 'userUserGroup',
             },
             foreignKey: 'g_id',
             otherKey: 'u_id',
@@ -229,7 +229,7 @@ const getModelDefs02 : () => Schemas = () => ({
           comment: 'Username',
         },
         accountLinks: {
-          type: AsuOrm.columnTypes.HAS_MANY('accountLink', {
+          type: AmmOrm.columnTypes.HAS_MANY('accountLink', {
             foreignKey: 'owner_id',
           }),
         },
@@ -264,7 +264,7 @@ const getModelDefs02 : () => Schemas = () => ({
           // unique: true,
         },
         owner: {
-          type: AsuOrm.columnTypes.BELONGS_TO('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO('user', {
             foreignKey: 'owner_id',
           }),
         },
