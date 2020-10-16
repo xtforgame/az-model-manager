@@ -3,7 +3,7 @@
 import chai from 'chai';
 import Sequelize from 'sequelize';
 import AmmOrm from 'library/core';
-import AmManager from 'library/manager';
+import AzModelManager from 'library/manager';
 import fs from 'fs';
 import path from 'path';
 import getLogFileNamefrom from '../test-utils/getLogFileName';
@@ -146,7 +146,7 @@ describe('AmmOrm test 04', () => {
       // console.log('userGroup :', userGroup && userGroup.dataValues);
 
       // https://www.pg-structure.com/nav.01.guide/guide--nc/examples.html#connection
-      const amMgr = new AmManager(getConnectString(postgresUser));
+      const amMgr = new AzModelManager(getConnectString(postgresUser));
       const testResult = amMgr.testParseSchema();
       console.log('testResult :', testResult);
       return amMgr.reportDb();
