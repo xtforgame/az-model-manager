@@ -3,6 +3,7 @@ import sequelize, {
   AssociationOptions,
   Model,
   ModelAttributeColumnOptions,
+  DataType,
 } from 'sequelize';
 
 import {
@@ -30,6 +31,25 @@ export type TypeConfig = {
 
 export type TypeConfigs = {
   [s: string]: TypeConfig;
+};
+
+export const basicParse : (dataType : DataType, extraNumber? : number) => (args : SchemaFuncArgs) => Error | ModelAttributeColumnOptions<Model> = (dataType : DataType, extraNumber : number = 0) => (args : SchemaFuncArgs) => {
+  const { type, ...rest } = args.column;
+  if (!type.length) {
+    return new Error('no type attribute');
+  }
+  if (type.length === 1) {
+    return {
+      ...rest,
+      type: dataType,
+    };
+  } else if (type.length === 1 + extraNumber) {
+    return {
+      ...rest,
+      type: (<any>dataType)(...type.slice(1)),
+    };
+  }
+  return new Error(`wrong type length(${type.length})`);
 };
 
 export const parseAssociationOptions : (a : SchemaFuncArgs) => AssociationOptions | Error = (args : SchemaFuncArgs) => {
@@ -88,7 +108,9 @@ export const parseAssociationOptions : (a : SchemaFuncArgs) => AssociationOption
   return result;
 };
 
-export const typeConfigs : TypeConfigs = {
+export let typeConfigs : TypeConfigs;
+
+typeConfigs = {
   hasOne: {
     associationType: 'hasOne',
     parseColumnSchema: (args : SchemaFuncArgs) => {
@@ -107,8 +129,8 @@ export const typeConfigs : TypeConfigs = {
         associationOptions.sourceKey = args.parsedInfo.tables[args.tableName].primaryKey;
       }
       return {
-        type: HAS_ONE(args.column.type, associationOptions),
         ...args.column,
+        type: HAS_ONE(args.column.type[1], associationOptions),
       };
     },
   },
@@ -130,8 +152,8 @@ export const typeConfigs : TypeConfigs = {
         associationOptions.sourceKey = args.parsedInfo.tables[args.tableName].primaryKey;
       }
       return {
-        type: HAS_MANY(args.column.type, associationOptions),
         ...args.column,
+        type: HAS_MANY(args.column.type[1], associationOptions),
       };
     },
   },
@@ -154,8 +176,8 @@ export const typeConfigs : TypeConfigs = {
         associationOptions.targetKey = targetTable.primaryKey;
       }
       return {
-        type: BELONGS_TO(args.column.type, associationOptions),
         ...args.column,
+        type: BELONGS_TO(args.column.type[1], associationOptions),
       };
     },
   },
@@ -167,6 +189,10 @@ export const typeConfigs : TypeConfigs = {
         return associationOptions;
       }
       const options = args.column.type[2];
+      if (options.otherKey) {
+        associationOptions.otherKey = options.otherKey;
+      }
+      associationOptions.onDelete = 'SET NULL';
       if (!options.through) {
         return new Error('no through provided');
       }
@@ -186,74 +212,103 @@ export const typeConfigs : TypeConfigs = {
         return new Error(`ammThroughAs name already taken(${ammThroughAs})`);
       }
       return {
-        type: BELONGS_TO_MANY(args.column.type, associationOptions),
         ...args.column,
+        type: BELONGS_TO_MANY(args.column.type[1], associationOptions),
       };
     },
   },
 
   integer: { // AzModelTypeInteger
     sequleizeDataType: sequelize.INTEGER,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.INTEGER),
   },
   bigint: { // AzModelTypeBigint
     sequleizeDataType: sequelize.BIGINT,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.BIGINT),
   },
   decimal: { // AzModelTypeDecimal
     sequleizeDataType: sequelize.DECIMAL,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.DECIMAL, 2),
   },
   real: { // AzModelTypeReal
     sequleizeDataType: sequelize.REAL,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.REAL),
   },
   float: { // AzModelTypeFloat
     sequleizeDataType: sequelize.FLOAT,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.FLOAT),
   },
   double: { // AzModelTypeDouble
     sequleizeDataType: sequelize.DOUBLE,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.DOUBLE),
   },
   boolean: { // AzModelTypeBoolean
     sequleizeDataType: sequelize.BOOLEAN,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.BOOLEAN),
   },
   string: { // AzModelTypeString
     sequleizeDataType: sequelize.STRING,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.STRING, 1),
   },
   binary: { // AzModelTypeBinary
     sequleizeDataType: sequelize.BLOB,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.BLOB),
   },
   text: { // AzModelTypeText
     sequleizeDataType: sequelize.TEXT,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.TEXT),
   },
   date: { // AzModelTypeDate
     sequleizeDataType: sequelize.DATE,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.DATE),
   },
   dateonly: { // AzModelTypeDateOnly
     sequleizeDataType: sequelize.DATEONLY,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.DATEONLY),
   },
   uuid: { // AzModelTypeUuid
     sequleizeDataType: sequelize.UUID,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.UUID),
   },
   range: { // AzModelTypeRange
     sequleizeDataType: sequelize.RANGE,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: (args : SchemaFuncArgs) => {
+      const { type, ...rest } = args.column;
+      if (type.length !== 2) {
+        return new Error('type.length !== 2');
+      }
+      const rangeTypes : { [s : string] : AbstractDataTypeConstructor } = {
+        integer: sequelize.INTEGER,
+        bigint: sequelize.BIGINT,
+        decimal: sequelize.DECIMAL,
+        date: sequelize.DATE,
+        dateonly: sequelize.DATEONLY,
+      };
+      if (!rangeTypes[type[1]]) {
+        return new Error(`wrong range item type(${type[1]})`);
+      }
+      const itemColumn = typeConfigs[type[1]].parseColumnSchema({
+        ...args,
+        column: {
+          ...args.column,
+          type: args.column.type.slice(1),
+        },
+      });
+      if (itemColumn instanceof Error) {
+        return itemColumn;
+      }
+      return {
+        ...args.column,
+        type: sequelize.RANGE(<any>itemColumn.type),
+      };
+    },
   },
   json: { // AzModelTypeJson
     sequleizeDataType: sequelize.JSON,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.JSON),
   },
   jsonb: { // AzModelTypeJsonb
     sequleizeDataType: sequelize.JSONB,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: basicParse(sequelize.JSONB),
   },
 };

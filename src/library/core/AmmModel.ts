@@ -269,7 +269,8 @@ export default class AzuModel {
       let throughModel;
       let options;
       if (association.type === 'belongsToMany') {
-        throughModel = this.ammOrm.getSqlzAssociationModel(((<BelongsToManyOptions>association.options).through as columnTypes.ThroughOptions).ammModelName!);
+        const o = <BelongsToManyOptions>association.options;
+        throughModel = this.ammOrm.getSqlzAssociationModel((<columnTypes.ThroughOptions><any>o.through).ammModelName!);
         options = sequelize.Utils.mergeDefaults({
           through: {
             model: throughModel,

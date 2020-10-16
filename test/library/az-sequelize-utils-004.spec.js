@@ -22,6 +22,10 @@ import {
   getModelDefs01,
 } from '../test-data/az-sequelize-utils-testdata';
 
+import {
+  getModelDefs04,
+} from '../test-data/az-sequelize-utils-testdata/fromAzModelSchemas';
+
 const logFiles = {};
 
 const write = (file, data) => {
@@ -72,7 +76,12 @@ describe('AmmOrm test 04', () => {
     let ammMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
       .then(() => {
-        ammMgr = new AzRdbmsMgr(getModelDefs01());
+        const schemas = getModelDefs04();
+        if (schemas instanceof Error) {
+          return Promise.reject(schemas);
+        }
+        ammMgr = new AzRdbmsMgr(schemas);
+        return ammMgr;
       }));
 
     afterEach(() => ammMgr.close());

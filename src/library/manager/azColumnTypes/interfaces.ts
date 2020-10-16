@@ -141,7 +141,7 @@ export type AzModelAttributeUuid = AzModelTypeUuid | [
 ];
 
 // ======== Ranges ========
-export type AzModelTypeRange = 'range // sequelize.RANGE';
+export type AzModelTypeRange = 'range'; // sequelize.RANGE
 export type AzModelAttributeRange = [
   AzModelTypeRange,
   AzModelTypeInteger | AzModelTypeBigint | AzModelTypeDecimal | AzModelTypeDate | AzModelTypeDateOnly,
@@ -178,6 +178,8 @@ export type AzModelAttributeColumn =
 
   | AzModelTypeDate
   | AzModelTypeDateOnly
+
+  | AzModelAttributeUuid
 
   | AzModelAttributeRange
 

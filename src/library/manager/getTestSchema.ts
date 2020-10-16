@@ -1,36 +1,43 @@
 import sequelize from 'sequelize';
-import AmmOrm, { Schemas } from 'library/core';
+import { AzSchemas } from './azColumnTypes';
 
-const getModelDefs04 : () => Schemas = () => ({
+const getSchemas : () => AzSchemas = () => ({
   models: {
     user: {
       columns: {
         id: {
-          type: sequelize.BIGINT.UNSIGNED,
+          type: 'bigint',
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         username: {
-          type: sequelize.STRING,
+          type: 'string',
           // unique: true,
           comment: 'Username',
         },
-        accountLinks: {
-          type: AmmOrm.columnTypes.HAS_MANY('accountLink', {
-            foreignKey: 'owner_id',
-          }),
+        mainAccountLink: {
+          type: ['hasOne', 'accountLink', {
+            foreignKey: 'main_al_owner_id',
+          }],
         },
-        privilege: sequelize.STRING,
+        accountLinks: {
+          type: ['hasMany', 'accountLink', {
+            foreignKey: 'owner_id',
+          }],
+        },
+        privilege: {
+          type: 'string',
+        },
         userGroups: {
-          type: AmmOrm.columnTypes.BELONGS_TO_MANY('userGroup', {
+          type: ['belongsToMany', 'userGroup', {
             through: {
               ammModelName: 'userUserGroup',
               ammThroughAs: 'relationship',
             },
             foreignKey: 'u_id',
             otherKey: 'g_id',
-          }),
+          }],
         },
       },
       options: {
@@ -44,82 +51,87 @@ const getModelDefs04 : () => Schemas = () => ({
     accountLink: {
       columns: {
         id: {
-          type: sequelize.BIGINT.UNSIGNED,
+          type: 'bigint',
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         provider_id: {
-          type: sequelize.STRING,
+          type: 'string',
           // unique: true,
         },
         provider_user_id: {
-          type: sequelize.STRING,
+          type: 'string',
           // unique: true,
         },
         provider_user_access_info: {
-          type: sequelize.JSONB,
+          type: 'jsonb',
           // unique: true,
         },
         integer: {
-          type: sequelize.INTEGER,
+          type: 'integer',
           // unique: true,
         },
         decimal: {
-          type: sequelize.DECIMAL(10, 2),
+          type: ['decimal', 12, 1],
           // unique: true,
         },
         real: {
-          type: sequelize.REAL,
+          type: 'real',
           // unique: true,
         },
         float: {
-          type: sequelize.FLOAT,
+          type: 'float',
           // unique: true,
         },
         double: {
-          type: sequelize.DOUBLE,
+          type: 'double',
           // unique: true,
         },
         bigint: {
-          type: sequelize.BIGINT,
+          type: 'bigint',
           // unique: true,
         },
         boolean: {
-          type: sequelize.BOOLEAN,
+          type: 'boolean',
           // unique: true,
         },
         string: {
-          type: sequelize.STRING,
+          type: ['string', 900],
         },
         binary: {
-          type: sequelize.STRING(200, true),
+          type: 'binary',
         },
         text: {
-          type: sequelize.TEXT,
+          type: 'text',
         },
         // citext: {
         //   type: sequelize.CITEXT,
         // },
         date: {
-          type: sequelize.DATE,
+          type: 'date',
         },
         dateonly: {
-          type: sequelize.DATEONLY,
+          type: 'dateonly',
         },
         uuid: {
-          type: sequelize.UUID,
+          type: 'uuid',
         },
         range: {
-          type: sequelize.RANGE(sequelize.INTEGER),
+          type: ['range', 'integer'],
         },
-        array: {
-          type: sequelize.ARRAY(sequelize.INTEGER),
+        // array: {
+        //   type: sequelize.ARRAY(sequelize.INTEGER),
+        // },
+        ownerAsMainAl: {
+          type: ['belongsTo', 'user', {
+            foreignKey: 'main_al_owner_id',
+          }],
         },
         owner: {
-          type: AmmOrm.columnTypes.BELONGS_TO('user', {
+          type: ['belongsTo', 'user', {
             foreignKey: 'owner_id',
-          }),
+          }],
         },
       },
       options: {
@@ -144,19 +156,21 @@ const getModelDefs04 : () => Schemas = () => ({
     userGroup: {
       columns: {
         id: {
-          type: sequelize.BIGINT.UNSIGNED,
+          type: 'bigint',
           primaryKey: true,
           autoIncrement: true,
         },
-        name: sequelize.STRING(900),
+        name: {
+          type: ['string', 900],
+        },
         users: {
-          type: AmmOrm.columnTypes.BELONGS_TO_MANY('user', {
+          type: ['belongsToMany', 'user', {
             through: {
               ammModelName: 'userUserGroup',
             },
             foreignKey: 'g_id',
             otherKey: 'u_id',
-          }),
+          }],
         },
       },
       options: {
@@ -172,11 +186,13 @@ const getModelDefs04 : () => Schemas = () => ({
     userUserGroup: {
       columns: {
         id: {
-          type: sequelize.BIGINT.UNSIGNED,
+          type: 'bigint',
           primaryKey: true,
           autoIncrement: true,
         },
-        role: sequelize.STRING,
+        role: {
+          type: 'string',
+        },
       },
       options: {
         // name: {
@@ -189,6 +205,4 @@ const getModelDefs04 : () => Schemas = () => ({
   },
 });
 
-export {
-  getModelDefs04,
-};
+export default getSchemas;
