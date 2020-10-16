@@ -118,14 +118,18 @@ export default class AmmModelManager {
       models: {},
       associationModels: {},
     };
-    Object.keys(rawSchemas.models).forEach((tableName) => {
+    const modelKeys = Object.keys(rawSchemas.models);
+    for (let i = 0; i < modelKeys.length; i++) {
+      const tableName = modelKeys[i];
       const table = rawSchemas.models[tableName];
       result.models[tableName] = {
         columns: {},
         options: table.options,
       };
       const rawColumns = table.columns;
-      Object.keys(rawColumns).forEach((columnName) => {
+      const rawColumnKeys = Object.keys(rawColumns);
+      for (let j = 0; j < rawColumnKeys.length; j++) {
+        const columnName = rawColumnKeys[j];
         const column = rawColumns[columnName];
         if (!column.type) {
           return Error(`no type name: table(${table}), column(${columnName})`);
@@ -136,13 +140,16 @@ export default class AmmModelManager {
         if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
           return Error(`bad type name: table(${table}), column(${columnName})`);
         }
-      });
-    });
+      }
+    }
 
-    Object.keys(rawSchemas.models).forEach((tableName) => {
+    for (let i = 0; i < modelKeys.length; i++) {
+      const tableName = modelKeys[i];
       const table = rawSchemas.models[tableName];
       const rawColumns = table.columns;
-      Object.keys(rawColumns).forEach((columnName) => {
+      const rawColumnKeys = Object.keys(rawColumns);
+      for (let j = 0; j < rawColumnKeys.length; j++) {
+        const columnName = rawColumnKeys[j];
         const column = rawColumns[columnName];
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
@@ -161,8 +168,8 @@ export default class AmmModelManager {
           return Error(`parse type error: table(${table}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
         }
         result.models[tableName].columns[columnName] = parseResult;
-      });
-    });
+      }
+    }
     return result;
   }
 }

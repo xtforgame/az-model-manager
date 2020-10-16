@@ -1,4 +1,4 @@
-import sequelize,{
+import sequelize, {
   AbstractDataTypeConstructor,
 
   DataType,
@@ -28,11 +28,11 @@ import {
   AssociationColumnExtraOption,
 
   ASSOCIATION,
-} from '../core/columnTypes';
+} from '../../core/columnTypes';
 
 import {
   Schema,
-} from '../core';
+} from '../../core';
 
 // ======== Associations ========
 
@@ -215,118 +215,23 @@ export type RawModelAttributes<M extends Model = Model, TCreationAttributes = an
   [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, RawModelAttributeColumnOptions<M>>;
 };
 
-type RawSchema = {
+export type RawSchema = {
   columns: RawModelAttributes;
   options?: ModelOptions;
 };
 
-type RawSchemas = {
+export type RawSchemas = {
   models: { [s: string]: RawSchema; };
   associationModels?: { [s: string]: RawSchema; };
 };
 
-type RawSchemaType = 'model' | 'associationModel';
+export type RawSchemaType = 'model' | 'associationModel';
 
-type SchemaFuncArgs = {
+export type SchemaFuncArgs = {
   schemas : RawSchemas;
   table : RawSchema;
   tableType : RawSchemaType;
   tableName : string;
   column : any;
   columnName : string;
-};
-
-// =========================================
-export type TypeConfig = {
-  sequleizeDataType?: AbstractDataTypeConstructor,
-  associationType?: AssociationType,
-  parseColumnSchema(args : SchemaFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
-};
-
-export type TypeConfigs = {
-  [s: string]: TypeConfig;
-};
-
-export const typeConfigs : TypeConfigs = {
-  hasOne: {
-    associationType: 'hasOne',
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  hasMany: {
-    associationType: 'hasMany',
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  belongsTo: {
-    associationType: 'belongsTo',
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  belongsToMany: {
-    associationType: 'belongsToMany',
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-
-  integer: { // AzModelTypeInteger
-    sequleizeDataType: sequelize.INTEGER,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  bigint: { // AzModelTypeBigint
-    sequleizeDataType: sequelize.BIGINT,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  decimal: { // AzModelTypeDecimal
-    sequleizeDataType: sequelize.DECIMAL,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  real: { // AzModelTypeReal
-    sequleizeDataType: sequelize.REAL,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  float: { // AzModelTypeFloat
-    sequleizeDataType: sequelize.FLOAT,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  double: { // AzModelTypeDouble
-    sequleizeDataType: sequelize.DOUBLE,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  boolean: { // AzModelTypeBoolean
-    sequleizeDataType: sequelize.BOOLEAN,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  string: { // AzModelTypeString
-    sequleizeDataType: sequelize.STRING,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  binary: { // AzModelTypeBinary
-    sequleizeDataType: sequelize.BLOB,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  text: { // AzModelTypeText
-    sequleizeDataType: sequelize.TEXT,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  date: { // AzModelTypeDate
-    sequleizeDataType: sequelize.DATE,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  dateonly: { // AzModelTypeDateOnly
-    sequleizeDataType: sequelize.DATEONLY,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  uuid: { // AzModelTypeUuid
-    sequleizeDataType: sequelize.UUID,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  range: { // AzModelTypeRange
-    sequleizeDataType: sequelize.RANGE,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  json: { // AzModelTypeJson
-    sequleizeDataType: sequelize.JSON,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
-  jsonb: { // AzModelTypeJsonb
-    sequleizeDataType: sequelize.JSONB,
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
-  },
 };
