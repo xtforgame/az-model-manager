@@ -5,7 +5,7 @@ import pgStructure, {
 } from 'pg-structure';
 import az_pglib from './azpg/az_pglib';
 import { Schemas } from '../core/interfaces';
-import { AzSchemas, typeConfigs } from './azColumnTypes';
+import { AzSchema, AzSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
 
 export default class AmmModelManager {
   connectString : string;
@@ -66,23 +66,34 @@ export default class AmmModelManager {
 
   // =============
 
-  testParseSchema() : Schemas | Error {
-    // const rawSchemas : AzSchemas = {
-    const rawSchemas : AzSchemas = {
+  getTestSchema() : AzSchemas {
+    return {
       models: {
+        table0: {
+          columns: {
+            id: {
+              type: 'bigint',
+              primaryKey: true,
+            },
+          },
+        },
         table1: {
           columns: {
+            id: {
+              type: 'bigint',
+              primaryKey: true,
+            },
             hasOne: {
-              type: ['hasOne', 'x', {}],
+              type: ['hasOne', 'table0', {}],
             },
             hasMany: {
-              type: ['hasMany', 'x', {}],
+              type: ['hasMany', 'table0', {}],
             },
             belongsTo: {
-              type: ['belongsTo', 'x', {}],
+              type: ['belongsTo', 'table0', {}],
             },
             belongsToMany: {
-              type: ['belongsToMany', 'x', { through: '' }],
+              type: ['belongsToMany', 'table0', { through: 'aTable1' }],
             },
             ccc: {
               type: 'decimal',
@@ -94,6 +105,10 @@ export default class AmmModelManager {
       associationModels: {
         aTable1: {
           columns: {
+            id: {
+              type: 'bigint',
+              primaryKey: true,
+            },
             hasOne: {
               type: ['hasOne', 'x', {}],
             },
@@ -114,14 +129,20 @@ export default class AmmModelManager {
         },
       },
     };
-    const result : Schemas = {
-      models: {},
-      associationModels: {},
-    };
-    const modelKeys = Object.keys(rawSchemas.models);
+  }
+
+  normalizeRawSchemas(
+    result : Schemas,
+    parsedTables : {
+      [s : string]: ParsedTableInfo;
+    },
+    models : { [s: string]: AzSchema; },
+  ) {
+    const modelKeys = Object.keys(models);
     for (let i = 0; i < modelKeys.length; i++) {
       const tableName = modelKeys[i];
-      const table = rawSchemas.models[tableName];
+      const table = models[tableName];
+      parsedTables[tableName] = {};
       result.models[tableName] = {
         columns: {},
         options: table.options,
@@ -132,16 +153,31 @@ export default class AmmModelManager {
         const columnName = rawColumnKeys[j];
         const column = rawColumns[columnName];
         if (!column.type) {
-          return Error(`no type name: table(${table}), column(${columnName})`);
+          return Error(`no type name: table(${tableName}), column(${columnName})`);
         }
         if (typeof column.type === 'string') {
           column.type = <any>[column.type];
         }
+        if (column.primaryKey) {
+          parsedTables[tableName].primaryKey = columnName;
+        }
         if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
-          return Error(`bad type name: table(${table}), column(${columnName})`);
+          return Error(`bad type name: table(${tableName}), column(${columnName})`);
         }
       }
     }
+  }
+
+  testParseSchema() : Schemas | Error {
+    const rawSchemas = this.getTestSchema();
+    const result : Schemas = {
+      models: {},
+      associationModels: {},
+    };
+    const parsedInfo : ParsedInfo = { tables: {}, associationTables: {} };
+    const modelKeys = Object.keys(rawSchemas.models);
+    this.normalizeRawSchemas(result, parsedInfo.tables, rawSchemas.models);
+    this.normalizeRawSchemas(result, parsedInfo.associationTables, rawSchemas.associationModels || {});
 
     for (let i = 0; i < modelKeys.length; i++) {
       const tableName = modelKeys[i];
@@ -154,9 +190,10 @@ export default class AmmModelManager {
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
         if (!typeConfig) {
-          return Error(`unknown type name: table(${table}), column(${columnName}), type(${typeName})`);
+          return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
         }
         const parseResult = typeConfig.parseColumnSchema({
+          parsedInfo,
           schemas: <any>rawSchemas,
           table: <any>table,
           tableType: 'model',
@@ -165,7 +202,7 @@ export default class AmmModelManager {
           columnName,
         });
         if (parseResult instanceof Error) {
-          return Error(`parse type error: table(${table}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
+          return Error(`parse type error: table(${tableName}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
         }
         result.models[tableName].columns[columnName] = parseResult;
       }

@@ -1,11 +1,20 @@
 import sequelize, {
   AbstractDataTypeConstructor,
+  AssociationOptions,
   Model,
   ModelAttributeColumnOptions,
 } from 'sequelize';
 
 import {
-  AssociationType, HAS_ONE,
+  AssociationType,
+  HAS_ONE,
+  HasOneOptions,
+  HAS_MANY,
+  HasManyOptions,
+  BELONGS_TO,
+  BelongsToOptions,
+  BELONGS_TO_MANY,
+  BelongsToManyOptions,
 } from '../../core/columnTypes';
 
 import {
@@ -23,30 +32,164 @@ export type TypeConfigs = {
   [s: string]: TypeConfig;
 };
 
+export const parseAssociationOptions : (a : SchemaFuncArgs) => AssociationOptions | Error = (args : SchemaFuncArgs) => {
+  const targetTable = args.parsedInfo.tables[args.column.type[1]];
+  if (!targetTable) {
+    return new Error(`target table(${args.column.type[1]}) not found < 3`);
+  }
+  if (args.column.type.length < 3) {
+    return new Error('type.length < 3');
+  }
+  const options = args.column.type[2];
+
+  const result : AssociationOptions = {};
+  if (!options) {
+    return new Error('wrong association options');
+  }
+
+  // if (options.as != null) { // ignored, will be releaced by orm
+  // }
+
+  // if (options.constraints != null) { // ignored
+  // }
+
+  if (options.foreignKey) {
+    if (typeof options.foreignKey !== 'string') {
+      return new Error(`wrong association options: foreignKey(${options.foreignKey})`);
+    }
+    result.foreignKey = options.foreignKey;
+  }
+
+  // if (options.foreignKeyConstraint != null) { // ignored
+  // }
+
+  // if (options.hooks != null) { // ignored
+  // }
+
+  if (options.onDelete) {
+    if (options.onDelete !== 'SET NULL' && options.onDelete !== 'CASCADE') {
+      return new Error(`wrong association options: onDelete(${options.onDelete})`);
+    }
+    result.onDelete = options.onDelete;
+  } else {
+    result.onDelete = 'CASCADE';
+  }
+  if (options.onUpdate) {
+    if (options.onUpdate !== 'CASCADE') {
+      return new Error(`wrong association options: onUpdate(${options.onUpdate})`);
+    }
+    result.onUpdate = options.onUpdate;
+  } else {
+    result.onUpdate = 'CASCADE';
+  }
+
+  // if (result.scope != null) { currently not supported
+  // }
+  return result;
+};
+
 export const typeConfigs : TypeConfigs = {
   hasOne: {
     associationType: 'hasOne',
     parseColumnSchema: (args : SchemaFuncArgs) => {
-      if (args.column.type.length < 3) {
-        return new Error('type.length < 3');
+      const associationOptions : HasOneOptions | Error = parseAssociationOptions(args);
+      if (associationOptions instanceof Error) {
+        return associationOptions;
+      }
+      const options = args.column.type[2];
+      if (options.sourceKey) {
+        associationOptions.sourceKey = options.sourceKey;
+      } else {
+        const primaryKey = args.parsedInfo.tables[args.tableName].primaryKey;
+        if (!primaryKey || !args.table.columns[primaryKey]) {
+          return new Error('no primaryKey or sourceKey provided');
+        }
+        associationOptions.sourceKey = args.parsedInfo.tables[args.tableName].primaryKey;
       }
       return {
-        type: HAS_ONE(args.column.type, {}),
+        type: HAS_ONE(args.column.type, associationOptions),
         ...args.column,
       };
     },
   },
   hasMany: {
     associationType: 'hasMany',
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: (args : SchemaFuncArgs) => {
+      const associationOptions : HasManyOptions | Error = parseAssociationOptions(args);
+      if (associationOptions instanceof Error) {
+        return associationOptions;
+      }
+      const options = args.column.type[2];
+      if (options.sourceKey) {
+        associationOptions.sourceKey = options.sourceKey;
+      } else {
+        const primaryKey = args.parsedInfo.tables[args.tableName].primaryKey;
+        if (!primaryKey || !args.table.columns[primaryKey]) {
+          return new Error('no primaryKey or sourceKey provided');
+        }
+        associationOptions.sourceKey = args.parsedInfo.tables[args.tableName].primaryKey;
+      }
+      return {
+        type: HAS_MANY(args.column.type, associationOptions),
+        ...args.column,
+      };
+    },
   },
   belongsTo: {
     associationType: 'belongsTo',
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: (args : SchemaFuncArgs) => {
+      const associationOptions : BelongsToOptions | Error = parseAssociationOptions(args);
+      if (associationOptions instanceof Error) {
+        return associationOptions;
+      }
+      const options = args.column.type[2];
+      if (options.targetKey) {
+        associationOptions.targetKey = options.targetKey;
+      } else {
+        const targetTable = args.parsedInfo.tables[args.column.type[1]];
+        const primaryKey = targetTable && targetTable.primaryKey;
+        if (!primaryKey || !args.table.columns[primaryKey]) {
+          return new Error('no primaryKey or targetKey provided');
+        }
+        associationOptions.targetKey = targetTable.primaryKey;
+      }
+      return {
+        type: BELONGS_TO(args.column.type, associationOptions),
+        ...args.column,
+      };
+    },
   },
   belongsToMany: {
     associationType: 'belongsToMany',
-    parseColumnSchema: (args : SchemaFuncArgs) => ({ type: '' }),
+    parseColumnSchema: (args : SchemaFuncArgs) => {
+      const associationOptions : BelongsToManyOptions | Error = <any>parseAssociationOptions(args);
+      if (associationOptions instanceof Error) {
+        return associationOptions;
+      }
+      const options = args.column.type[2];
+      if (!options.through) {
+        return new Error('no through provided');
+      }
+      associationOptions.through = options.through;
+      let throughTableName = '';
+      if (typeof associationOptions.through !== 'string') {
+        throughTableName = associationOptions.through.ammModelName;
+      } else {
+        associationOptions.through = { ammModelName: associationOptions.through };
+        throughTableName = associationOptions.through.ammModelName;
+      }
+      if (!args.schemas.associationModels || !args.schemas.associationModels[throughTableName]) {
+        return new Error(`associationModels not found(${throughTableName})`);
+      }
+      const ammThroughAs = associationOptions.through.ammThroughAs;
+      if (ammThroughAs && args.table.columns[ammThroughAs]) {
+        return new Error(`ammThroughAs name already taken(${ammThroughAs})`);
+      }
+      return {
+        type: BELONGS_TO_MANY(args.column.type, associationOptions),
+        ...args.column,
+      };
+    },
   },
 
   integer: { // AzModelTypeInteger

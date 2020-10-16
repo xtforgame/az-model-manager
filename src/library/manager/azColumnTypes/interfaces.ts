@@ -227,7 +227,22 @@ export type RawSchemas = {
 
 export type RawSchemaType = 'model' | 'associationModel';
 
+export type ParsedTableInfo = {
+  primaryKey?: string,
+};
+
+export type ParsedInfo = {
+  tables: {
+    [s : string]: ParsedTableInfo;
+  };
+  associationTables: {
+    [s : string]: ParsedTableInfo;
+  };
+};
+
 export type SchemaFuncArgs = {
+  parsedInfo: ParsedInfo;
+
   schemas : RawSchemas;
   table : RawSchema;
   tableType : RawSchemaType;
