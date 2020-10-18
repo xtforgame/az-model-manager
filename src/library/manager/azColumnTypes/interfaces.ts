@@ -204,7 +204,7 @@ export type AzSchema = {
   options?: ModelOptions;
 };
 
-export type AzSchemas = {
+export type JsonSchemas = {
   models: { [s: string]: AzSchema; };
   associationModels?: { [s: string]: AzSchema; };
 };

@@ -8,7 +8,7 @@ import {
   ModelAttributeColumnOptions,
 } from 'sequelize';
 import {
-  AzSchemas,
+  JsonSchemas,
 } from './azColumnTypes';
 
 export * from './azColumnTypes';

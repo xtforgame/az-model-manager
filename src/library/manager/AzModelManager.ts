@@ -5,7 +5,7 @@ import pgStructure, {
 } from 'pg-structure';
 import az_pglib from './azpg/az_pglib';
 import { Schemas, Schema } from '../core/interfaces';
-import { AzSchema, AzSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
+import { AzSchema, JsonSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
 import getTestSchema from './getTestSchema';
 
 export default class AzModelManager {
@@ -107,7 +107,7 @@ export default class AzModelManager {
 
   static initModels(
     parsedInfo : ParsedInfo,
-    rawSchemas : AzSchemas,
+    rawSchemas : JsonSchemas,
     result : Schemas,
     parsedTables : {
       [s : string]: ParsedTableInfo;
@@ -146,7 +146,7 @@ export default class AzModelManager {
     }
   }
 
-  static parseSchema(rawSchemas : AzSchemas) : Schemas | Error {
+  static parseSchema(rawSchemas : JsonSchemas) : Schemas | Error {
     const result : Schemas = {
       models: {},
       associationModels: {},

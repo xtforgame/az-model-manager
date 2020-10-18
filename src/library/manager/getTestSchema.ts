@@ -1,7 +1,7 @@
 import sequelize from 'sequelize';
-import { AzSchemas } from './azColumnTypes';
+import { JsonSchemas } from './azColumnTypes';
 
-const getSchemas : () => AzSchemas = () => ({
+const getSchemas : () => JsonSchemas = () => ({
   models: {
     user: {
       columns: {
