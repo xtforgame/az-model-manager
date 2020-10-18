@@ -1,2 +1,2 @@
 export * from './IJsonSchemas';
-export * from './JsonSchemas';
+export * from './JsonSchemasX';

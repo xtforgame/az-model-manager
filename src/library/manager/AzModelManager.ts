@@ -5,7 +5,7 @@ import pgStructure, {
 } from 'pg-structure';
 import az_pglib from './azpg/az_pglib';
 import { Schemas, Schema } from '../core/interfaces';
-import { IJsonSchema, IJsonSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
+import { IJsonSchema, IJsonSchemas, RawSchemas, JsonSchemasX, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
 import getTestSchema from './getTestSchema';
 
 export default class AzModelManager {
@@ -67,121 +67,9 @@ export default class AzModelManager {
 
   // =============
 
-  static normalizeRawSchemas(
-    result : Schemas,
-    parsedTables : {
-      [s : string]: ParsedTableInfo;
-    },
-    models : { [s: string]: IJsonSchema; },
-    resultModels: { [s: string]: Schema; },
-  ) {
-    const modelKeys = Object.keys(models);
-    for (let i = 0; i < modelKeys.length; i++) {
-      const tableName = modelKeys[i];
-      const table = models[tableName];
-      parsedTables[tableName] = {};
-      const rawColumns = table.columns;
-      const rawColumnKeys = Object.keys(rawColumns);
-      for (let j = 0; j < rawColumnKeys.length; j++) {
-        const columnName = rawColumnKeys[j];
-        const column = rawColumns[columnName];
-        if (!column.type) {
-          return Error(`no type name: table(${tableName}), column(${columnName})`);
-        }
-        if (typeof column.type === 'string') {
-          column.type = <any>[column.type];
-        }
-        if (column.primaryKey) {
-          parsedTables[tableName].primaryKey = columnName;
-        }
-        if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
-          return Error(`bad type name: table(${tableName}), column(${columnName})`);
-        }
-      }
-    }
-  }
-
-  static initModels(
-    parsedInfo : ParsedInfo,
-    rawSchemas : IJsonSchemas,
-    result : Schemas,
-    parsedTables : {
-      [s : string]: ParsedTableInfo;
-    },
-    models : { [s: string]: IJsonSchema; },
-    resultModels: { [s: string]: Schema; },
-  ) {
-    const modelKeys = Object.keys(models);
-    for (let i = 0; i < modelKeys.length; i++) {
-      const tableName = modelKeys[i];
-      const table = models[tableName];
-      resultModels[tableName] = {
-        columns: {},
-        options: table.options,
-      };
-
-      const rawColumns = table.columns;
-      const rawColumnKeys = Object.keys(rawColumns);
-      for (let j = 0; j < rawColumnKeys.length; j++) {
-        const columnName = rawColumnKeys[j];
-        const column = rawColumns[columnName];
-        const typeName = column.type[0];
-        const typeConfig = typeConfigs[typeName];
-        if (!typeConfig) {
-          return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
-        }
-        const parseResult = typeConfig.parseColumnSchema({
-          parsedInfo,
-          schemas: <any>rawSchemas,
-          table: <any>table,
-          tableType: 'associationModel',
-          tableName,
-          column,
-          columnName,
-        });
-        if (parseResult instanceof Error) {
-          return Error(`parse type error: table(${tableName}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
-        }
-        resultModels[tableName].columns[columnName] = parseResult;
-      }
-    }
-  }
-
-  static parseSchema(rawSchemas : IJsonSchemas) : Schemas | Error {
-    const result : Schemas = {
-      models: {},
-      associationModels: {},
-    };
-    const parsedInfo : ParsedInfo = { tables: {}, associationTables: {} };
-    const modelKeys = Object.keys(rawSchemas.models);
-    let err : Error | undefined;
-    err = AzModelManager.normalizeRawSchemas(result, parsedInfo.tables, rawSchemas.models, result.models);
-    if (err) { return err; }
-    err = AzModelManager.normalizeRawSchemas(result, parsedInfo.associationTables, rawSchemas.associationModels || {}, result.associationModels!);
-    if (err) { return err; }
-
-    err = AzModelManager.initModels(
-      parsedInfo,
-      rawSchemas,
-      result,
-      parsedInfo.tables, rawSchemas.models,
-      result.models,
-    )
-    if (err) { return err; }
-
-    err = AzModelManager.initModels(
-      parsedInfo,
-      rawSchemas,
-      result,
-      parsedInfo.associationTables, rawSchemas.associationModels || {},
-      result.associationModels!,
-    )
-    if (err) { return err; }
-    return result;
-  }
-
   testParseSchema() : Schemas | Error {
     const rawSchemas = getTestSchema();
-    return AzModelManager.parseSchema(rawSchemas);
+    const jsonSchemasX = new JsonSchemasX(<any>rawSchemas);
+    return jsonSchemasX.parseSchema();
   }
 }

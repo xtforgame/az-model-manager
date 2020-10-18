@@ -55,7 +55,7 @@ export const basicParse : (dataType : DataType, extraNumber? : number) => (args 
 export const parseAssociationOptions : (a : SchemaFuncArgs) => AssociationOptions | Error = (args : SchemaFuncArgs) => {
   const targetTable = args.parsedInfo.tables[args.column.type[1]];
   if (!targetTable) {
-    return new Error(`target table(${args.column.type[1]}) not found < 3`);
+    return new Error(`target table(${args.column.type[1]}) not found`);
   }
   if (args.column.type.length < 3) {
     return new Error('type.length < 3');

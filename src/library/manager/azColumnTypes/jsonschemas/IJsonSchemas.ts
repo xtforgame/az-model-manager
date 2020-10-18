@@ -205,5 +205,5 @@ export type IJsonSchema = {
 
 export type IJsonSchemas = {
   models: { [s: string]: IJsonSchema; };
-  associationModels?: { [s: string]: IJsonSchema; };
+  associationModels: { [s: string]: IJsonSchema; };
 };
