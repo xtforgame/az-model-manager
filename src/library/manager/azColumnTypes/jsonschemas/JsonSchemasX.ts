@@ -192,7 +192,7 @@ export class JsonSchemasX {
     }
   }
 
-  parseSchema() : Schemas | Error {
+  parseRawSchema() : Schemas | Error {
     const result : Schemas = {
       models: {},
       associationModels: {},

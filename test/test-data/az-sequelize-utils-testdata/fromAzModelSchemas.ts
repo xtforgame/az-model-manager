@@ -5,7 +5,7 @@ import getTestSchema from 'library/manager/getTestSchema';
 
 const getModelDefs04 : () => Schemas | Error = () => {
   const jsonSchemasX = new JsonSchemasX(<any>getTestSchema());
-  return jsonSchemasX.parseSchema();
+  return jsonSchemasX.parseRawSchema();
 };
 
 export {
