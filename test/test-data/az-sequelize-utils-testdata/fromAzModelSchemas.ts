@@ -4,7 +4,7 @@ import AzModelManager, { JsonSchemasX } from 'library/manager';
 import getTestSchema from 'library/manager/getTestSchema';
 
 const getModelDefs04 : () => Schemas | Error = () => {
-  const jsonSchemasX = new JsonSchemasX(<any>getTestSchema());
+  const jsonSchemasX = new JsonSchemasX('public', <any>getTestSchema());
   return jsonSchemasX.parseRawSchema();
 };
 

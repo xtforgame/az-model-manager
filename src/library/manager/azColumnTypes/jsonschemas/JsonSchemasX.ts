@@ -8,6 +8,12 @@ import sequelize, {
   ModelOptions,
   ModelAttributeColumnOptions,
 } from 'sequelize';
+import pgStructure, {
+  Table,
+  Column,
+  Index,
+  Db,
+} from 'pg-structure';
 
 import {
   IJsonSchema,
@@ -23,8 +29,6 @@ import {
   Schemas,
   Overwrite,
 } from '../../../core';
-
-
 
 // =======================
 
@@ -76,10 +80,12 @@ export type SchemaFuncArgs = {
 
 export class JsonSchemasX {
   rawSchemas : RawSchemas;
+  dbSchemaName : string;
   parsedInfo!: ParsedInfo;
   schema!: IJsonSchemas;
 
-  constructor(rawSchemas : RawSchemas) {
+  constructor(dbSchemaName : string, rawSchemas : RawSchemas) {
+    this.dbSchemaName = dbSchemaName;
     this.rawSchemas = rawSchemas;
     this.clear();
   }
@@ -92,7 +98,7 @@ export class JsonSchemasX {
     };
   }
 
-  normalize() : (Error | undefined) {
+  normalizeRawSchemas() : (Error | undefined) {
     this.clear();
 
     if (!this.rawSchemas.models) {
@@ -197,7 +203,7 @@ export class JsonSchemasX {
       models: {},
       associationModels: {},
     };
-    let err = this.normalize();
+    let err = this.normalizeRawSchemas();
     if (err) { return err; }
 
     const { parsedInfo, schema } = this;
@@ -221,4 +227,60 @@ export class JsonSchemasX {
     if (err) { return err; }
     return result;
   }
+
+
+  // ========================
+
+  parseSchemaFromDb(db : Db) {
+    const dbSchema = db.schemas.get(this.dbSchemaName);
+    const table = db.get('tbl_account_link') as Table;
+    return this.parseTableFromDb(table);
+    // console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
+    // const table = db.get('tbl_account_link') as Table;
+    // return this.reportTable(table);
+  }
+
+  parseTableFromDb(table : Table) {
+    // console.log('table :', table);
+    const columnNames = table.columns.map((c) => {
+      this.reportColumn(c);
+      return c.name;
+    });
+    console.log('columnNames :', columnNames);
+    // const constraintNames = table.constraints.map((c) => {
+    //   console.log('c :', c);
+    //   return c.name;
+    // });
+    // console.log('constraintNames :', constraintNames);
+    const indexNames = table.indexes.map((i) => {
+      this.reportIndex(i);
+      return i.name;
+    });
+    console.log('indexNames :', indexNames);
+    // const columnTypeName = table.columns.get('owner_id').type.name;
+    // const indexColumnNames = table.indexes.get('ix_mail').columns;
+    const relatedTables = table.hasManyTables;
+    console.log('relatedTables :', relatedTables);
+  }
+
+  reportColumn(column : Column) {
+    // console.log('column.name :', column.name);
+    // console.log('column.type.name :', column.type.name);
+    // // // console.log('column.comment :', column.comment);
+    // // console.log('column.notNull :', column.notNull);
+    // console.log('column.length :', column.length);
+    // console.log('column.precision :', column.precision);
+    // // console.log('column.scale :', column.scale);
+    // // console.log('column.arrayDimension :', column.arrayDimension);
+    // // console.log('column.defaultWithTypeCast :', column.defaultWithTypeCast);
+    // // console.log('column.attributeNumber :', column.attributeNumber);
+  }
+
+  reportIndex(index : Index) {
+    // console.log('index.isPrimaryKey :', index.isPrimaryKey);
+    if (index.isPrimaryKey) {
+      console.log('index.columnsAndExpressions :', index.columnsAndExpressions.map(col => typeof col === 'string' ? col : col.name).join(', '));
+    }
+  }
+
 }

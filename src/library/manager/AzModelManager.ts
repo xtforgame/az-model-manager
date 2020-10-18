@@ -57,9 +57,12 @@ export default class AzModelManager {
   }
 
   async reportDb() {
-    // const r = await az_pglib.create_connection(this.connectString);
-    // const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
-    // await r.client.end();
+    const r = await az_pglib.create_connection(this.connectString);
+    const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
+    await r.client.end();
+    const jsonSchemasX = new JsonSchemasX('public', <any>{});
+    jsonSchemasX.parseSchemaFromDb(db);
+
     // // console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
     // const table = db.get('tbl_account_link') as Table;
     // return this.reportTable(table);
@@ -69,7 +72,7 @@ export default class AzModelManager {
 
   testParseSchema() : Schemas | Error {
     const rawSchemas = getTestSchema();
-    const jsonSchemasX = new JsonSchemasX(<any>rawSchemas);
+    const jsonSchemasX = new JsonSchemasX('public', <any>rawSchemas);
     return jsonSchemasX.parseRawSchema();
   }
 }
