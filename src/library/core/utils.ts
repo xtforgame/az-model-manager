@@ -115,3 +115,5 @@ toSeqPromise([1, 2, 3, 4, 5, 6, 7], (_, value) => {
   return Promise.reject(value);
 });
 */
+
+export type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;

@@ -218,59 +218,59 @@ typeConfigs = {
     },
   },
 
-  integer: { // AzModelTypeInteger
+  integer: { // JsonModelTypeInteger
     sequleizeDataType: sequelize.INTEGER,
     parseColumnSchema: basicParse(sequelize.INTEGER),
   },
-  bigint: { // AzModelTypeBigint
+  bigint: { // JsonModelTypeBigint
     sequleizeDataType: sequelize.BIGINT,
     parseColumnSchema: basicParse(sequelize.BIGINT),
   },
-  decimal: { // AzModelTypeDecimal
+  decimal: { // JsonModelTypeDecimal
     sequleizeDataType: sequelize.DECIMAL,
     parseColumnSchema: basicParse(sequelize.DECIMAL, 2),
   },
-  real: { // AzModelTypeReal
+  real: { // JsonModelTypeReal
     sequleizeDataType: sequelize.REAL,
     parseColumnSchema: basicParse(sequelize.REAL),
   },
-  float: { // AzModelTypeFloat
+  float: { // JsonModelTypeFloat
     sequleizeDataType: sequelize.FLOAT,
     parseColumnSchema: basicParse(sequelize.FLOAT),
   },
-  double: { // AzModelTypeDouble
+  double: { // JsonModelTypeDouble
     sequleizeDataType: sequelize.DOUBLE,
     parseColumnSchema: basicParse(sequelize.DOUBLE),
   },
-  boolean: { // AzModelTypeBoolean
+  boolean: { // JsonModelTypeBoolean
     sequleizeDataType: sequelize.BOOLEAN,
     parseColumnSchema: basicParse(sequelize.BOOLEAN),
   },
-  string: { // AzModelTypeString
+  string: { // JsonModelTypeString
     sequleizeDataType: sequelize.STRING,
     parseColumnSchema: basicParse(sequelize.STRING, 1),
   },
-  binary: { // AzModelTypeBinary
+  binary: { // JsonModelTypeBinary
     sequleizeDataType: sequelize.BLOB,
     parseColumnSchema: basicParse(sequelize.BLOB),
   },
-  text: { // AzModelTypeText
+  text: { // JsonModelTypeText
     sequleizeDataType: sequelize.TEXT,
     parseColumnSchema: basicParse(sequelize.TEXT),
   },
-  date: { // AzModelTypeDate
+  date: { // JsonModelTypeDate
     sequleizeDataType: sequelize.DATE,
     parseColumnSchema: basicParse(sequelize.DATE),
   },
-  dateonly: { // AzModelTypeDateOnly
+  dateonly: { // JsonModelTypeDateOnly
     sequleizeDataType: sequelize.DATEONLY,
     parseColumnSchema: basicParse(sequelize.DATEONLY),
   },
-  uuid: { // AzModelTypeUuid
+  uuid: { // JsonModelTypeUuid
     sequleizeDataType: sequelize.UUID,
     parseColumnSchema: basicParse(sequelize.UUID),
   },
-  range: { // AzModelTypeRange
+  range: { // JsonModelTypeRange
     sequleizeDataType: sequelize.RANGE,
     parseColumnSchema: (args : SchemaFuncArgs) => {
       const { type, ...rest } = args.column;
@@ -303,11 +303,11 @@ typeConfigs = {
       };
     },
   },
-  json: { // AzModelTypeJson
+  json: { // JsonModelTypeJson
     sequleizeDataType: sequelize.JSON,
     parseColumnSchema: basicParse(sequelize.JSON),
   },
-  jsonb: { // AzModelTypeJsonb
+  jsonb: { // JsonModelTypeJsonb
     sequleizeDataType: sequelize.JSONB,
     parseColumnSchema: basicParse(sequelize.JSONB),
   },

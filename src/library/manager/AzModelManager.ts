@@ -5,7 +5,7 @@ import pgStructure, {
 } from 'pg-structure';
 import az_pglib from './azpg/az_pglib';
 import { Schemas, Schema } from '../core/interfaces';
-import { AzSchema, JsonSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
+import { JsonSchema, JsonSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
 import getTestSchema from './getTestSchema';
 
 export default class AzModelManager {
@@ -72,7 +72,7 @@ export default class AzModelManager {
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
-    models : { [s: string]: AzSchema; },
+    models : { [s: string]: JsonSchema; },
     resultModels: { [s: string]: Schema; },
   ) {
     const modelKeys = Object.keys(models);
@@ -112,7 +112,7 @@ export default class AzModelManager {
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
-    models : { [s: string]: AzSchema; },
+    models : { [s: string]: JsonSchema; },
     resultModels: { [s: string]: Schema; },
   ) {
     const modelKeys = Object.keys(models);

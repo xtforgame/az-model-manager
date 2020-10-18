@@ -16,6 +16,9 @@ export {
   HasManyOptions,
 } from 'sequelize';
 
+import {
+  Overwrite,
+} from './utils';
 
 export type AssociationTypeHasOne = 'hasOne';
 export type AssociationTypeHasMany = 'hasMany';
@@ -30,8 +33,6 @@ export const associations : AssociationType[] = [
   'belongsTo',
   'belongsToMany',
 ];
-
-type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 export type ThroughOptions = Overwrite<TO, {
   ammModelName: string;
