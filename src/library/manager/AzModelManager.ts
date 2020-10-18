@@ -5,7 +5,7 @@ import pgStructure, {
 } from 'pg-structure';
 import az_pglib from './azpg/az_pglib';
 import { Schemas, Schema } from '../core/interfaces';
-import { JsonSchema, JsonSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
+import { IJsonSchema, IJsonSchemas, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
 import getTestSchema from './getTestSchema';
 
 export default class AzModelManager {
@@ -72,7 +72,7 @@ export default class AzModelManager {
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
-    models : { [s: string]: JsonSchema; },
+    models : { [s: string]: IJsonSchema; },
     resultModels: { [s: string]: Schema; },
   ) {
     const modelKeys = Object.keys(models);
@@ -80,10 +80,6 @@ export default class AzModelManager {
       const tableName = modelKeys[i];
       const table = models[tableName];
       parsedTables[tableName] = {};
-      resultModels[tableName] = {
-        columns: {},
-        options: table.options,
-      };
       const rawColumns = table.columns;
       const rawColumnKeys = Object.keys(rawColumns);
       for (let j = 0; j < rawColumnKeys.length; j++) {
@@ -107,18 +103,23 @@ export default class AzModelManager {
 
   static initModels(
     parsedInfo : ParsedInfo,
-    rawSchemas : JsonSchemas,
+    rawSchemas : IJsonSchemas,
     result : Schemas,
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
-    models : { [s: string]: JsonSchema; },
+    models : { [s: string]: IJsonSchema; },
     resultModels: { [s: string]: Schema; },
   ) {
     const modelKeys = Object.keys(models);
     for (let i = 0; i < modelKeys.length; i++) {
       const tableName = modelKeys[i];
       const table = models[tableName];
+      resultModels[tableName] = {
+        columns: {},
+        options: table.options,
+      };
+
       const rawColumns = table.columns;
       const rawColumnKeys = Object.keys(rawColumns);
       for (let j = 0; j < rawColumnKeys.length; j++) {
@@ -146,7 +147,7 @@ export default class AzModelManager {
     }
   }
 
-  static parseSchema(rawSchemas : JsonSchemas) : Schemas | Error {
+  static parseSchema(rawSchemas : IJsonSchemas) : Schemas | Error {
     const result : Schemas = {
       models: {},
       associationModels: {},

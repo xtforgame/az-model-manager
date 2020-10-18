@@ -28,12 +28,12 @@ import {
   AssociationColumnExtraOption,
 
   ASSOCIATION,
-} from '../../core/columnTypes';
+} from '../../../core/columnTypes';
 
 import {
   Schema,
   Overwrite,
-} from '../../core';
+} from '../../../core';
 
 // ======== Associations ========
 
@@ -198,12 +198,12 @@ export type JsonModelAttributes<M extends Model = Model, TCreationAttributes = a
   [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
 };
 
-export type JsonSchema = {
+export type IJsonSchema = {
   columns: JsonModelAttributes;
   options?: ModelOptions;
 };
 
-export type JsonSchemas = {
-  models: { [s: string]: JsonSchema; };
-  associationModels?: { [s: string]: JsonSchema; };
+export type IJsonSchemas = {
+  models: { [s: string]: IJsonSchema; };
+  associationModels?: { [s: string]: IJsonSchema; };
 };

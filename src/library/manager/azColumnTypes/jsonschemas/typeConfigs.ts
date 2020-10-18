@@ -16,7 +16,7 @@ import {
   BelongsToOptions,
   BELONGS_TO_MANY,
   BelongsToManyOptions,
-} from '../../core/columnTypes';
+} from '../../../core/columnTypes';
 
 import {
   SchemaFuncArgs,
