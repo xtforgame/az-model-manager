@@ -194,8 +194,10 @@ export interface JsonModelAttributeColumnOptions<M extends Model = Model> {
   type : JsonModelAttributeColumn;
 }
 
+export type JsonModelAttribute<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+
 export type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-  [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+  [name in keyof TCreationAttributes]: JsonModelAttribute<M, TCreationAttributes>;
 };
 
 export type IJsonSchema = {

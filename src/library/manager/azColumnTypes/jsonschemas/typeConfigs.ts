@@ -27,7 +27,7 @@ import {
 export type TypeConfig = {
   sequleizeDataType?: AbstractDataTypeConstructor,
   associationType?: AssociationType,
-  normalize(args : NormalizeJsonFuncArgs) : Error | undefined;
+  normalize(args : NormalizeJsonFuncArgs) : Error | void;
   toCoreColumn(args : ParseJsonFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
 };
 

@@ -18,6 +18,7 @@ import pgStructure, {
 import {
   IJsonSchema,
   IJsonSchemas,
+  JsonModelAttribute,
 } from './IJsonSchemas';
 
 import {
@@ -102,7 +103,7 @@ export class JsonSchemasX {
     };
   }
 
-  normalizeRawSchemas() : (Error | undefined) {
+  normalizeRawSchemas() : Error | void {
     this.clear();
 
     if (!this.rawSchemas.models) {
@@ -124,22 +125,47 @@ export class JsonSchemasX {
     return JsonSchemasX.normalizeRawSchemas(this.parsedInfo.associationModels, this.schema.associationModels);
   }
 
+  static forEachSchema(
+    models : { [s: string]: IJsonSchema; },
+    modelCb : ((tableName : string, jsonSchema : IJsonSchema) => Error | void) | null,
+    columnCb : ((
+      tableName : string, jsonSchema : IJsonSchema,
+      columnName : string, column : JsonModelAttribute,
+    ) => Error | void) | null,
+  ) {
+    const modelKeys = Object.keys(models);
+    for (let i = 0; i < modelKeys.length; i++) {
+      const tableName = modelKeys[i];
+      const table = models[tableName];
+      let err : void | Error;
+      if (modelCb) {
+        modelCb(tableName, table);
+      }
+      if (err) return err;
+      if (!columnCb) {
+        continue;
+      }
+      const rawColumns = table.columns;
+      const rawColumnKeys = Object.keys(rawColumns);
+      for (let j = 0; j < rawColumnKeys.length; j++) {
+        const columnName = rawColumnKeys[j];
+        const column = rawColumns[columnName];
+        err = columnCb(tableName, table, columnName, column)
+        if (err) return err;
+      }
+    }
+  }
+
   static normalizeRawSchemas(
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
     models : { [s: string]: IJsonSchema; },
-  ) : Error | undefined {
-    const modelKeys = Object.keys(models);
-    for (let i = 0; i < modelKeys.length; i++) {
-      const tableName = modelKeys[i];
-      const table = models[tableName];
-      parsedTables[tableName] = {};
-      const rawColumns = table.columns;
-      const rawColumnKeys = Object.keys(rawColumns);
-      for (let j = 0; j < rawColumnKeys.length; j++) {
-        const columnName = rawColumnKeys[j];
-        const column = rawColumns[columnName];
+  ) : Error | void {
+    JsonSchemasX.forEachSchema(
+      models,
+      (tableName) => { parsedTables[tableName] = {}; },
+      (tableName, table, columnName, column) => {
         if (!column.type) {
           return Error(`no type name: table(${tableName}), column(${columnName})`);
         }
@@ -152,30 +178,18 @@ export class JsonSchemasX {
         if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
           return Error(`bad type name: table(${tableName}), column(${columnName})`);
         }
-      }
-    }
-    for (let i = 0; i < modelKeys.length; i++) {
-      const tableName = modelKeys[i];
-      const table = models[tableName];
-      parsedTables[tableName] = {};
-      const rawColumns = table.columns;
-      const rawColumnKeys = Object.keys(rawColumns);
-      for (let j = 0; j < rawColumnKeys.length; j++) {
-        const columnName = rawColumnKeys[j];
-        const column = rawColumns[columnName];
-        if (!column.type) {
-          return Error(`no type name: table(${tableName}), column(${columnName})`);
+        const typeName = column.type[0];
+        const typeConfig = typeConfigs[typeName];
+        if (!typeConfig) {
+          return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
         }
-        if (typeof column.type === 'string') {
-          column.type = <any>[column.type];
-        }
-        if (column.primaryKey) {
-          parsedTables[tableName].primaryKey = columnName;
-        }
-        if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
-          return Error(`bad type name: table(${tableName}), column(${columnName})`);
-        }
+      },
+    );
 
+    JsonSchemasX.forEachSchema(
+      models,
+      null,
+      (tableName, table, columnName, column) => {
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
         const err = typeConfig.normalize({
@@ -188,8 +202,8 @@ export class JsonSchemasX {
         if (err) {
           return err;
         }
-      }
-    }
+      },
+    );
   }
 
   static parseModels(
@@ -201,26 +215,19 @@ export class JsonSchemasX {
     },
     models : { [s: string]: IJsonSchema; },
     resultModels: { [s: string]: AmmSchema; },
-  ) {
-    const modelKeys = Object.keys(models);
-    for (let i = 0; i < modelKeys.length; i++) {
-      const tableName = modelKeys[i];
-      const table = models[tableName];
-      resultModels[tableName] = {
-        columns: {},
-        options: table.options,
-      };
+  ) : (Error | void) {
 
-      const rawColumns = table.columns;
-      const rawColumnKeys = Object.keys(rawColumns);
-      for (let j = 0; j < rawColumnKeys.length; j++) {
-        const columnName = rawColumnKeys[j];
-        const column = rawColumns[columnName];
+    JsonSchemasX.forEachSchema(
+      models,
+      (tableName, table) => {
+        resultModels[tableName] = {
+          columns: {},
+          options: table.options,
+        };
+      },
+      (tableName, table, columnName, column) => {
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
-        if (!typeConfig) {
-          return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
-        }
         const parseResult = typeConfig.toCoreColumn({
           parsedInfo,
           schemas: <any>rawSchemas,
@@ -234,8 +241,8 @@ export class JsonSchemasX {
           return Error(`parse type error: table(${tableName}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
         }
         resultModels[tableName].columns[columnName] = parseResult;
-      }
-    }
+      },
+    );
   }
 
   parseRawSchema() : AmmSchemas | Error {
@@ -254,7 +261,7 @@ export class JsonSchemasX {
       result,
       parsedInfo.models, schema.models,
       result.models,
-    )
+    );
     if (err) { return err; }
 
     err = JsonSchemasX.parseModels(
@@ -263,11 +270,10 @@ export class JsonSchemasX {
       result,
       parsedInfo.associationModels, schema.associationModels || {},
       result.associationModels!,
-    )
+    );
     if (err) { return err; }
     return result;
   }
-
 
   // ========================
 
