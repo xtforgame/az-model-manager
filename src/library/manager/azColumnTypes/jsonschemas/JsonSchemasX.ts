@@ -86,6 +86,8 @@ export class JsonSchemasX {
   rawSchemas : RawSchemas; // from input
   dbSchemaName : string; // from db
 
+  parsed!: boolean;
+
   schemasMetadata!: SchemasMetadata;
   schema!: IJsonSchemas;
 
@@ -96,6 +98,7 @@ export class JsonSchemasX {
   }
 
   clear() {
+    this.parsed = false;
     this.schemasMetadata = { models: {}, associationModels: {} };
     this.schema = {
       models: {},
@@ -278,10 +281,15 @@ export class JsonSchemasX {
   }
 
   parseRawSchemas() : Error | void {
+    this.parsed = false;
+    let err = this.normalizeRawSchemas();
+    if (err) { return err; }
     const { schemasMetadata, schema } = this;
-    const err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'model', this.schema.models);
+    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'model', this.schema.models);
     if (err) return err;
-    return JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'associationModel', this.schema.associationModels);
+    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'associationModel', this.schema.associationModels);
+    this.parsed = false;
+    return err;
   }
 
   toCoreSchemas() : AmmSchemas | Error {
@@ -289,14 +297,15 @@ export class JsonSchemasX {
       models: {},
       associationModels: {},
     };
-    let err = this.normalizeRawSchemas();
-    if (err) { return err; }
-    err = this.parseRawSchemas();
-    if (err) { return err; }
+
+    if (!this.parsed) {
+      const err = this.parseRawSchemas();
+      if (err) return err;
+    }
 
     const { schemasMetadata, schema } = this;
 
-    err = JsonSchemasX.toCoreModels(
+    let err = JsonSchemasX.toCoreModels(
       schemasMetadata,
       schema,
       'model',
@@ -367,6 +376,8 @@ export class JsonSchemasX {
     // console.log('index.isPrimaryKey :', index.isPrimaryKey);
     if (index.isPrimaryKey) {
       console.log('index.columnsAndExpressions :', index.columnsAndExpressions.map(col => typeof col === 'string' ? col : col.name).join(', '));
+    } else if (index.isUnique) {
+      console.log('index.partialIndexExpression :', index.partialIndexExpression);
     }
   }
 }

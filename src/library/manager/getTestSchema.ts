@@ -141,6 +141,7 @@ const getSchemas : () => IJsonSchemas = () => ({
         indexes: [
           {
             unique: true,
+            name: 'al_owner_provider',
             fields: ['owner_id', 'provider_id'],
             where: {
               deleted_at: null,
@@ -148,6 +149,7 @@ const getSchemas : () => IJsonSchemas = () => ({
           },
           {
             unique: true,
+            name: 'al_provider_provider_user',
             fields: ['provider_id', 'provider_user_id'],
             where: {
               deleted_at: null,

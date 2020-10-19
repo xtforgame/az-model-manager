@@ -2,8 +2,10 @@
 
 import chai from 'chai';
 import Sequelize from 'sequelize';
+import parser from 'js-sql-parse';
 import AmmOrm from 'library/core';
-import AzModelManager from 'library/manager';
+import AzModelManager, { JsonSchemasX } from 'library/manager';
+import getTestSchema from 'library/manager/getTestSchema';
 import fs from 'fs';
 import path from 'path';
 import getLogFileNamefrom from '../test-utils/getLogFileName';
@@ -146,9 +148,19 @@ describe('AmmOrm test 04', () => {
       // console.log('userGroup :', userGroup && userGroup.dataValues);
 
       // https://www.pg-structure.com/nav.01.guide/guide--nc/examples.html#connection
+      const result = parser.parse('SELECT * FROM dummy WHERE ((deleted_at IS NULL) AND (owner_id = 1) AND (xxx != 8) AND (kkk IS NOT NULL))');
+      {
+        const { where } = result.parsed.table_exp;
+        const { condition } = where;
+        console.log('condition.exprs :', condition.exprs);
+        console.log('condition.exprs[0].right.exprs[0] :', condition.exprs[0].right.exprs[0]);
+      }
+      const jsonSchemaX = new JsonSchemasX('public', getTestSchema());
+      jsonSchemaX.parseRawSchemas();
+      const schemaFromJson = jsonSchemaX.schema;
+      write(path.resolve(__dirname, 'schema_from_json.json'), JSON.stringify(schemaFromJson, null, 2));
+      const testResult = jsonSchemaX.toCoreSchemas();
       const amMgr = new AzModelManager(getConnectString(postgresUser));
-      const testResult = amMgr.testParseSchema();
-      console.log('testResult :', testResult);
       return amMgr.reportDb();
     });
 
