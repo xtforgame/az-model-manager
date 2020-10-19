@@ -117,8 +117,11 @@ const getSchemas : () => IJsonSchemas = () => ({
         uuid: {
           type: 'uuid',
         },
-        range: {
+        range_integer: {
           type: ['range', 'integer'],
+        },
+        range_decimal: {
+          type: ['range', 'decimal'],
         },
         // array: {
         //   type: sequelize.ARRAY(sequelize.INTEGER),

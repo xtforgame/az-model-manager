@@ -87,6 +87,10 @@ export const ASSOCIATION = (type : AssociationType, targetModel : string, option
   return new AssociationColumn(type, targetModel, options, extraOptions);
 };
 
+export type AssociationCreator = {
+  type : AssociationType;
+}
+
 export const HAS_ONE = (targetModel : string, options : HasOneOptions) => ASSOCIATION(HAS_ONE.type, targetModel, options);
 HAS_ONE.type = <AssociationType>'hasOne';
 

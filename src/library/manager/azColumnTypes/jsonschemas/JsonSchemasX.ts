@@ -57,7 +57,7 @@ export type ParsedTableInfo = {
   primaryKey?: string,
 };
 
-export type ParsedInfo = {
+export type SchemasMetadata = {
   models: {
     [s : string]: ParsedTableInfo;
   };
@@ -75,7 +75,7 @@ export type NormalizeJsonFuncArgs = {
 };
 
 export type ParseJsonFuncArgs = NormalizeJsonFuncArgs & {
-  parsedInfo: ParsedInfo;
+  schemasMetadata: SchemasMetadata;
 
   schemas : RawSchemas;
 };
@@ -86,7 +86,7 @@ export class JsonSchemasX {
   rawSchemas : RawSchemas; // from input
   dbSchemaName : string; // from db
 
-  parsedInfo!: ParsedInfo;
+  schemasMetadata!: SchemasMetadata;
   schema!: IJsonSchemas;
 
   constructor(dbSchemaName : string, rawSchemas : RawSchemas) {
@@ -96,7 +96,7 @@ export class JsonSchemasX {
   }
 
   clear() {
-    this.parsedInfo = { models: {}, associationModels: {} };
+    this.schemasMetadata = { models: {}, associationModels: {} };
     this.schema = {
       models: {},
       associationModels: {},
@@ -189,7 +189,7 @@ export class JsonSchemasX {
   }
 
   static parseRawSchemas(
-    parsedInfo : ParsedInfo,
+    schemasMetadata : SchemasMetadata,
     rawSchemas : IJsonSchemas,
     tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
@@ -202,7 +202,7 @@ export class JsonSchemasX {
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
         const result = typeConfig.parse({
-          parsedInfo,
+          schemasMetadata,
           schemas: <any>rawSchemas,
           table: <any>table,
           tableType,
@@ -219,7 +219,7 @@ export class JsonSchemasX {
   }
 
   static toCoreModels(
-    parsedInfo : ParsedInfo,
+    schemasMetadata : SchemasMetadata,
     rawSchemas : IJsonSchemas,
     tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
@@ -239,7 +239,7 @@ export class JsonSchemasX {
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
         const parseResult = typeConfig.toCoreColumn({
-          parsedInfo,
+          schemasMetadata,
           schemas: <any>rawSchemas,
           table: <any>table,
           tableType: 'associationModel',
@@ -272,17 +272,17 @@ export class JsonSchemasX {
       };
     }
 
-    const err = JsonSchemasX.normalizeRawSchemas(this.parsedInfo.models, 'model', this.schema.models);
+    const err = JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.models, 'model', this.schema.models);
     if (err) return err;
-    return JsonSchemasX.normalizeRawSchemas(this.parsedInfo.associationModels, 'associationModel', this.schema.associationModels);
+    return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schema.associationModels);
   }
 
-  // parseRawSchemas() : Error | void {
-  //   const { parsedInfo, schema } = this;
-  //   const err = JsonSchemasX.parseRawSchemas(parsedInfo, schema, 'model', this.schema.models);
-  //   if (err) return err;
-  //   return JsonSchemasX.parseRawSchemas(parsedInfo, schema, 'associationModel', this.schema.associationModels);
-  // }
+  parseRawSchemas() : Error | void {
+    const { schemasMetadata, schema } = this;
+    const err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'model', this.schema.models);
+    if (err) return err;
+    return JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'associationModel', this.schema.associationModels);
+  }
 
   toCoreSchemas() : AmmSchemas | Error {
     const result : AmmSchemas = {
@@ -291,13 +291,13 @@ export class JsonSchemasX {
     };
     let err = this.normalizeRawSchemas();
     if (err) { return err; }
-    // err = this.parseRawSchemas();
-    // if (err) { return err; }
+    err = this.parseRawSchemas();
+    if (err) { return err; }
 
-    const { parsedInfo, schema } = this;
+    const { schemasMetadata, schema } = this;
 
     err = JsonSchemasX.toCoreModels(
-      parsedInfo,
+      schemasMetadata,
       schema,
       'model',
       schema.models,
@@ -306,7 +306,7 @@ export class JsonSchemasX {
     if (err) { return err; }
 
     err = JsonSchemasX.toCoreModels(
-      parsedInfo,
+      schemasMetadata,
       schema,
       'associationModel',
       schema.associationModels,
