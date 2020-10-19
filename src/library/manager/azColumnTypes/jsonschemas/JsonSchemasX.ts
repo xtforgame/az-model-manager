@@ -57,10 +57,10 @@ export type ParsedTableInfo = {
 };
 
 export type ParsedInfo = {
-  tables: {
+  models: {
     [s : string]: ParsedTableInfo;
   };
-  associationTables: {
+  associationModels: {
     [s : string]: ParsedTableInfo;
   };
 };
@@ -91,7 +91,7 @@ export class JsonSchemasX {
   }
 
   clear() {
-    this.parsedInfo = { tables: {}, associationTables: {} };
+    this.parsedInfo = { models: {}, associationModels: {} };
     this.schema = {
       models: {},
       associationModels: {},
@@ -115,9 +115,9 @@ export class JsonSchemasX {
       };
     }
 
-    const err = JsonSchemasX.normalizeRawSchemas(this.parsedInfo.tables, this.schema.models);
+    const err = JsonSchemasX.normalizeRawSchemas(this.parsedInfo.models, this.schema.models);
     if (err) return err;
-    return JsonSchemasX.normalizeRawSchemas(this.parsedInfo.associationTables, this.schema.associationModels);
+    return JsonSchemasX.normalizeRawSchemas(this.parsedInfo.associationModels, this.schema.associationModels);
   }
 
   static normalizeRawSchemas(
@@ -212,7 +212,7 @@ export class JsonSchemasX {
       parsedInfo,
       schema,
       result,
-      parsedInfo.tables, schema.models,
+      parsedInfo.models, schema.models,
       result.models,
     )
     if (err) { return err; }
@@ -221,7 +221,7 @@ export class JsonSchemasX {
       parsedInfo,
       schema,
       result,
-      parsedInfo.associationTables, schema.associationModels || {},
+      parsedInfo.associationModels, schema.associationModels || {},
       result.associationModels!,
     )
     if (err) { return err; }
@@ -282,5 +282,4 @@ export class JsonSchemasX {
       console.log('index.columnsAndExpressions :', index.columnsAndExpressions.map(col => typeof col === 'string' ? col : col.name).join(', '));
     }
   }
-
 }

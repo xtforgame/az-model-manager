@@ -53,7 +53,7 @@ export const basicParse : (dataType : DataType, extraNumber? : number) => (args 
 };
 
 export const parseAssociationOptions : (a : SchemaFuncArgs) => AssociationOptions | Error = (args : SchemaFuncArgs) => {
-  const targetTable = args.parsedInfo.tables[args.column.type[1]];
+  const targetTable = args.parsedInfo.models[args.column.type[1]];
   if (!targetTable) {
     return new Error(`target table(${args.column.type[1]}) not found`);
   }
@@ -122,11 +122,11 @@ typeConfigs = {
       if (options.sourceKey) {
         associationOptions.sourceKey = options.sourceKey;
       } else {
-        const primaryKey = args.parsedInfo.tables[args.tableName].primaryKey;
+        const primaryKey = args.parsedInfo.models[args.tableName].primaryKey;
         if (!primaryKey || !args.table.columns[primaryKey]) {
           return new Error('no primaryKey or sourceKey provided');
         }
-        associationOptions.sourceKey = args.parsedInfo.tables[args.tableName].primaryKey;
+        associationOptions.sourceKey = args.parsedInfo.models[args.tableName].primaryKey;
       }
       return {
         ...args.column,
@@ -145,11 +145,11 @@ typeConfigs = {
       if (options.sourceKey) {
         associationOptions.sourceKey = options.sourceKey;
       } else {
-        const primaryKey = args.parsedInfo.tables[args.tableName].primaryKey;
+        const primaryKey = args.parsedInfo.models[args.tableName].primaryKey;
         if (!primaryKey || !args.table.columns[primaryKey]) {
           return new Error('no primaryKey or sourceKey provided');
         }
-        associationOptions.sourceKey = args.parsedInfo.tables[args.tableName].primaryKey;
+        associationOptions.sourceKey = args.parsedInfo.models[args.tableName].primaryKey;
       }
       return {
         ...args.column,
@@ -168,7 +168,7 @@ typeConfigs = {
       if (options.targetKey) {
         associationOptions.targetKey = options.targetKey;
       } else {
-        const targetTable = args.parsedInfo.tables[args.column.type[1]];
+        const targetTable = args.parsedInfo.models[args.column.type[1]];
         const primaryKey = targetTable && targetTable.primaryKey;
         if (!primaryKey || !args.table.columns[primaryKey]) {
           return new Error('no primaryKey or targetKey provided');
