@@ -28,6 +28,6 @@ export default class AzModelManager {
   testParseSchema() : AmmSchemas | Error {
     const rawSchemas = getTestSchema();
     const jsonSchemasX = new JsonSchemasX('public', <any>rawSchemas);
-    return jsonSchemasX.parseRawSchema();
+    return jsonSchemasX.toCoreSchemas();
   }
 }

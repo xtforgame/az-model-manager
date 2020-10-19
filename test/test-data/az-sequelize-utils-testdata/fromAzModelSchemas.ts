@@ -5,7 +5,7 @@ import getTestSchema from 'library/manager/getTestSchema';
 
 const getModelDefs04 : () => AmmSchemas | Error = () => {
   const jsonSchemasX = new JsonSchemasX('public', <any>getTestSchema());
-  return jsonSchemasX.parseRawSchema();
+  return jsonSchemasX.toCoreSchemas();
 };
 
 export {

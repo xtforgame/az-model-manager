@@ -103,33 +103,12 @@ export class JsonSchemasX {
     };
   }
 
-  normalizeRawSchemas() : Error | void {
-    this.clear();
-
-    if (!this.rawSchemas.models) {
-      return Error(`bad json data: no models provided`);
-    }
-
-    this.schema.models = {
-      ...<any>this.rawSchemas.models,
-    };
-
-    if (this.rawSchemas.associationModels) {
-      this.schema.associationModels = {
-        ...<any>this.rawSchemas.associationModels,
-      };
-    }
-
-    const err = JsonSchemasX.normalizeRawSchemas(this.parsedInfo.models, this.schema.models);
-    if (err) return err;
-    return JsonSchemasX.normalizeRawSchemas(this.parsedInfo.associationModels, this.schema.associationModels);
-  }
-
   static forEachSchema(
+    tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
-    modelCb : ((tableName : string, jsonSchema : IJsonSchema) => Error | void) | null,
+    modelCb : ((tableName : string, tableType : RawSchemaType, jsonSchema : IJsonSchema) => Error | void) | null,
     columnCb : ((
-      tableName : string, jsonSchema : IJsonSchema,
+      tableName : string, tableType : RawSchemaType, jsonSchema : IJsonSchema,
       columnName : string, column : JsonModelAttribute,
     ) => Error | void) | null,
   ) {
@@ -139,7 +118,7 @@ export class JsonSchemasX {
       const table = models[tableName];
       let err : void | Error;
       if (modelCb) {
-        modelCb(tableName, table);
+        modelCb(tableName, tableType, table);
       }
       if (err) return err;
       if (!columnCb) {
@@ -150,7 +129,7 @@ export class JsonSchemasX {
       for (let j = 0; j < rawColumnKeys.length; j++) {
         const columnName = rawColumnKeys[j];
         const column = rawColumns[columnName];
-        err = columnCb(tableName, table, columnName, column)
+        err = columnCb(tableName, tableType, table, columnName, column)
         if (err) return err;
       }
     }
@@ -160,12 +139,14 @@ export class JsonSchemasX {
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
+    tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
   ) : Error | void {
     JsonSchemasX.forEachSchema(
+      tableType,
       models,
       (tableName) => { parsedTables[tableName] = {}; },
-      (tableName, table, columnName, column) => {
+      (tableName, tableType, table, columnName, column) => {
         if (!column.type) {
           return Error(`no type name: table(${tableName}), column(${columnName})`);
         }
@@ -187,14 +168,15 @@ export class JsonSchemasX {
     );
 
     JsonSchemasX.forEachSchema(
+      tableType,
       models,
       null,
-      (tableName, table, columnName, column) => {
+      (tableName, tableType, table, columnName, column) => {
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
         const err = typeConfig.normalize({
           table: <any>table,
-          tableType: 'associationModel',
+          tableType,
           tableName,
           column,
           columnName,
@@ -206,26 +188,54 @@ export class JsonSchemasX {
     );
   }
 
-  static parseModels(
+  static parseRawSchemas(
     parsedInfo : ParsedInfo,
     rawSchemas : IJsonSchemas,
-    result : AmmSchemas,
-    parsedTables : {
-      [s : string]: ParsedTableInfo;
-    },
+    tableType : RawSchemaType,
+    models : { [s: string]: IJsonSchema; },
+  ) : Error | void {
+    JsonSchemasX.forEachSchema(
+      tableType,
+      models,
+      null,
+      (tableName, tableType, table, columnName, column) => {
+        const typeName = column.type[0];
+        const typeConfig = typeConfigs[typeName];
+        const result = typeConfig.parse({
+          parsedInfo,
+          schemas: <any>rawSchemas,
+          table: <any>table,
+          tableType,
+          tableName,
+          column,
+          columnName,
+        });
+        if (result instanceof Error) {
+          return result;
+        }
+        table.columns[columnName] = result;
+      },
+    );
+  }
+
+  static toCoreModels(
+    parsedInfo : ParsedInfo,
+    rawSchemas : IJsonSchemas,
+    tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
     resultModels: { [s: string]: AmmSchema; },
   ) : (Error | void) {
 
     JsonSchemasX.forEachSchema(
+      tableType,
       models,
-      (tableName, table) => {
+      (tableName, tableType, table) => {
         resultModels[tableName] = {
           columns: {},
           options: table.options,
         };
       },
-      (tableName, table, columnName, column) => {
+      (tableName, tableType, table, columnName, column) => {
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
         const parseResult = typeConfig.toCoreColumn({
@@ -245,30 +255,61 @@ export class JsonSchemasX {
     );
   }
 
-  parseRawSchema() : AmmSchemas | Error {
+  normalizeRawSchemas() : Error | void {
+    this.clear();
+
+    if (!this.rawSchemas.models) {
+      return Error(`bad json data: no models provided`);
+    }
+
+    this.schema.models = {
+      ...<any>this.rawSchemas.models,
+    };
+
+    if (this.rawSchemas.associationModels) {
+      this.schema.associationModels = {
+        ...<any>this.rawSchemas.associationModels,
+      };
+    }
+
+    const err = JsonSchemasX.normalizeRawSchemas(this.parsedInfo.models, 'model', this.schema.models);
+    if (err) return err;
+    return JsonSchemasX.normalizeRawSchemas(this.parsedInfo.associationModels, 'associationModel', this.schema.associationModels);
+  }
+
+  // parseRawSchemas() : Error | void {
+  //   const { parsedInfo, schema } = this;
+  //   const err = JsonSchemasX.parseRawSchemas(parsedInfo, schema, 'model', this.schema.models);
+  //   if (err) return err;
+  //   return JsonSchemasX.parseRawSchemas(parsedInfo, schema, 'associationModel', this.schema.associationModels);
+  // }
+
+  toCoreSchemas() : AmmSchemas | Error {
     const result : AmmSchemas = {
       models: {},
       associationModels: {},
     };
     let err = this.normalizeRawSchemas();
     if (err) { return err; }
+    // err = this.parseRawSchemas();
+    // if (err) { return err; }
 
     const { parsedInfo, schema } = this;
 
-    err = JsonSchemasX.parseModels(
+    err = JsonSchemasX.toCoreModels(
       parsedInfo,
       schema,
-      result,
-      parsedInfo.models, schema.models,
+      'model',
+      schema.models,
       result.models,
     );
     if (err) { return err; }
 
-    err = JsonSchemasX.parseModels(
+    err = JsonSchemasX.toCoreModels(
       parsedInfo,
       schema,
-      result,
-      parsedInfo.associationModels, schema.associationModels || {},
+      'associationModel',
+      schema.associationModels,
       result.associationModels!,
     );
     if (err) { return err; }
