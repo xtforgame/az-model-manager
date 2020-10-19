@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign, import/no-named-as-default-member */
 import { Sequelize, ModelDefined, Model } from 'sequelize';
-import { AmmOrmI, AmmModelI, Schemas } from './interfaces';
+import { AmmOrmI, AmmModelI, AmmSchemas } from './interfaces';
 import AmmModel from './AmmModel';
 import AssociationModel from './AssociationModel';
 
@@ -10,11 +10,11 @@ export default class AmmOrm {
   static columnTypes = AmmModel.columnTypes;
 
   db : Sequelize;
-  ammSchemas : Schemas;
+  ammSchemas : AmmSchemas;
   tableInfo : { [name : string] : AmmModel };
   associationModelInfo : { [name : string] : AmmModelI };
 
-  constructor(sequelizeDb : Sequelize, ammSchemas : Schemas) {
+  constructor(sequelizeDb : Sequelize, ammSchemas : AmmSchemas) {
     this.db = sequelizeDb;
     this.ammSchemas = ammSchemas;
     this.tableInfo = {};

@@ -1,5 +1,5 @@
 import { Sequelize, ModelDefined, Model } from 'sequelize';
-import { AsuModelI, Schemas } from './interfaces';
+import { AsuModelI, AmmSchemas } from './interfaces';
 import AsuModel from './AsuModel';
 export default class AsuOrm {
     static ThroughValues: symbol;

@@ -69,11 +69,11 @@ var autoInclude = function autoInclude(asuOrm, modelName, values) {
   return include;
 };
 
-var AzuModel = function () {
-  function AzuModel(asuOrm, modelName, tableDefine) {
+var AmmModel = function () {
+  function AmmModel(asuOrm, modelName, tableDefine) {
     var tablePrefix = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'tbl_';
 
-    _classCallCheck(this, AzuModel);
+    _classCallCheck(this, AmmModel);
 
     _defineProperty(this, "asuOrm", void 0);
 
@@ -125,7 +125,7 @@ var AzuModel = function () {
     this.addModelMethods();
   }
 
-  _createClass(AzuModel, [{
+  _createClass(AmmModel, [{
     key: "separateNxNAssociations",
     value: function separateNxNAssociations(instance) {
       var _this = this;
@@ -311,11 +311,11 @@ var AzuModel = function () {
     }
   }]);
 
-  return AzuModel;
+  return AmmModel;
 }();
 
-exports["default"] = AzuModel;
+exports["default"] = AmmModel;
 
-_defineProperty(AzuModel, "columnTypes", columnTypes);
+_defineProperty(AmmModel, "columnTypes", columnTypes);
 
-_defineProperty(AzuModel, "ThroughValues", ThroughValues);
+_defineProperty(AmmModel, "ThroughValues", ThroughValues);

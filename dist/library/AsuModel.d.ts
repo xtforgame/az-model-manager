@@ -2,7 +2,7 @@ import sequelize, { Model, ModelDefined, ModelAttributes, ModelOptions, ModelNam
 import * as columnTypes from './columnTypes';
 import { AsuOrmI } from './interfaces';
 export declare const ThroughValues: unique symbol;
-export default class AzuModel {
+export default class AmmModel {
     static columnTypes: typeof columnTypes;
     static ThroughValues: symbol;
     asuOrm: AsuOrmI;

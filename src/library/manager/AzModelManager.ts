@@ -4,7 +4,7 @@ import pgStructure, {
   Index,
 } from 'pg-structure';
 import az_pglib from './azpg/az_pglib';
-import { Schemas, Schema } from '../core/interfaces';
+import { AmmSchemas, AmmSchema } from '../core/interfaces';
 import { IJsonSchema, IJsonSchemas, RawSchemas, JsonSchemasX, typeConfigs, ParsedInfo, ParsedTableInfo } from './azColumnTypes';
 import getTestSchema from './getTestSchema';
 
@@ -25,7 +25,7 @@ export default class AzModelManager {
 
   // =============
 
-  testParseSchema() : Schemas | Error {
+  testParseSchema() : AmmSchemas | Error {
     const rawSchemas = getTestSchema();
     const jsonSchemasX = new JsonSchemasX('public', <any>rawSchemas);
     return jsonSchemasX.parseRawSchema();

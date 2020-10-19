@@ -25,8 +25,8 @@ import {
 } from './typeConfigs';
 
 import {
-  Schema,
-  Schemas,
+  AmmSchema,
+  AmmSchemas,
   Overwrite,
 } from '../../../core';
 
@@ -178,13 +178,16 @@ export class JsonSchemasX {
 
         const typeName = column.type[0];
         const typeConfig = typeConfigs[typeName];
-        const parseResult = typeConfig.normalize({
+        const err = typeConfig.normalize({
           table: <any>table,
           tableType: 'associationModel',
           tableName,
           column,
           columnName,
         });
+        if (err) {
+          return err;
+        }
       }
     }
   }
@@ -192,12 +195,12 @@ export class JsonSchemasX {
   static parseModels(
     parsedInfo : ParsedInfo,
     rawSchemas : IJsonSchemas,
-    result : Schemas,
+    result : AmmSchemas,
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
     models : { [s: string]: IJsonSchema; },
-    resultModels: { [s: string]: Schema; },
+    resultModels: { [s: string]: AmmSchema; },
   ) {
     const modelKeys = Object.keys(models);
     for (let i = 0; i < modelKeys.length; i++) {
@@ -235,8 +238,8 @@ export class JsonSchemasX {
     }
   }
 
-  parseRawSchema() : Schemas | Error {
-    const result : Schemas = {
+  parseRawSchema() : AmmSchemas | Error {
+    const result : AmmSchemas = {
       models: {},
       associationModels: {},
     };

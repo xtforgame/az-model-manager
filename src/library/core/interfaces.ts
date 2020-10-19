@@ -21,12 +21,12 @@ export interface AmmModelI {
   associations : { [s: string]: AssociationColumn; };
 }
 
-export type Schema = {
+export type AmmSchema = {
   columns: ModelAttributes;
   options?: ModelOptions;
 };
 
-export type Schemas = {
-  models: { [s: string]: Schema; };
-  associationModels?: { [s: string]: Schema; };
+export type AmmSchemas = {
+  models: { [s: string]: AmmSchema; };
+  associationModels?: { [s: string]: AmmSchema; };
 };

@@ -1,7 +1,7 @@
 import sequelize from 'sequelize';
-import AmmOrm, { Schemas } from 'library/core';
+import AmmOrm, { AmmSchemas } from 'library/core';
 
-const getModelDefs00 : () => Schemas = () => ({
+const getModelDefs00 : () => AmmSchemas = () => ({
   models: {
     user: {
       columns: {
@@ -80,7 +80,7 @@ const getModelDefs00 : () => Schemas = () => ({
   associationModels: {},
 });
 
-const getModelDefs01 : () => Schemas = () => ({
+const getModelDefs01 : () => AmmSchemas = () => ({
   models: {
     user: {
       columns: {
@@ -268,7 +268,7 @@ const getModelDefs01 : () => Schemas = () => ({
   },
 });
 
-const getModelDefs02 : () => Schemas = () => ({
+const getModelDefs02 : () => AmmSchemas = () => ({
   models: {
     user: {
       columns: {

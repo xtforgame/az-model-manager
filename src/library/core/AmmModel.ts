@@ -13,7 +13,7 @@ import sequelize, {
   HasManyOptions,
 } from 'sequelize';
 import * as columnTypes from './columnTypes';
-import { AmmOrmI, Schema } from './interfaces';
+import { AmmOrmI, AmmSchema } from './interfaces';
 // import {
 //   defaultCallbackPromise,
 //   isFunction,
@@ -76,14 +76,14 @@ const autoInclude = (ammOrm : AmmOrmI, modelName : string, values, inputInclude 
   return include;
 };
 
-export default class AzuModel {
+export default class AmmModel {
   static columnTypes = columnTypes;
 
   static ThroughValues = ThroughValues;
 
   ammOrm : AmmOrmI;
   db : Sequelize;
-  tableDefine : Schema;
+  tableDefine : AmmSchema;
   tablePrefix : string;
   sqlzModel : ModelDefined<Model, any>;
   sqlzOptions : ModelOptions;
@@ -95,7 +95,7 @@ export default class AzuModel {
 
   associations : { [s : string] : columnTypes.AssociationColumn };
 
-  constructor(ammOrm : AmmOrmI, modelName : string, tableDefine : Schema, tablePrefix : string = 'tbl_') {
+  constructor(ammOrm : AmmOrmI, modelName : string, tableDefine : AmmSchema, tablePrefix : string = 'tbl_') {
     this.ammOrm = ammOrm;
     this.db = this.ammOrm.db;
     this.tableDefine = tableDefine;

@@ -31,7 +31,7 @@ import {
 } from '../../../core/columnTypes';
 
 import {
-  Schema,
+  AmmSchema,
   Overwrite,
 } from '../../../core';
 
