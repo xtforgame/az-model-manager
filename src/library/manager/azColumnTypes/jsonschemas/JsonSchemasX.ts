@@ -65,10 +65,7 @@ export type ParsedInfo = {
   };
 };
 
-export type SchemaFuncArgs = {
-  parsedInfo: ParsedInfo;
-
-  schemas : RawSchemas;
+export type NormalizeJsonFuncArgs = {
   table : RawSchema;
   tableType : RawSchemaType;
   tableName : string;
@@ -76,11 +73,18 @@ export type SchemaFuncArgs = {
   columnName : string;
 };
 
+export type ParseJsonFuncArgs = NormalizeJsonFuncArgs & {
+  parsedInfo: ParsedInfo;
+
+  schemas : RawSchemas;
+};
+
 // =======================
 
 export class JsonSchemasX {
-  rawSchemas : RawSchemas;
-  dbSchemaName : string;
+  rawSchemas : RawSchemas; // from input
+  dbSchemaName : string; // from db
+
   parsedInfo!: ParsedInfo;
   schema!: IJsonSchemas;
 
@@ -150,6 +154,39 @@ export class JsonSchemasX {
         }
       }
     }
+    for (let i = 0; i < modelKeys.length; i++) {
+      const tableName = modelKeys[i];
+      const table = models[tableName];
+      parsedTables[tableName] = {};
+      const rawColumns = table.columns;
+      const rawColumnKeys = Object.keys(rawColumns);
+      for (let j = 0; j < rawColumnKeys.length; j++) {
+        const columnName = rawColumnKeys[j];
+        const column = rawColumns[columnName];
+        if (!column.type) {
+          return Error(`no type name: table(${tableName}), column(${columnName})`);
+        }
+        if (typeof column.type === 'string') {
+          column.type = <any>[column.type];
+        }
+        if (column.primaryKey) {
+          parsedTables[tableName].primaryKey = columnName;
+        }
+        if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
+          return Error(`bad type name: table(${tableName}), column(${columnName})`);
+        }
+
+        const typeName = column.type[0];
+        const typeConfig = typeConfigs[typeName];
+        const parseResult = typeConfig.normalize({
+          table: <any>table,
+          tableType: 'associationModel',
+          tableName,
+          column,
+          columnName,
+        });
+      }
+    }
   }
 
   static parseModels(
@@ -181,7 +218,7 @@ export class JsonSchemasX {
         if (!typeConfig) {
           return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
         }
-        const parseResult = typeConfig.parseColumnSchema({
+        const parseResult = typeConfig.toCoreColumn({
           parsedInfo,
           schemas: <any>rawSchemas,
           table: <any>table,
