@@ -24,6 +24,7 @@ import {
   getConnectString,
   resetTestDbAndTestRole,
 } from '../test-utils/utils';
+import AzRdbmsMgr from '../test-utils/AzRdbmsMgr';
 
 import {
   getModelDefs01,
@@ -54,38 +55,6 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 }
 
 // const { expect } = chai;
-
-class AzRdbmsMgr {
-  ammSchemas : AmmSchemas;
-  sequelizeDb : Sequelize;
-  ammOrm : AmmOrm;
-
-  constructor(ammSchemas) {
-    this.ammSchemas = ammSchemas;
-    this.sequelizeDb = new Sequelize(getConnectString(postgresUser), {
-      dialect: 'postgres',
-      logging: databaseLogger,
-      minifyAliases: true,
-      define: {
-        defaultScope: {
-          attributes: {
-            exclude: ['created_at', 'updated_at', 'deleted_at'],
-          },
-        },
-      },
-    });
-
-    this.ammOrm = new AmmOrm(this.sequelizeDb, this.ammSchemas);
-  }
-
-  sync(force = true) {
-    return this.ammOrm.sync(force);
-  }
-
-  close() {
-    return this.ammOrm.db.close();
-  }
-}
 
 type AccountLinkCreationAttributes = {
   name: string;
@@ -137,7 +106,7 @@ describe('AmmOrm test 04', () => {
         if (schemas instanceof Error) {
           return Promise.reject(schemas);
         }
-        ammMgr = new AzRdbmsMgr(schemas);
+        ammMgr = new AzRdbmsMgr(schemas, getConnectString(postgresUser), databaseLogger);
         return ammMgr;
       }));
 
@@ -174,7 +143,7 @@ describe('AmmOrm test 04', () => {
         //   as: 'userGroups',
         // }],
       });
-      console.log('user :', JSON.stringify(user.toJSON()));
+      // console.log('user :', JSON.stringify(user.toJSON()));
       let userGroup = await UserGroup.findOne({
         where: {
           name: 'group 1',

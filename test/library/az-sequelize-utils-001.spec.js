@@ -5,6 +5,7 @@ import Sequelize from 'sequelize';
 import AmmOrm from 'library/core';
 import fs from 'fs';
 import path from 'path';
+import AzRdbmsMgr from '../test-utils/AzRdbmsMgr';
 import getLogFileNamefrom from '../test-utils/getLogFileName';
 
 import {
@@ -38,40 +39,12 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 
 const { expect } = chai;
 
-class AzRdbmsMgr {
-  constructor(ammSchemas) {
-    this.ammSchemas = ammSchemas;
-    this.sequelizeDb = new Sequelize(getConnectString(postgresUser), {
-      dialect: 'postgres',
-      logging: databaseLogger,
-      minifyAliases: true,
-      define: {
-        defaultScope: {
-          attributes: {
-            exclude: ['created_at', 'updated_at', 'deleted_at'],
-          },
-        },
-      },
-    });
-
-    this.ammOrm = new AmmOrm(this.sequelizeDb, this.ammSchemas);
-  }
-
-  sync(force = true) {
-    return this.ammOrm.sync({ force });
-  }
-
-  close() {
-    return this.ammOrm.db.close();
-  }
-}
-
 describe('AmmOrm test 01', () => {
   describe('Basic', () => {
     let ammMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
       .then(() => {
-        ammMgr = new AzRdbmsMgr(getModelDefs01());
+        ammMgr = new AzRdbmsMgr(getModelDefs01(), getConnectString(postgresUser), databaseLogger);
       }));
 
     afterEach(() => ammMgr.close());
