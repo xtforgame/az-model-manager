@@ -2,7 +2,7 @@
 
 import chai from 'chai';
 import Sequelize from 'sequelize';
-import AsuOrm from 'library/AsuOrm';
+import AmmOrm from 'library/core';
 import fs from 'fs';
 import path from 'path';
 import getLogFileNamefrom from '../test-utils/getLogFileName';
@@ -39,8 +39,8 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 const { expect } = chai;
 
 class AzRdbmsMgr {
-  constructor(asuSchemas) {
-    this.asuSchemas = asuSchemas;
+  constructor(ammSchemas) {
+    this.ammSchemas = ammSchemas;
     this.sequelizeDb = new Sequelize(getConnectString(postgresUser), {
       dialect: 'postgres',
       logging: databaseLogger,
@@ -54,35 +54,35 @@ class AzRdbmsMgr {
       },
     });
 
-    this.asuOrm = new AsuOrm(this.sequelizeDb, this.asuSchemas);
+    this.ammOrm = new AmmOrm(this.sequelizeDb, this.ammSchemas);
   }
 
   sync(force = true) {
-    return this.asuOrm.sync({ force });
+    return this.ammOrm.sync({ force });
   }
 
   close() {
-    return this.asuOrm.db.close();
+    return this.ammOrm.db.close();
   }
 }
 
-describe('AsuOrm test', () => {
+describe('AmmOrm test 03', () => {
   describe('Basic', () => {
-    let asuMgr = null;
+    let ammMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
       .then(() => {
-        asuMgr = new AzRdbmsMgr(getModelDefs01());
+        ammMgr = new AzRdbmsMgr(getModelDefs01());
       }));
 
-    afterEach(() => asuMgr.close());
+    afterEach(() => ammMgr.close());
 
     it('should able to add has-many association ', function () {
       this.timeout(900000);
-      const User = asuMgr.asuOrm.getSqlzModel('user');
-      const UserGroup = asuMgr.asuOrm.getSqlzModel('userGroup');
+      const User = ammMgr.ammOrm.getSqlzModel('user');
+      const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
 
       let user = null;
-      return asuMgr.sync()
+      return ammMgr.sync()
       .then(() => Promise.all([User.create(), UserGroup.create()])
         .then(([_user, userGroup]) => {
           user = _user;

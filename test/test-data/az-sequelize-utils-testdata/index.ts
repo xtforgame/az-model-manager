@@ -1,27 +1,27 @@
-import Sequelize from 'sequelize';
-import AsuOrm, { Schemas } from 'library';
+import sequelize from 'sequelize';
+import AmmOrm, { AmmSchemas } from 'library/core';
 
-const getModelDefs00 : () => Schemas = () => ({
+const getModelDefs00 : () => AmmSchemas = () => ({
   models: {
     user: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         username: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
           comment: 'Username',
         },
         accountLinks: {
-          type: AsuOrm.columnTypes.HAS_MANY('accountLink', {
+          type: AmmOrm.columnTypes.HAS_MANY('accountLink', {
             foreignKey: 'owner_id',
           }),
         },
-        privilege: Sequelize.STRING,
+        privilege: sequelize.STRING,
       },
       options: {
         // name: {
@@ -34,25 +34,25 @@ const getModelDefs00 : () => Schemas = () => ({
     accountLink: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         provider_id: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
         },
         provider_user_id: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
         },
         provider_user_access_info: {
-          type: Sequelize.JSONB,
+          type: sequelize.JSONB,
           // unique: true,
         },
         owner: {
-          type: AsuOrm.columnTypes.BELONGS_TO('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO('user', {
             foreignKey: 'owner_id',
           }),
         },
@@ -80,32 +80,32 @@ const getModelDefs00 : () => Schemas = () => ({
   associationModels: {},
 });
 
-const getModelDefs01 : () => Schemas = () => ({
+const getModelDefs01 : () => AmmSchemas = () => ({
   models: {
     user: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         username: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
           comment: 'Username',
         },
         accountLinks: {
-          type: AsuOrm.columnTypes.HAS_MANY('accountLink', {
+          type: AmmOrm.columnTypes.HAS_MANY('accountLink', {
             foreignKey: 'owner_id',
           }),
         },
-        privilege: Sequelize.STRING,
+        privilege: sequelize.STRING,
         userGroups: {
-          type: AsuOrm.columnTypes.BELONGS_TO_MANY('userGroup', {
+          type: AmmOrm.columnTypes.BELONGS_TO_MANY('userGroup', {
             through: {
-              asuModelName: 'userUserGroup',
-              asuThroughAs: 'relationship',
+              ammModelName: 'userUserGroup',
+              ammThroughAs: 'relationship',
             },
             foreignKey: 'u_id',
             otherKey: 'g_id',
@@ -123,25 +123,80 @@ const getModelDefs01 : () => Schemas = () => ({
     accountLink: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         provider_id: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
         },
         provider_user_id: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
         },
         provider_user_access_info: {
-          type: Sequelize.JSONB,
+          type: sequelize.JSONB,
           // unique: true,
         },
+        integer: {
+          type: sequelize.INTEGER,
+          // unique: true,
+        },
+        decimal: {
+          type: sequelize.DECIMAL(10, 2),
+          // unique: true,
+        },
+        real: {
+          type: sequelize.REAL,
+          // unique: true,
+        },
+        float: {
+          type: sequelize.FLOAT,
+          // unique: true,
+        },
+        double: {
+          type: sequelize.DOUBLE,
+          // unique: true,
+        },
+        bigint: {
+          type: sequelize.BIGINT,
+          // unique: true,
+        },
+        boolean: {
+          type: sequelize.BOOLEAN,
+          // unique: true,
+        },
+        string: {
+          type: sequelize.STRING,
+        },
+        binary: {
+          type: sequelize.STRING(200, true),
+        },
+        text: {
+          type: sequelize.TEXT,
+        },
+        // citext: {
+        //   type: sequelize.CITEXT,
+        // },
+        date: {
+          type: sequelize.DATE,
+        },
+        dateonly: {
+          type: sequelize.DATEONLY,
+        },
+        uuid: {
+          type: sequelize.UUID,
+        },
+        range: {
+          type: sequelize.RANGE(sequelize.INTEGER),
+        },
+        array: {
+          type: sequelize.ARRAY(sequelize.INTEGER),
+        },
         owner: {
-          type: AsuOrm.columnTypes.BELONGS_TO('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO('user', {
             foreignKey: 'owner_id',
           }),
         },
@@ -168,15 +223,15 @@ const getModelDefs01 : () => Schemas = () => ({
     userGroup: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
         },
-        name: Sequelize.STRING(900),
+        name: sequelize.STRING(900),
         users: {
-          type: AsuOrm.columnTypes.BELONGS_TO_MANY('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO_MANY('user', {
             through: {
-              asuModelName: 'userUserGroup',
+              ammModelName: 'userUserGroup',
             },
             foreignKey: 'g_id',
             otherKey: 'u_id',
@@ -196,11 +251,11 @@ const getModelDefs01 : () => Schemas = () => ({
     userUserGroup: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
         },
-        role: Sequelize.STRING,
+        role: sequelize.STRING,
       },
       options: {
         // name: {
@@ -213,27 +268,27 @@ const getModelDefs01 : () => Schemas = () => ({
   },
 });
 
-const getModelDefs02 : () => Schemas = () => ({
+const getModelDefs02 : () => AmmSchemas = () => ({
   models: {
     user: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         username: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
           comment: 'Username',
         },
         accountLinks: {
-          type: AsuOrm.columnTypes.HAS_MANY('accountLink', {
+          type: AmmOrm.columnTypes.HAS_MANY('accountLink', {
             foreignKey: 'owner_id',
           }),
         },
-        privilege: Sequelize.STRING,
+        privilege: sequelize.STRING,
       },
       options: {
         // name: {
@@ -246,25 +301,25 @@ const getModelDefs02 : () => Schemas = () => ({
     accountLink: {
       columns: {
         id: {
-          type: Sequelize.BIGINT.UNSIGNED,
+          type: sequelize.BIGINT.UNSIGNED,
           primaryKey: true,
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
         provider_id: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
         },
         provider_user_id: {
-          type: Sequelize.STRING,
+          type: sequelize.STRING,
           // unique: true,
         },
         provider_user_access_info: {
-          type: Sequelize.JSONB,
+          type: sequelize.JSONB,
           // unique: true,
         },
         owner: {
-          type: AsuOrm.columnTypes.BELONGS_TO('user', {
+          type: AmmOrm.columnTypes.BELONGS_TO('user', {
             foreignKey: 'owner_id',
           }),
         },

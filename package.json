@@ -1,8 +1,8 @@
 {
   "name": "az-model-manager",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Az Model Manager",
-  "main": "dist/library/index.js",
+  "main": "index.js",
   "repository": {
     "type": "git"
   },
@@ -22,12 +22,19 @@
     "lint-all-fix": "eslint --fix --ext .js ./src ./test ./internals&& tslint --fix -c ./tslint.json './src/**/*.ts'",
     "build": "cross-env NODE_ENV=production gulp library:build",
     "start": "cross-env NODE_ENV=development gulp library:watch:dev",
-    "test": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --require ./test/babel-register.js './test/library/**/*.spec.js'",
-    "test-watch": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --watch ./test --watch-extensions js,ts --require ./test/babel-register.js './test/library/**/*.spec.js'",
+    "test": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
+    "test-watch": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --watch ./test --watch-extensions js,ts --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
     "start-db": "docker-compose -f dev.yml up -d",
     "stop-db": "docker-compose -f dev.yml down"
   },
   "license": "MIT",
+  "peerDependencies": {
+    "js-sql-parse": "^0.2.6",
+    "node-sql-parser": "^3.1.0",
+    "pg": "^8.4.1",
+    "pg-structure": "git+https://github.com/xtforgame/pg-structure.git#master",
+    "sequelize": "^6.3.5"
+  },
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.4.0",
@@ -50,15 +57,16 @@
     "eslint-plugin-import": "^2.12.0",
     "gulp": "^4.0.1",
     "gulp-typescript": "^5.0.1",
+    "js-sql-parse": "^0.2.6",
     "mocha": "^5.2.0",
     "pg": "^8.4.1",
-    "pg-structure": "7.2.1",
+    "pg-structure": "git+https://github.com/xtforgame/pg-structure.git#master",
     "rimraf": "^2.5.4",
     "sequelize": "^6.3.5",
     "sinon": "^4.3.0",
     "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
-    "typescript": "^3.4.4"
+    "typescript": "3.8.3"
   },
   "false": {}
 }

@@ -111,7 +111,7 @@ class SequelizeC2 {
   }
 }
 
-describe('AzSqlOrm test', () => {
+describe('AzSqlOrm test 00', () => {
   beforeEach(() => resetTestDbAndTestRole());
 
   describe('Basic', () => {
@@ -132,7 +132,8 @@ describe('AzSqlOrm test', () => {
             );
           `);
         })
-        .then(({ result }) => {
+        .then(async ({ result }) => {
+          await client.end();
           expect(result.rowCount, 'result.rowCount').to.equal(1);
           return result;
         });
@@ -170,7 +171,8 @@ describe('AzSqlOrm test', () => {
             );
           `);
         })
-        .then(({ result }) => {
+        .then(async ({ result }) => {
+          await client.end();
           expect(result.rowCount, 'result.rowCount').to.equal(1);
           return result;
         });
