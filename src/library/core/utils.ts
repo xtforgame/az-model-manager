@@ -24,6 +24,7 @@ idsToDelete.reduce(function(cur, next) {
 });
 
 */
+import { Sequelize, ModelCtor, Model } from 'sequelize';
 
 export type ToPromiseFunction<T> = (_ : any, value : T, index : number, array : T[]) => any;
 
@@ -117,3 +118,7 @@ toSeqPromise([1, 2, 3, 4, 5, 6, 7], (_, value) => {
 */
 
 export type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
+
+export type ExtendedModel<X, S = any, T = any> = Model<S, T> & X;
+
+export type ExtendedModelDefined<X, S = any, T = any> = ModelCtor<ExtendedModel<X, S, T>>;

@@ -85,7 +85,7 @@ export default class AmmModel {
   db : Sequelize;
   tableDefine : AmmSchema;
   tablePrefix : string;
-  sqlzModel : ModelDefined<Model, any>;
+  sqlzModel : ModelDefined<any, any>;
   sqlzOptions : ModelOptions;
   modelName : string;
 
@@ -220,6 +220,8 @@ export default class AmmModel {
         .then(() => me);
       });
     };
+
+    this.ammOrm.addSqlzModelMethod(this.sqlzModel);
   }
 
   getNormalizedSettings(modelName) {

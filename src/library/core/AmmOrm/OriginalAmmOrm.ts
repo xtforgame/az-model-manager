@@ -1,10 +1,10 @@
 /* eslint-disable no-param-reassign, import/no-named-as-default-member */
-import { Sequelize, ModelDefined, Model } from 'sequelize';
-import { AmmOrmI, AmmModelI, AmmSchemas } from './interfaces';
-import AmmModel from './AmmModel';
-import AssociationModel from './AssociationModel';
+import { Sequelize, ModelDefined } from 'sequelize';
+import { AmmOrmI, AmmModelI, AmmSchemas } from '../interfaces';
+import AmmModel from '../AmmModel';
+import AssociationModel from '../AssociationModel';
 
-export default class AmmOrm {
+export default class OriginalAmmOrm {
   static ThroughValues = AmmModel.ThroughValues;
 
   static columnTypes = AmmModel.columnTypes;
@@ -33,25 +33,10 @@ export default class AmmOrm {
     return this.db.sync({ force });
   }
 
-  getAmmModel(name) : AmmModelI | undefined {
-    return this.tableInfo[name];
-  }
-
-  getSqlzModel(name) : ModelDefined<Model, any> | undefined {
-    const model = this.getAmmModel(name);
-    return model && model.sqlzModel;
-  }
-
-  getAmmAssociationModel(name) : AmmModelI | undefined {
-    return this.associationModelInfo[name];
-  }
-
-  getSqlzAssociationModel(name) : ModelDefined<Model, any> | undefined {
-    const model = this.getAmmAssociationModel(name);
-    return model && model.sqlzModel;
+  addSqlzModelMethod(sqlzModel : ModelDefined<any, any>) {
   }
 }
 
 Object.keys(AmmModel.columnTypes).forEach((name) => {
-  AmmOrm[name] = AmmModel.columnTypes[name];
+  OriginalAmmOrm[name] = AmmModel.columnTypes[name];
 });
