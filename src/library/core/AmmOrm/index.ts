@@ -64,6 +64,7 @@ export default class AmmOrm extends OriginalAmmOrm {
 
   getAssociationIncludeData = (baseModelName : string, associationModelNameAs : string) => {
     if (!this.ammSchemas.models[baseModelName]) {
+      console.log('baseModelName, this.ammSchemas.models :', baseModelName, this.ammSchemas.models);
       // throw new Error(`Base Model not found: ${baseModelName}`);
       return null;
     }
@@ -115,9 +116,16 @@ export default class AmmOrm extends OriginalAmmOrm {
         }
       }
       if (rest.length > 0) {
+        let tmn = '';
+        const { targetModelName } = includeMap[associationModelNameAs];
+        if (typeof targetModelName === 'string') {
+          tmn = targetModelName;
+        } else {
+          tmn = targetModelName.name;
+        }
         includeMap[associationModelNameAs].includeMap = {
           ...includeMap[associationModelNameAs].includeMap,
-          ...this.getAssociationIncludeMap(includeMap[associationModelNameAs].targetModelName, [{
+          ...this.getAssociationIncludeMap(tmn, [{
             as: rest.join('.'),
             ...options,
           }]),

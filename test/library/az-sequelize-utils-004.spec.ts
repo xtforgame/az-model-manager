@@ -161,14 +161,14 @@ describe('AmmOrm test 04', () => {
         // }],
       });
       // console.log('user :', JSON.stringify(user));
-      user.createAccountLink({
+      await user.createAccountLink({
         name: '2',
       })
       user = await User.findOne({
         where: {
           username: 'xxxx',
         },
-        include: User.ammIncloud(['userGroups.users.accountLinks']),
+        include: User.ammIncloud(['userGroups.users.accountLinks', 'accountLinks.owner']),
         // include: [{
         //   model: UserGroup,
         //   as: 'userGroups',
