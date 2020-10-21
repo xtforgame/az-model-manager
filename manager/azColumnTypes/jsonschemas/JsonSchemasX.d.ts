@@ -1,6 +1,6 @@
 import { Model, ModelOptions, ModelAttributeColumnOptions } from 'sequelize';
 import { Table, Column, Index, Db } from 'pg-structure';
-import { IJsonSchema, IJsonSchemas, JsonModelAttribute } from './IJsonSchemas';
+import { IJsonSchema, IJsonSchemas, JsonModelAllAttributeType } from './IJsonSchemas';
 import { AmmSchema, AmmSchemas, Overwrite } from '../../../core';
 export interface RawModelAttributeColumnOptions<M extends Model = Model> {
     type: [string, ...any[]];
@@ -51,9 +51,9 @@ export declare class JsonSchemasX {
     schema: IJsonSchemas;
     constructor(dbSchemaName: string, rawSchemas: RawSchemas);
     clear(): void;
-    static forEachSchema(tableType: RawSchemaType, models: {
+    static forEachSchema<ColumnType = JsonModelAllAttributeType>(tableType: RawSchemaType, models: {
         [s: string]: IJsonSchema;
-    }, modelCb: ((tableName: string, tableType: RawSchemaType, jsonSchema: IJsonSchema) => Error | void) | null, columnCb: ((tableName: string, tableType: RawSchemaType, jsonSchema: IJsonSchema, columnName: string, column: JsonModelAttribute) => Error | void) | null): Error | undefined;
+    }, modelCb: ((tableName: string, tableType: RawSchemaType, jsonSchema: IJsonSchema) => Error | void) | null, columnCb: ((tableName: string, tableType: RawSchemaType, jsonSchema: IJsonSchema, columnName: string, column: ColumnType) => Error | void) | null): Error | undefined;
     static normalizeRawSchemas(parsedTables: {
         [s: string]: ParsedTableInfo;
     }, tableType: RawSchemaType, models: {

@@ -109,7 +109,7 @@ export type JsonModelAttributeBoolean = JsonModelTypeBoolean | [
 export type JsonModelTypeString = 'string'; // sequelize.STRING
 export type JsonModelAttributeString = JsonModelTypeString | [
   JsonModelTypeString,
-  number,
+  number?,
 ];
 
 export type JsonModelTypeBinary = 'binary'; // sequelize.STRING(0, true), sequelize.BLOB
@@ -194,10 +194,12 @@ export interface JsonModelAttributeColumnOptions<M extends Model = Model> {
   type : JsonModelAttributeColumn;
 }
 
-export type JsonModelAttribute<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+export type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+
+export type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes> | JsonModelAttributeColumn;
 
 export type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-  [name in keyof TCreationAttributes]: JsonModelAttribute<M, TCreationAttributes>;
+  [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes>;
 };
 
 export type IJsonSchema = {

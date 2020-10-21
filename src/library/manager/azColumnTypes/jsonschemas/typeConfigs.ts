@@ -19,7 +19,7 @@ import {
 } from '../../../core/columnTypes';
 
 import {
-  JsonModelAttribute,
+  JsonModelAttributeInOptionsForm,
 } from './IJsonSchemas';
 
 import {
@@ -32,7 +32,7 @@ export type TypeConfig = {
   sequleizeDataType?: AbstractDataTypeConstructor,
   associationType?: AssociationType,
   normalize(args : NormalizeJsonFuncArgs) : Error | void;
-  parse(args : ParseJsonFuncArgs) : Error | JsonModelAttribute;
+  parse(args : ParseJsonFuncArgs) : Error | JsonModelAttributeInOptionsForm;
   toCoreColumn(args : ParseJsonFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
 };
 
@@ -40,7 +40,7 @@ export type TypeConfigs = {
   [s: string]: TypeConfig;
 };
 
-export const basicParse : (extraNumber? : number) => (args : ParseJsonFuncArgs) => Error | JsonModelAttribute = (extraNumber : number = 0) => (args : ParseJsonFuncArgs) => {
+export const basicParse : (extraNumber? : number) => (args : ParseJsonFuncArgs) => Error | JsonModelAttributeInOptionsForm = (extraNumber : number = 0) => (args : ParseJsonFuncArgs) => {
   const { type, ...rest } = args.column;
   if (!type.length) {
     return new Error('no type attribute');

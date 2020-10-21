@@ -29,16 +29,14 @@ const getSchemas : () => IJsonSchemas = () => ({
         privilege: {
           type: 'string',
         },
-        userGroups: {
-          type: ['belongsToMany', 'userGroup', {
-            through: {
-              ammModelName: 'userUserGroup',
-              ammThroughAs: 'relationship',
-            },
-            foreignKey: 'u_id',
-            otherKey: 'g_id',
-          }],
-        },
+        userGroups: ['belongsToMany', 'userGroup', {
+          through: {
+            ammModelName: 'userUserGroup',
+            ammThroughAs: 'relationship',
+          },
+          foreignKey: 'u_id',
+          otherKey: 'g_id',
+        }],
       },
       options: {
         // name: {
@@ -56,14 +54,8 @@ const getSchemas : () => IJsonSchemas = () => ({
           autoIncrement: true,
           comment: 'PrimaryKey',
         },
-        provider_id: {
-          type: 'string',
-          // unique: true,
-        },
-        provider_user_id: {
-          type: 'string',
-          // unique: true,
-        },
+        provider_id: 'string',
+        provider_user_id: ['string'],
         provider_user_access_info: {
           type: 'jsonb',
           // unique: true,

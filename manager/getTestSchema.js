@@ -33,16 +33,14 @@ var getSchemas = function getSchemas() {
           privilege: {
             type: 'string'
           },
-          userGroups: {
-            type: ['belongsToMany', 'userGroup', {
-              through: {
-                ammModelName: 'userUserGroup',
-                ammThroughAs: 'relationship'
-              },
-              foreignKey: 'u_id',
-              otherKey: 'g_id'
-            }]
-          }
+          userGroups: ['belongsToMany', 'userGroup', {
+            through: {
+              ammModelName: 'userUserGroup',
+              ammThroughAs: 'relationship'
+            },
+            foreignKey: 'u_id',
+            otherKey: 'g_id'
+          }]
         },
         options: {}
       },
@@ -54,12 +52,8 @@ var getSchemas = function getSchemas() {
             autoIncrement: true,
             comment: 'PrimaryKey'
           },
-          provider_id: {
-            type: 'string'
-          },
-          provider_user_id: {
-            type: 'string'
-          },
+          provider_id: 'string',
+          provider_user_id: ['string'],
           provider_user_access_info: {
             type: 'jsonb'
           },

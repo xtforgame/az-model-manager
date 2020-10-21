@@ -20,7 +20,7 @@ export declare type JsonModelAttributeDouble = JsonModelTypeDouble | [JsonModelT
 export declare type JsonModelTypeBoolean = 'boolean';
 export declare type JsonModelAttributeBoolean = JsonModelTypeBoolean | [JsonModelTypeBoolean];
 export declare type JsonModelTypeString = 'string';
-export declare type JsonModelAttributeString = JsonModelTypeString | [JsonModelTypeString, number];
+export declare type JsonModelAttributeString = JsonModelTypeString | [JsonModelTypeString, number?];
 export declare type JsonModelTypeBinary = 'binary';
 export declare type JsonModelAttributeBinary = JsonModelTypeBinary | [JsonModelTypeBinary];
 export declare type JsonModelTypeText = 'text';
@@ -41,9 +41,10 @@ export declare type JsonModelAttributeColumn = JsonModelAttributeHasOne | JsonMo
 export interface JsonModelAttributeColumnOptions<M extends Model = Model> {
     type: JsonModelAttributeColumn;
 }
-export declare type JsonModelAttribute<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+export declare type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+export declare type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes> | JsonModelAttributeColumn;
 export declare type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-    [name in keyof TCreationAttributes]: JsonModelAttribute<M, TCreationAttributes>;
+    [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes>;
 };
 export declare type IJsonSchema = {
     columns: JsonModelAttributes;

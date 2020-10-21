@@ -196,6 +196,14 @@ var JsonSchemasX = function () {
       JsonSchemasX.forEachSchema(tableType, models, function (tableName) {
         parsedTables[tableName] = {};
       }, function (tableName, tableType, table, columnName, column) {
+        if (typeof column === 'string' || Array.isArray(column)) {
+          column = {
+            type: column
+          };
+        }
+
+        table.columns[columnName] = column;
+
         if (!column.type) {
           return Error("no type name: table(".concat(tableName, "), column(").concat(columnName, ")"));
         }

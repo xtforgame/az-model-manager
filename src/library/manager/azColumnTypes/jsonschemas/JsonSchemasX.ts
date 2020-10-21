@@ -18,7 +18,8 @@ import pgStructure, {
 import {
   IJsonSchema,
   IJsonSchemas,
-  JsonModelAttribute,
+  JsonModelAllAttributeType,
+  JsonModelAttributeInOptionsForm,
 } from './IJsonSchemas';
 
 import {
@@ -106,13 +107,13 @@ export class JsonSchemasX {
     };
   }
 
-  static forEachSchema(
+  static forEachSchema<ColumnType = JsonModelAllAttributeType>(
     tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
     modelCb : ((tableName : string, tableType : RawSchemaType, jsonSchema : IJsonSchema) => Error | void) | null,
     columnCb : ((
       tableName : string, tableType : RawSchemaType, jsonSchema : IJsonSchema,
-      columnName : string, column : JsonModelAttribute,
+      columnName : string, column : ColumnType,
     ) => Error | void) | null,
   ) {
     const modelKeys = Object.keys(models);
@@ -132,7 +133,7 @@ export class JsonSchemasX {
       for (let j = 0; j < rawColumnKeys.length; j++) {
         const columnName = rawColumnKeys[j];
         const column = rawColumns[columnName];
-        err = columnCb(tableName, tableType, table, columnName, column)
+        err = columnCb(tableName, tableType, table, columnName, <any>column)
         if (err) return err;
       }
     }
@@ -150,6 +151,12 @@ export class JsonSchemasX {
       models,
       (tableName) => { parsedTables[tableName] = {}; },
       (tableName, tableType, table, columnName, column) => {
+        if (typeof column === 'string' || Array.isArray(column)) {
+          column = {
+            type: <any>column,
+          };
+        }
+        table.columns[columnName] = column;
         if (!column.type) {
           return Error(`no type name: table(${tableName}), column(${columnName})`);
         }
@@ -170,7 +177,7 @@ export class JsonSchemasX {
       },
     );
 
-    JsonSchemasX.forEachSchema(
+    JsonSchemasX.forEachSchema<JsonModelAttributeInOptionsForm>(
       tableType,
       models,
       null,
@@ -197,7 +204,7 @@ export class JsonSchemasX {
     tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
   ) : Error | void {
-    JsonSchemasX.forEachSchema(
+    JsonSchemasX.forEachSchema<JsonModelAttributeInOptionsForm>(
       tableType,
       models,
       null,
@@ -229,7 +236,7 @@ export class JsonSchemasX {
     resultModels: { [s: string]: AmmSchema; },
   ) : (Error | void) {
 
-    JsonSchemasX.forEachSchema(
+    JsonSchemasX.forEachSchema<JsonModelAttributeInOptionsForm>(
       tableType,
       models,
       (tableName, tableType, table) => {
