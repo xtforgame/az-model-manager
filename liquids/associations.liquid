@@ -1,9 +1,16 @@
-{%- if model.options.paranoid or model.options.timestamps %}
-  // associations
-{%- case model.options.paranoid -%}
-{%- when false %}
-{%- when true %}
-  getProjects: HasManyGetAssociationsMixin<Project>; // Note the null assertions!
+{%- if true %}
+  // associations: {{ name }}
+{%- case column.type[0] -%}
+{%- when "hasOne" %}
+{%- when "hasMany" %}
+  getProjects: HasManyGetAssociationsMixin<Project>;
+  addProject: HasManyAddAssociationMixin<Project, number>;
+  hasProject: HasManyHasAssociationMixin<Project, number>;
+  countProjects: HasManyCountAssociationsMixin;
+  createProject: HasManyCreateAssociationMixin<Project>;
+{%- when "belongsTo" %}
+{%- when "belongsToMany" %}
+  getProjects: HasManyGetAssociationsMixin<Project>;
   addProject: HasManyAddAssociationMixin<Project, number>;
   hasProject: HasManyHasAssociationMixin<Project, number>;
   countProjects: HasManyCountAssociationsMixin;

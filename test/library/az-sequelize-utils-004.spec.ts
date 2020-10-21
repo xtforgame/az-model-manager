@@ -129,7 +129,8 @@ describe('AmmOrm test 04', () => {
         //   as: 'userGroups',
         // }],
       });
-      console.log('user.created_at :', user.created_at);
+      user.addAccountLink
+      console.log('user.addAccountsLink :', user.addAccountsLink);
       // console.log('user :', JSON.stringify(user));
       await user.createAccountLink({
         name: '2',
