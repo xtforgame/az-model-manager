@@ -1,6 +1,10 @@
 import sequelize, {
   Sequelize,
+
+  HasManyGetAssociationsMixin,
   HasManyAddAssociationMixin,
+  HasManyHasAssociationMixin,
+  HasManyCountAssociationsMixin,
   HasManyCreateAssociationMixin,
 } from 'sequelize';
 import { Overwrite, ExtendedModel } from 'library';

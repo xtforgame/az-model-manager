@@ -1,0 +1,18 @@
+{%- if model.options.paranoid or model.options.timestamps %}
+  // timestamps
+{%- if model.options.timestamps %}
+  readonly {{model.options.createdAt}}: Date;
+{%- endif -%}
+{%- if model.options.timestamps %}
+  readonly {{model.options.updatedAt}}: Date;
+{%- endif -%}
+{%- if model.options.paranoid %}
+  readonly {{model.options.deletedAt}}: Date;
+
+  getProjects: HasManyGetAssociationsMixin<Project>; // Note the null assertions!
+  addProject: HasManyAddAssociationMixin<Project, number>;
+  hasProject: HasManyHasAssociationMixin<Project, number>;
+  countProjects: HasManyCountAssociationsMixin;
+  createProject: HasManyCreateAssociationMixin<Project>;
+{% endif -%}
+{% endif -%}

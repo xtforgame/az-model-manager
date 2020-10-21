@@ -15,6 +15,12 @@ type {{ name | capitalize }}Attributes = Overwrite<{{ name | capitalize }}Creati
 {%- endfor -%} }>;
 
 type {{ name | capitalize }}I = {{ name | capitalize }}Attributes & {
-{% render 'timestamp-columns.liquid', model: model -%} };
+{% render 'timestamp-columns.liquid', model: model -%}
+
+{% for column in model.columns -%}
+{%- if column[1].type[0] == "hasMany" or column[1].type[0] == "hasOne"  -%}
+{% render 'associations.liquid', model: model -%}
+{%- endif -%}
+{%- endfor -%} };
 // ============== end model: {{ name | capitalize }} ==============
 
