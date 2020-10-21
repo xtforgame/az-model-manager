@@ -4,11 +4,6 @@ import sequelize, {
   ModelDefined,
   ModelNameOptions,
   Sequelize,
-
-  BelongsToManyOptions,
-  HasOneOptions,
-  BelongsToOptions,
-  HasManyOptions,
 } from 'sequelize';
 import * as columnTypes from './columnTypes';
 import { AmmOrmI, AmmSchema } from './interfaces';
@@ -278,7 +273,7 @@ export default class AmmModel {
       let throughModel;
       let options;
       if (association.type === 'belongsToMany') {
-        const o = <BelongsToManyOptions>association.options;
+        const o = <columnTypes.BelongsToManyOptions>association.options;
         throughModel = this.ammOrm.getSqlzAssociationModel((<columnTypes.ThroughOptions><any>o.through).ammModelName!);
         options = sequelize.Utils.mergeDefaults({
           through: {
