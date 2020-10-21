@@ -5,7 +5,27 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.JsonSchemasX = void 0;
 
+var _path = _interopRequireDefault(require("path"));
+
+var _liquidjs = require("liquidjs");
+
+var _appRootPath = _interopRequireDefault(require("app-root-path"));
+
 var _typeConfigs = require("./typeConfigs");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -19,6 +39,8 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+var appRoot = _appRootPath["default"].resolve('./');
+
 var JsonSchemasX = function () {
   function JsonSchemasX(dbSchemaName, rawSchemas) {
     _classCallCheck(this, JsonSchemasX);
@@ -31,7 +53,7 @@ var JsonSchemasX = function () {
 
     _defineProperty(this, "schemasMetadata", void 0);
 
-    _defineProperty(this, "schema", void 0);
+    _defineProperty(this, "schemas", void 0);
 
     this.dbSchemaName = dbSchemaName;
     this.rawSchemas = rawSchemas;
@@ -46,7 +68,7 @@ var JsonSchemasX = function () {
         models: {},
         associationModels: {}
       };
-      this.schema = {
+      this.schemas = {
         models: {},
         associationModels: {}
       };
@@ -60,15 +82,15 @@ var JsonSchemasX = function () {
         return Error("bad json data: no models provided");
       }
 
-      this.schema.models = _objectSpread({}, this.rawSchemas.models);
+      this.schemas.models = _objectSpread({}, this.rawSchemas.models);
 
       if (this.rawSchemas.associationModels) {
-        this.schema.associationModels = _objectSpread({}, this.rawSchemas.associationModels);
+        this.schemas.associationModels = _objectSpread({}, this.rawSchemas.associationModels);
       }
 
-      var err = JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.models, 'model', this.schema.models);
+      var err = JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.models, 'model', this.schemas.models);
       if (err) return err;
-      return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schema.associationModels);
+      return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels);
     }
   }, {
     key: "parseRawSchemas",
@@ -81,10 +103,10 @@ var JsonSchemasX = function () {
       }
 
       var schemasMetadata = this.schemasMetadata,
-          schema = this.schema;
-      err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'model', this.schema.models);
+          schemas = this.schemas;
+      err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
       if (err) return err;
-      err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'associationModel', this.schema.associationModels);
+      err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
       this.parsed = false;
       return err;
     }
@@ -103,20 +125,39 @@ var JsonSchemasX = function () {
       }
 
       var schemasMetadata = this.schemasMetadata,
-          schema = this.schema;
-      var err = JsonSchemasX.toCoreModels(schemasMetadata, schema, 'model', schema.models, result.models);
+          schemas = this.schemas;
+      var err = JsonSchemasX.toCoreModels(schemasMetadata, schemas, 'model', schemas.models, result.models);
 
       if (err) {
         return err;
       }
 
-      err = JsonSchemasX.toCoreModels(schemasMetadata, schema, 'associationModel', schema.associationModels, result.associationModels);
+      err = JsonSchemasX.toCoreModels(schemasMetadata, schemas, 'associationModel', schemas.associationModels, result.associationModels);
 
       if (err) {
         return err;
       }
 
       return result;
+    }
+  }, {
+    key: "buildModelTsFile",
+    value: function buildModelTsFile(orders) {
+      var schemasMetadata = this.schemasMetadata,
+          schemas = this.schemas;
+      var engine = new _liquidjs.Liquid({
+        root: _path["default"].join(appRoot, 'liquids')
+      });
+      engine.plugin(function (Liquid) {
+        this.registerFilter('toTsTypeExpression', function (column) {
+          return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpression(column);
+        });
+      });
+      return engine.parseAndRender("{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}", {
+        schemasMetadata: schemasMetadata,
+        schemas: schemas,
+        orders: orders || [].concat(_toConsumableArray(Object.keys(schemas.models)), _toConsumableArray(Object.keys(schemas.associationModels)))
+      });
     }
   }, {
     key: "parseSchemaFromDb",

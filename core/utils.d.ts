@@ -1,4 +1,20 @@
-import { ModelCtor, Model } from 'sequelize';
+import { ModelCtor, Model, DataType, ModelAttributeColumnOptions as MACO, ModelOptions as MO } from 'sequelize';
+export declare type ColumnExtraOptions = {
+    requiredOnCreation: boolean;
+    [s: string]: any;
+};
+export declare type ModelExtraOptions = {
+    [s: string]: any;
+};
+export declare type ModelAttributeColumnOptions<M extends Model = Model> = MACO<M> & {
+    extraOptions?: ColumnExtraOptions;
+};
+export declare type ModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
+    [name in keyof TCreationAttributes]: DataType | ModelAttributeColumnOptions<M>;
+};
+export declare type ModelOptions<M extends Model = Model> = MO<M> & {
+    extraOptions?: ModelExtraOptions;
+};
 export declare type ToPromiseFunction<T> = (_: any, value: T, index: number, array: T[]) => any;
 export declare function defaultToPromiseFunc<T>(_: any, value: T, index: number, array: T[]): Promise<T>;
 export declare function toSeqPromise<T>(inArray: T[], toPrmiseFunc?: ToPromiseFunction<T>): Promise<void>;

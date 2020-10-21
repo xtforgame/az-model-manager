@@ -1,4 +1,5 @@
-import { Model, ModelOptions, ModelAttributeColumnOptions } from 'sequelize';
+import { Model } from 'sequelize';
+import { ModelOptions, ModelAttributeColumnOptions } from '../../../core/utils';
 import { AssociationTypeHasOne, AssociationTypeHasMany, AssociationTypeBelongsTo, AssociationTypeBelongsToMany, HasOneOptions, HasManyOptions, BelongsToOptions, BelongsToManyOptions, AssociationColumnExtraOption } from '../../../core/columnTypes';
 import { Overwrite } from '../../../core';
 export declare type JsonModelAttributeHasOne = [AssociationTypeHasOne, string, HasOneOptions, AssociationColumnExtraOption?];
@@ -42,6 +43,9 @@ export interface JsonModelAttributeColumnOptions<M extends Model = Model> {
     type: JsonModelAttributeColumn;
 }
 export declare type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+export declare type NormalizedJsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
+    [name in keyof TCreationAttributes]: JsonModelAttributeInOptionsForm<M, TCreationAttributes>;
+};
 export declare type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes> | JsonModelAttributeColumn;
 export declare type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
     [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes>;

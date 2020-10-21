@@ -1,1 +1,1 @@
-  {{ name }}: {{ column | toTsTypeExpression }};
+  {{ name }}{{ column| getOptionalMark: optionMark }}: {{ column | toTsTypeExpression }};

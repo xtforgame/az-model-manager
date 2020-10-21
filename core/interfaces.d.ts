@@ -1,6 +1,6 @@
-import { Sequelize, ModelDefined, ModelAttributes, ModelOptions } from 'sequelize';
+import { Sequelize, ModelDefined } from 'sequelize';
 import { AssociationColumn } from './columnTypes';
-import { ExtendedModelDefined } from './utils';
+import { ExtendedModelDefined, ModelAttributes, ModelOptions } from './utils';
 export declare type AmmOrmI<Extended = {}> = {
     db: Sequelize;
     ammSchemas: AmmSchemas;

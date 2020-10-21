@@ -4,10 +4,13 @@ import sequelize, {
   DataType,
   Model,
   ModelDefined,
+} from 'sequelize';
+
+import {
   ModelAttributes,
   ModelOptions,
   ModelAttributeColumnOptions,
-} from 'sequelize';
+} from '../../../core/utils';
 
 import {
   AssociationColumn,

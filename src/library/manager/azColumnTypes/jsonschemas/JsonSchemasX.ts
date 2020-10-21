@@ -1,13 +1,7 @@
 import path from 'path';
-import sequelize, {
-  AbstractDataTypeConstructor,
-
-  DataType,
+import {
   Model,
-  ModelDefined,
-  ModelAttributes,
   ModelOptions,
-  ModelAttributeColumnOptions,
 } from 'sequelize';
 import { Liquid } from 'liquidjs';
 import appRootPath from 'app-root-path';
@@ -34,6 +28,8 @@ import {
   AmmSchema,
   AmmSchemas,
   Overwrite,
+  ModelAttributeColumnOptions,
+  getNormalizedModelOptions,
 } from '../../../core';
 
 // =======================
@@ -155,7 +151,10 @@ export class JsonSchemasX {
     JsonSchemasX.forEachSchema(
       tableType,
       models,
-      (tableName) => { parsedTables[tableName] = {}; },
+      (tableName, tableType, table) => {
+        parsedTables[tableName] = {};
+        table.options = getNormalizedModelOptions(tableName, table.options || {});
+      },
       (tableName, tableType, table, columnName, column) => {
         if (typeof column === 'string' || Array.isArray(column)) {
           column = {
@@ -169,6 +168,7 @@ export class JsonSchemasX {
         if (typeof column.type === 'string') {
           column.type = <any>[column.type];
         }
+        column.extraOptions = column.extraOptions || {};
         if (column.primaryKey) {
           parsedTables[tableName].primaryKey = columnName;
         }
@@ -348,6 +348,9 @@ export class JsonSchemasX {
     engine.plugin(function (Liquid) {
       this.registerFilter('toTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
         return typeConfigs[column.type[0]].getTsTypeExpression(column);
+      });
+      this.registerFilter('getOptionalMark', (column : JsonModelAttributeInOptionsForm, optionalMark = '?') => {
+        return column.extraOptions!.requiredOnCreation ? '' : optionalMark;
       });
     });
     return engine.parseAndRender(`{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}`, { schemasMetadata, schemas, orders: orders || [...Object.keys(schemas.models), ...Object.keys(schemas.associationModels)] });

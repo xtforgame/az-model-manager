@@ -2,7 +2,6 @@ import sequelize, {
   AbstractDataTypeConstructor,
   AssociationOptions,
   Model,
-  ModelAttributeColumnOptions,
   DataType,
 } from 'sequelize';
 
@@ -26,6 +25,10 @@ import {
   NormalizeJsonFuncArgs,
   ParseJsonFuncArgs,
 } from './interfaces';
+
+import {
+  ModelAttributeColumnOptions,
+} from '../../../core/utils';
 
 // =========================================
 export type TypeConfig = {

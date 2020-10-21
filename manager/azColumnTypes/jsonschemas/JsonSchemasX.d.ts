@@ -1,7 +1,7 @@
-import { Model, ModelOptions, ModelAttributeColumnOptions } from 'sequelize';
+import { Model, ModelOptions } from 'sequelize';
 import { Table, Column, Index, Db } from 'pg-structure';
 import { IJsonSchema, IJsonSchemas, JsonModelAllAttributeType } from './IJsonSchemas';
-import { AmmSchema, AmmSchemas, Overwrite } from '../../../core';
+import { AmmSchema, AmmSchemas, Overwrite, ModelAttributeColumnOptions } from '../../../core';
 export interface RawModelAttributeColumnOptions<M extends Model = Model> {
     type: [string, ...any[]];
 }
@@ -48,7 +48,7 @@ export declare class JsonSchemasX {
     dbSchemaName: string;
     parsed: boolean;
     schemasMetadata: SchemasMetadata;
-    schema: IJsonSchemas;
+    schemas: IJsonSchemas;
     constructor(dbSchemaName: string, rawSchemas: RawSchemas);
     clear(): void;
     static forEachSchema<ColumnType = JsonModelAllAttributeType>(tableType: RawSchemaType, models: {
@@ -70,6 +70,7 @@ export declare class JsonSchemasX {
     normalizeRawSchemas(): Error | void;
     parseRawSchemas(): Error | void;
     toCoreSchemas(): AmmSchemas | Error;
+    buildModelTsFile(orders?: string[]): Promise<string>;
     parseSchemaFromDb(db: Db): void;
     parseTableFromDb(table: Table): void;
     reportColumn(column: Column): void;

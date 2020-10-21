@@ -2,8 +2,6 @@
 import sequelize, {
   Model,
   ModelDefined,
-  ModelAttributes,
-  ModelOptions,
   ModelNameOptions,
   Sequelize,
 
@@ -14,6 +12,10 @@ import sequelize, {
 } from 'sequelize';
 import * as columnTypes from './columnTypes';
 import { AmmOrmI, AmmSchema } from './interfaces';
+import {
+  ModelAttributes,
+  ModelOptions,
+} from './utils';
 // import {
 //   defaultCallbackPromise,
 //   isFunction,
@@ -76,6 +78,19 @@ const autoInclude = (ammOrm : AmmOrmI, modelName : string, values, inputInclude 
   return include;
 };
 
+export const getNormalizedModelOptions = (modelName : string, options : ModelOptions) => sequelize.Utils.mergeDefaults(<any>{
+  timestamps: true,
+  paranoid: true,
+  underscored: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at',
+  name: {
+    plural: sequelize.Utils.pluralize(modelName),
+    singular: sequelize.Utils.singularize(modelName),
+  },
+}, options);
+
 export default class AmmModel {
   static columnTypes = columnTypes;
 
@@ -114,10 +129,10 @@ export default class AmmModel {
       throw new Error('no name');
     }
 
+    this.sqlzOptions = sqlzOptions;
     const sqlzModel = this.db.define(modelName, columns, sqlzOptions);
     this.columns = columns;
 
-    this.sqlzOptions = sqlzOptions;
     this.name = name;
     this.tableName = tableName;
     this.associations = associations;
@@ -243,15 +258,7 @@ export default class AmmModel {
       }
     });
 
-    const sqlzOptions : ModelOptions = sequelize.Utils.mergeDefaults(<any>{
-      timestamps: true,
-      paranoid: true,
-      underscored: true,
-      name: {
-        plural: sequelize.Utils.pluralize(modelName),
-        singular: sequelize.Utils.singularize(modelName),
-      },
-    }, options);
+    const sqlzOptions : ModelOptions = getNormalizedModelOptions(modelName, options)
 
     sqlzOptions.tableName = sqlzOptions.tableName || `${this.tablePrefix}${(<any>sequelize.Utils).underscore(sqlzOptions.name!.singular)}`;
 

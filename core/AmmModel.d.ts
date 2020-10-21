@@ -1,6 +1,7 @@
-import sequelize, { ModelDefined, ModelAttributes, ModelOptions, ModelNameOptions, Sequelize } from 'sequelize';
+import sequelize, { ModelDefined, ModelNameOptions, Sequelize } from 'sequelize';
 import * as columnTypes from './columnTypes';
 import { AmmOrmI, AmmSchema } from './interfaces';
+import { ModelAttributes, ModelOptions } from './utils';
 export declare const ThroughValues: unique symbol;
 export default class AmmModel {
     static columnTypes: typeof columnTypes;
@@ -24,7 +25,7 @@ export default class AmmModel {
     addModelMethods(): void;
     getNormalizedSettings(modelName: any): {
         columns: {};
-        sqlzOptions: sequelize.ModelOptions<sequelize.Model<any, any>>;
+        sqlzOptions: ModelOptions<sequelize.Model<any, any>>;
         associations: {};
     };
     setupAssociations(): void;
