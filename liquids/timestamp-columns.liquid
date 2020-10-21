@@ -1,5 +1,5 @@
 {%- if model.options.paranoid or model.options.timestamps %}
-  // timestamps!
+  // timestamps
 {%- if model.options.timestamps %}
   readonly {{model.options.createdAt}}: Date;
 {%- endif -%}
