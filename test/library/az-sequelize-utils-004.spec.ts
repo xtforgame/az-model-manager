@@ -185,8 +185,10 @@ describe('AmmOrm test 04', () => {
       // }
       const jsonSchemaX = new JsonSchemasX('public', <any>getTestSchema());
       jsonSchemaX.parseRawSchemas();
-      const schemaFromJson = jsonSchemaX.schema;
+      const schemaFromJson = jsonSchemaX.schemas;
       write(path.resolve(__dirname, 'schema_from_json.json'), JSON.stringify(schemaFromJson, null, 2));
+      const tsFile = await jsonSchemaX.buildModelTsFile();
+      write(path.resolve(__dirname, 'models.tsx'), tsFile);
       const testResult = jsonSchemaX.toCoreSchemas();
       const amMgr = new AzModelManager(getConnectString(postgresUser));
       return amMgr.reportDb();

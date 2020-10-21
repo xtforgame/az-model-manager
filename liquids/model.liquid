@@ -1,0 +1,17 @@
+// ============== start model: {{ name | capitalize }} ==============
+type {{ name | capitalize }}CreationAttributes = {
+{% for column in model.columns -%}
+{% render 'column.liquid', name: column[0], column: column[1] %}
+{%- endfor -%} };
+
+type {{ name | capitalize }}Attributes = Overwrite<{{ name | capitalize }}CreationAttributes, {
+  id: string;
+}>;
+
+type {{ name | capitalize }}I = {{ name | capitalize }}Attributes & {
+  // timestamps!
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+};
+// ============== end model: {{ name | capitalize }} ==============
+
