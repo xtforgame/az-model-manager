@@ -65,11 +65,11 @@ export default class AmmOrm extends OriginalAmmOrm {
   getAssociationIncludeData = (baseModelName : string, associationModelNameAs : string) => {
     if (!this.ammSchemas.models[baseModelName]) {
       console.log('baseModelName, this.ammSchemas.models :', baseModelName, this.ammSchemas.models);
-      // throw new Error(`Base Model not found: ${baseModelName}`);
+      throw new Error(`Base Model not found: ${baseModelName}`);
       return null;
     }
     if (!this.ammSchemas.models[baseModelName].columns[associationModelNameAs]) {
-      // throw new Error(`Association Model not found: ${associationModelNameAs}`);
+      throw new Error(`Association Model not found: ${associationModelNameAs}`);
       return null;
     }
     const coType = (<any>this.ammSchemas.models[baseModelName].columns[associationModelNameAs]).type as AssociationColumn;
@@ -99,6 +99,7 @@ export default class AmmOrm extends OriginalAmmOrm {
       let options = {};
       if (typeof item !== 'string') {
         ({ as: nameAs, ...options } = item);
+        console.log('nameAs :', nameAs);
       } else {
         nameAs = item;
       }

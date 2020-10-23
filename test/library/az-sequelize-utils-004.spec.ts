@@ -202,12 +202,11 @@ describe('AmmOrm test 04', () => {
       await user.createAccountLink({
         name: '2',
       })
-      
       user = await User.findOne({
         where: {
           name: 'xxxx',
         },
-        include: User.ammIncloud(['userGroups.users.accountLinks', 'accountLinks.owner']),
+        include: User.ammIncloud(['userGroups.users.accountLinks', 'accountLinks.user']),
         // include: [{
         //   model: UserGroup,
         //   as: 'userGroups',
