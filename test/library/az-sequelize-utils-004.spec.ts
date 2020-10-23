@@ -77,7 +77,7 @@ type UserGroupAttributes = UserGroupCreationAttributes & {
 };
 
 type UserCreationAttributes = {
-  username: string;
+  name: string;
   accountLinks?: AccountLinkCreationAttributes[];
   userGroups?: UserGroupCreationAttributes[];
 };
@@ -119,7 +119,7 @@ describe('AmmOrm test 04', () => {
 
       await ammMgr.sync();
       let user = await User.create({
-        username: 'xxxx',
+        name: 'xxxx',
         userGroups: [{
           name: 'group 1',
         }],
@@ -144,7 +144,7 @@ describe('AmmOrm test 04', () => {
       userGroup = await UserGroup.create({
         name: 'group 2',
         users: [{
-          username: 'oooo',
+          name: 'oooo',
           userGroups: [{
             name: 'group 3',
           }],
@@ -188,7 +188,7 @@ describe('AmmOrm test 04', () => {
 
       await ammMgr.sync();
       let user = await User.create({
-        username: 'xxxx',
+        name: 'xxxx',
         userGroups: [{
           name: 'group 1',
         }],
@@ -202,9 +202,10 @@ describe('AmmOrm test 04', () => {
       await user.createAccountLink({
         name: '2',
       })
+      
       user = await User.findOne({
         where: {
-          username: 'xxxx',
+          name: 'xxxx',
         },
         include: User.ammIncloud(['userGroups.users.accountLinks', 'accountLinks.owner']),
         // include: [{
@@ -228,7 +229,7 @@ describe('AmmOrm test 04', () => {
         .then(t => UserGroup.create({
           name: 'group 2',
           users: [{
-            username: 'oooo',
+            name: 'oooo',
             userGroups: [{
               name: 'group 3',
               [AmmOrm.ThroughValues]: {
@@ -256,7 +257,7 @@ describe('AmmOrm test 04', () => {
         .then(t => UserGroup.create({
           name: 'group 2',
           users: [{
-            username: 'oooo',
+            name: 'oooo',
             userGroups: [{
               id: 1,
               name: 'group 3',
