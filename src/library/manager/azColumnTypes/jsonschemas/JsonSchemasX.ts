@@ -349,6 +349,9 @@ export class JsonSchemasX {
       this.registerFilter('toTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
         return typeConfigs[column.type[0]].getTsTypeExpression(column);
       });
+      this.registerFilter('toTsTypeExpressionForCreation', (column : JsonModelAttributeInOptionsForm) => {
+        return typeConfigs[column.type[0]].getTsTypeExpressionForCreation(column);
+      });
       this.registerFilter('getOptionalMark', (column : JsonModelAttributeInOptionsForm, optionalMark = '?') => {
         return column.extraOptions!.requiredOnCreation ? '' : optionalMark;
       });

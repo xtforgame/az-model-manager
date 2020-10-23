@@ -34,6 +34,8 @@ import {
   getModelDefs04,
 } from '../test-data/az-sequelize-utils-testdata/fromAzModelSchemas';
 
+import * as models from './models';
+
 declare const describe;
 declare const beforeEach;
 declare const afterEach;
@@ -56,47 +58,6 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 
 // const { expect } = chai;
 
-type AccountLinkCreationAttributes = {
-  name: string;
-};
-
-type AccountLinkAttributes = AccountLinkCreationAttributes & {
-  id: string;
-};
-
-type AccountLinkI = AccountLinkAttributes & {
-  owner?: UserI;
-};
-
-type UserGroupCreationAttributes = {
-  name: string;
-};
-
-type UserGroupAttributes = UserGroupCreationAttributes & {
-  id: string;
-};
-
-type UserCreationAttributes = {
-  name: string;
-  accountLinks?: AccountLinkCreationAttributes[];
-  userGroups?: UserGroupCreationAttributes[];
-};
-
-type UserAttributes = Overwrite<UserCreationAttributes, {
-  id: string;
-  accountLinks: AccountLinkI[];
-  userGroups: UserGroupAttributes[];
-}>;
-
-type UserI = UserAttributes & {
-  addAccountLink: HasManyAddAssociationMixin<ExtendedModel<{}, UserGroupAttributes, UserGroupCreationAttributes>, string>;
-  createAccountLink: HasManyCreateAssociationMixin<ExtendedModel<{}, UserGroupAttributes, UserGroupCreationAttributes>>;
-
-  // timestamps!
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-};
-
 describe('AmmOrm test 04', () => {
   describe('Basic', () => {
     let ammMgr : AzRdbmsMgr = null;
@@ -114,8 +75,8 @@ describe('AmmOrm test 04', () => {
 
     it('should able to do CRUD for has-many association ', async function () {
       this.timeout(900000);
-      const User = ammMgr.ammOrm.getSqlzModel<UserI/* can simply use 'any' */, UserAttributes, UserCreationAttributes>('user');
-      const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
+      const User = ammMgr.ammOrm.getSqlzModel<models.UserI/* can simply use 'any' */, models.UserAttributes, models.UserCreationAttributes>('user');
+      const UserGroup = ammMgr.ammOrm.getSqlzModel<models.UserGroupI>('userGroup');
 
       await ammMgr.sync();
       let user = await User.create({
@@ -123,12 +84,14 @@ describe('AmmOrm test 04', () => {
         userGroups: [{
           name: 'group 1',
         }],
+        memos: [{}],
       }, {
         // include: [{
         //   model: UserGroup,
         //   as: 'userGroups',
         // }],
       });
+      console.log('user.memos :', user.memos[0].data);
       // console.log('user :', JSON.stringify(user.toJSON()));
       let userGroup = await UserGroup.findOne({
         where: {
@@ -183,7 +146,7 @@ describe('AmmOrm test 04', () => {
 
     it('should able to do CRUD by ammIncloud ', async function () {
       this.timeout(900000);
-      const User = ammMgr.ammOrm.getSqlzModel<UserI/* can simply use 'any' */, UserAttributes, UserCreationAttributes>('user');
+      const User = ammMgr.ammOrm.getSqlzModel<models.UserI/* can simply use 'any' */, models.UserAttributes, models.UserCreationAttributes>('user');
       const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
 
       await ammMgr.sync();
