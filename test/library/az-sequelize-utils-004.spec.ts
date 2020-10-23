@@ -129,22 +129,6 @@ describe('AmmOrm test 04', () => {
         //   as: 'userGroups',
         // }],
       });
-      user.addAccountLink
-      console.log('user.addAccountsLink :', user.addAccountsLink);
-      // console.log('user :', JSON.stringify(user));
-      await user.createAccountLink({
-        name: '2',
-      })
-      user = await User.findOne({
-        where: {
-          username: 'xxxx',
-        },
-        include: User.ammIncloud(['userGroups.users.accountLinks', 'accountLinks.owner']),
-        // include: [{
-        //   model: UserGroup,
-        //   as: 'userGroups',
-        // }],
-      });
       // console.log('user :', JSON.stringify(user.toJSON()));
       let userGroup = await UserGroup.findOne({
         where: {
@@ -194,6 +178,40 @@ describe('AmmOrm test 04', () => {
       const testResult = jsonSchemaX.toCoreSchemas();
       const amMgr = new AzModelManager(getConnectString(postgresUser));
       return amMgr.reportDb();
+    });
+
+
+    it('should able to do CRUD by ammIncloud ', async function () {
+      this.timeout(900000);
+      const User = ammMgr.ammOrm.getSqlzModel<UserI/* can simply use 'any' */, UserAttributes, UserCreationAttributes>('user');
+      const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
+
+      await ammMgr.sync();
+      let user = await User.create({
+        username: 'xxxx',
+        userGroups: [{
+          name: 'group 1',
+        }],
+      }, {
+        // include: [{
+        //   model: UserGroup,
+        //   as: 'userGroups',
+        // }],
+      });
+      // console.log('user :', JSON.stringify(user));
+      await user.createAccountLink({
+        name: '2',
+      })
+      user = await User.findOne({
+        where: {
+          username: 'xxxx',
+        },
+        include: User.ammIncloud(['userGroups.users.accountLinks', 'accountLinks.owner']),
+        // include: [{
+        //   model: UserGroup,
+        //   as: 'userGroups',
+        // }],
+      });
     });
 
     it('should able to do CRUD with transaction', function () {
