@@ -158,6 +158,8 @@ typeConfigs = {
         }
         associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
       }
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = args.columnName;
       return {
         ...args.column,
         type: [args.column.type[0], args.column.type[1], associationOptions],
@@ -191,6 +193,11 @@ typeConfigs = {
         }
         associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
       }
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = {
+        plural: sequelize.Utils.pluralize(associationOptions.ammAs),
+        singular: sequelize.Utils.singularize(associationOptions.ammAs),
+      };
       return {
         ...args.column,
         type: [args.column.type[0], args.column.type[1], associationOptions],
@@ -225,6 +232,8 @@ typeConfigs = {
         }
         associationOptions.targetKey = targetTable.primaryKey;
       }
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = args.columnName;
       return {
         ...args.column,
         type: [args.column.type[0], args.column.type[1], associationOptions],
@@ -271,6 +280,11 @@ typeConfigs = {
       if (ammThroughAs && args.table.columns[ammThroughAs]) {
         return new Error(`ammThroughAs name already taken(${ammThroughAs})`);
       }
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = {
+        plural: sequelize.Utils.pluralize(associationOptions.ammAs),
+        singular: sequelize.Utils.singularize(associationOptions.ammAs),
+      };
       return {
         ...args.column,
         type: [args.column.type[0], args.column.type[1], associationOptions],

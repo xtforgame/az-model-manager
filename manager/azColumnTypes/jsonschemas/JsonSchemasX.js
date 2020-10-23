@@ -13,6 +13,8 @@ var _appRootPath = _interopRequireDefault(require("app-root-path"));
 
 var _typeConfigs = require("./typeConfigs");
 
+var _core = require("../../../core");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -150,7 +152,12 @@ var JsonSchemasX = function () {
       });
       engine.plugin(function (Liquid) {
         this.registerFilter('toTsTypeExpression', function (column) {
+          console.log('column :', column);
           return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpression(column);
+        });
+        this.registerFilter('getOptionalMark', function (column) {
+          var optionalMark = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '?';
+          return column.extraOptions.requiredOnCreation ? '' : optionalMark;
         });
       });
       return engine.parseAndRender("{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}", {
@@ -234,8 +241,9 @@ var JsonSchemasX = function () {
   }, {
     key: "normalizeRawSchemas",
     value: function normalizeRawSchemas(parsedTables, tableType, models) {
-      JsonSchemasX.forEachSchema(tableType, models, function (tableName) {
+      JsonSchemasX.forEachSchema(tableType, models, function (tableName, tableType, table) {
         parsedTables[tableName] = {};
+        table.options = (0, _core.getNormalizedModelOptions)(tableName, table.options || {});
       }, function (tableName, tableType, table, columnName, column) {
         if (typeof column === 'string' || Array.isArray(column)) {
           column = {
@@ -252,6 +260,8 @@ var JsonSchemasX = function () {
         if (typeof column.type === 'string') {
           column.type = [column.type];
         }
+
+        column.extraOptions = column.extraOptions || {};
 
         if (column.primaryKey) {
           parsedTables[tableName].primaryKey = columnName;

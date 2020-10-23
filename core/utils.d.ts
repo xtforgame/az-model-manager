@@ -1,6 +1,6 @@
 import { ModelCtor, Model, DataType, ModelAttributeColumnOptions as MACO, ModelOptions as MO } from 'sequelize';
 export declare type ColumnExtraOptions = {
-    requiredOnCreation: boolean;
+    requiredOnCreation?: boolean;
     [s: string]: any;
 };
 export declare type ModelExtraOptions = {

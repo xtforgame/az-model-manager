@@ -3,27 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "HasOneOptions", {
-  enumerable: true,
-  get: function get() {
-    return _sequelize.HasOneOptions;
-  }
-});
-Object.defineProperty(exports, "BelongsToOptions", {
-  enumerable: true,
-  get: function get() {
-    return _sequelize.BelongsToOptions;
-  }
-});
-Object.defineProperty(exports, "HasManyOptions", {
-  enumerable: true,
-  get: function get() {
-    return _sequelize.HasManyOptions;
-  }
-});
 exports.isAssociationColumn = exports.BELONGS_TO_MANY = exports.BELONGS_TO = exports.HAS_MANY = exports.HAS_ONE = exports.ASSOCIATION = exports.AssociationColumn = exports.associations = void 0;
-
-var _sequelize = require("sequelize");
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 

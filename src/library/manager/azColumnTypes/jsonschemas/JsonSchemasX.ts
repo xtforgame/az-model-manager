@@ -352,6 +352,10 @@ export class JsonSchemasX {
       this.registerFilter('getOptionalMark', (column : JsonModelAttributeInOptionsForm, optionalMark = '?') => {
         return column.extraOptions!.requiredOnCreation ? '' : optionalMark;
       });
+      this.registerFilter('debugPrint', (value : any) => {
+        console.log('value :', value);
+        return value;
+      });
     });
     return engine.parseAndRender(`{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}`, { schemasMetadata, schemas, orders: orders || [...Object.keys(schemas.models), ...Object.keys(schemas.associationModels)] });
   }

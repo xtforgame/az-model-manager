@@ -1,5 +1,4 @@
-import { BelongsToManyOptions as BTMO, HasOneOptions, BelongsToOptions, HasManyOptions, ThroughOptions as TO, Model, ModelDefined } from 'sequelize';
-export { HasOneOptions, BelongsToOptions, HasManyOptions, } from 'sequelize';
+import { BelongsToManyOptions as BTMO, HasOneOptions as HOO, BelongsToOptions as BTO, HasManyOptions as HMO, ThroughOptions as TO, Model, ModelDefined } from 'sequelize';
 import { Overwrite } from './utils';
 export declare type AssociationTypeHasOne = 'hasOne';
 export declare type AssociationTypeHasMany = 'hasMany';
@@ -14,9 +13,15 @@ export declare type ThroughOptions = Overwrite<TO, {
         name: string;
     };
 }>;
+export declare type ExtraAssociationOptions = {
+    ammAs?: string;
+};
 export declare type BelongsToManyOptions = Overwrite<BTMO, {
     through: string | ThroughOptions;
-}>;
+}> & ExtraAssociationOptions;
+export declare type HasOneOptions = HOO & ExtraAssociationOptions;
+export declare type BelongsToOptions = BTO & ExtraAssociationOptions;
+export declare type HasManyOptions = HMO & ExtraAssociationOptions;
 export declare type AssociationColumnOption = BelongsToManyOptions | HasOneOptions | BelongsToOptions | HasManyOptions;
 export interface AssociationColumnExtraOption {
     ammThroughAs?: string;
@@ -47,15 +52,7 @@ export declare const ASSOCIATION: {
         type: AssociationType;
     };
     BELONGS_TO_MANY: {
-        (targetModel: string, o: Overwrite<BTMO, {
-            through: string | Overwrite<TO, {
-                ammModelName: string;
-                ammThroughAs?: string | undefined;
-                model?: {
-                    name: string;
-                } | undefined;
-            }>;
-        }>): AssociationColumn;
+        (targetModel: string, o: BelongsToManyOptions): AssociationColumn;
         type: AssociationType;
     };
 };
@@ -75,15 +72,7 @@ export declare const BELONGS_TO: {
     type: AssociationType;
 };
 export declare const BELONGS_TO_MANY: {
-    (targetModel: string, o: Overwrite<BTMO, {
-        through: string | Overwrite<TO, {
-            ammModelName: string;
-            ammThroughAs?: string | undefined;
-            model?: {
-                name: string;
-            } | undefined;
-        }>;
-    }>): AssociationColumn;
+    (targetModel: string, o: BelongsToManyOptions): AssociationColumn;
     type: AssociationType;
 };
 export declare const isAssociationColumn: (columnType: any) => boolean;

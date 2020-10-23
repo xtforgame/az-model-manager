@@ -1,19 +1,35 @@
 {%- if true %}
-  // associations: {{ name }}
+  // association: {{ name }}
 {%- case column.type[0] -%}
 {%- when "hasOne" %}
+  get{{ column.type[2].as | capitalize }}: HasOneGetAssociationMixin<{{ column.type[1] | capitalize }}I>;
+  set{{ column.type[2].as | capitalize }}: HasOneSetAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  create{{ column.type[2].as | capitalize }}: HasOneCreateAssociationMixin<{{ column.type[1] | capitalize }}I>;
 {%- when "hasMany" %}
-  getProjects: HasManyGetAssociationsMixin<Project>;
-  addProject: HasManyAddAssociationMixin<Project, number>;
-  hasProject: HasManyHasAssociationMixin<Project, number>;
-  countProjects: HasManyCountAssociationsMixin;
-  createProject: HasManyCreateAssociationMixin<Project>;
+  count{{ column.type[2].as.plural | capitalize }}: HasManyCountAssociationsMixin;
+  has{{ column.type[2].as.singular | capitalize }}: HasManyHasAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  has{{ column.type[2].as.plural | capitalize }}: HasManyHasAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  get{{ column.type[2].as.plural | capitalize }}: HasManyGetAssociationsMixin<{{ column.type[1] | capitalize }}I>;
+  set{{ column.type[2].as.plural | capitalize }}: HasManySetAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  add{{ column.type[2].as.singular | capitalize }}: HasManyAddAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  add{{ column.type[2].as.plural | capitalize }}: HasManyAddAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  remove{{ column.type[2].as.singular | capitalize }}: HasManyRemoveAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  remove{{ column.type[2].as.plural | capitalize }}: HasManyRemoveAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  create{{ column.type[2].as.singular | capitalize }}: HasManyCreateAssociationMixin<{{ column.type[1] | capitalize }}I>;
 {%- when "belongsTo" %}
+  get{{ column.type[2].as | capitalize }}: BelongsToGetAssociationMixin<{{ column.type[1] | capitalize }}I>;
+  set{{ column.type[2].as | capitalize }}: BelongsToSetAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  create{{ column.type[2].as | capitalize }}: BelongsToCreateAssociationMixin<{{ column.type[1] | capitalize }}I>;
 {%- when "belongsToMany" %}
-  getProjects: HasManyGetAssociationsMixin<Project>;
-  addProject: HasManyAddAssociationMixin<Project, number>;
-  hasProject: HasManyHasAssociationMixin<Project, number>;
-  countProjects: HasManyCountAssociationsMixin;
-  createProject: HasManyCreateAssociationMixin<Project>;
+  count{{ column.type[2].as.plural | capitalize }}: BelongsToManyCountAssociationsMixin;
+  has{{ column.type[2].as.singular | capitalize }}: BelongsToManyHasAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  has{{ column.type[2].as.plural | capitalize }}: BelongsToManyHasAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  get{{ column.type[2].as.plural | capitalize }}: BelongsToManyGetAssociationsMixin<{{ column.type[1] | capitalize }}I>;
+  set{{ column.type[2].as.plural | capitalize }}: BelongsToManySetAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  add{{ column.type[2].as.singular | capitalize }}: BelongsToManyAddAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  add{{ column.type[2].as.plural | capitalize }}: BelongsToManyAddAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  remove{{ column.type[2].as.singular | capitalize }}: BelongsToManyRemoveAssociationMixin<{{ column.type[1] | capitalize }}I, string>;
+  remove{{ column.type[2].as.plural | capitalize }}: BelongsToManyRemoveAssociationsMixin<{{ column.type[1] | capitalize }}I, string>;
+  create{{ column.type[2].as.singular | capitalize }}: BelongsToManyCreateAssociationMixin<{{ column.type[1] | capitalize }}I>;
 {% endcase -%}
 {% endif -%}

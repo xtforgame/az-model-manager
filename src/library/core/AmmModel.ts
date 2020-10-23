@@ -280,15 +280,24 @@ export default class AmmModel {
             model: throughModel,
           },
           as: associationName,
+          ammAs: associationName,
         }, <any>association.options);
       } else {
         options = sequelize.Utils.mergeDefaults({
           as: associationName,
+          ammAs: associationName,
         }, <any>association.options);
       }
 
-      if (options.as && options.as !== associationName) {
-        throw new Error(`Association.as (${options.as}) should be the same as column name (${associationName}) in model (${this.modelName})`);
+      if (association.type === 'hasMany' || association.type === 'belongsToMany') {
+        options.as = {
+          plural: sequelize.Utils.pluralize(associationName),
+          singular: sequelize.Utils.singularize(associationName),
+        };
+      }
+
+      if (options.ammAs && options.ammAs !== associationName) {
+        throw new Error(`Association.as (${options.ammAs}) should be the same as column name (${associationName}) in model (${this.modelName})`);
       }
       (<any>this.sqlzModel)[association.type](TargetModel, options);
     });

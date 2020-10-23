@@ -3,6 +3,7 @@ import * as columnTypes from './columnTypes';
 import { AmmOrmI, AmmSchema } from './interfaces';
 import { ModelAttributes, ModelOptions } from './utils';
 export declare const ThroughValues: unique symbol;
+export declare const getNormalizedModelOptions: (modelName: string, options: ModelOptions<sequelize.Model<any, any>>) => any;
 export default class AmmModel {
     static columnTypes: typeof columnTypes;
     static ThroughValues: symbol;

@@ -221,6 +221,11 @@ exports.typeConfigs = typeConfigs = {
         associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
       }
 
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = {
+        plural: _sequelize["default"].Utils.pluralize(associationOptions.ammAs),
+        singular: _sequelize["default"].Utils.singularize(associationOptions.ammAs)
+      };
       return _objectSpread(_objectSpread({}, args.column), {}, {
         type: [args.column.type[0], args.column.type[1], associationOptions]
       });
@@ -320,6 +325,11 @@ exports.typeConfigs = typeConfigs = {
         return new Error("ammThroughAs name already taken(".concat(ammThroughAs, ")"));
       }
 
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = {
+        plural: _sequelize["default"].Utils.pluralize(associationOptions.ammAs),
+        singular: _sequelize["default"].Utils.singularize(associationOptions.ammAs)
+      };
       return _objectSpread(_objectSpread({}, args.column), {}, {
         type: [args.column.type[0], args.column.type[1], associationOptions]
       });
