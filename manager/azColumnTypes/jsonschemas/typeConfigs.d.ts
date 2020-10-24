@@ -10,6 +10,7 @@ export declare type TypeConfig = {
     parse(args: ParseJsonFuncArgs): Error | JsonModelAttributeInOptionsForm;
     toCoreColumn(args: ParseJsonFuncArgs): Error | ModelAttributeColumnOptions<Model>;
     getTsTypeExpression(column: JsonModelAttributeInOptionsForm): string;
+    getTsTypeExpressionForCreation(column: JsonModelAttributeInOptionsForm): string;
 };
 export declare type TypeConfigs = {
     [s: string]: TypeConfig;
@@ -17,7 +18,8 @@ export declare type TypeConfigs = {
 export declare const basicParse: (extraNumber?: number) => (args: ParseJsonFuncArgs) => Error | JsonModelAttributeInOptionsForm;
 export declare const basicToCoreColumn: (dataType: DataType, extraNumber?: number) => (args: ParseJsonFuncArgs) => Error | ModelAttributeColumnOptions<Model>;
 export declare const parseAssociationOptions: (a: ParseJsonFuncArgs) => AssociationOptions | Error;
-export declare const basicFetTsTypeExpression: (tsType: string) => (column: JsonModelAttributeInOptionsForm) => string;
+export declare const basicGetTsTypeExpression: (tsType: string) => (column: JsonModelAttributeInOptionsForm) => string;
 export declare const capitalize: (str: any) => any;
 export declare const toInterfaceType: (str: any) => string;
+export declare const toTypeForCreation: (str: any) => string;
 export declare let typeConfigs: TypeConfigs;

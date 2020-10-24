@@ -152,12 +152,18 @@ var JsonSchemasX = function () {
       });
       engine.plugin(function (Liquid) {
         this.registerFilter('toTsTypeExpression', function (column) {
-          console.log('column :', column);
           return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpression(column);
+        });
+        this.registerFilter('toTsTypeExpressionForCreation', function (column) {
+          return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpressionForCreation(column);
         });
         this.registerFilter('getOptionalMark', function (column) {
           var optionalMark = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '?';
           return column.extraOptions.requiredOnCreation ? '' : optionalMark;
+        });
+        this.registerFilter('debugPrint', function (value) {
+          console.log('value :', value);
+          return value;
         });
       });
       return engine.parseAndRender("{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}", {

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.typeConfigs = exports.toInterfaceType = exports.capitalize = exports.basicFetTsTypeExpression = exports.parseAssociationOptions = exports.basicToCoreColumn = exports.basicParse = void 0;
+exports.typeConfigs = exports.toTypeForCreation = exports.toInterfaceType = exports.capitalize = exports.basicGetTsTypeExpression = exports.parseAssociationOptions = exports.basicToCoreColumn = exports.basicParse = void 0;
 
 var _sequelize = _interopRequireDefault(require("sequelize"));
 
@@ -134,13 +134,13 @@ var parseAssociationOptions = function parseAssociationOptions(args) {
 
 exports.parseAssociationOptions = parseAssociationOptions;
 
-var basicFetTsTypeExpression = function basicFetTsTypeExpression(tsType) {
+var basicGetTsTypeExpression = function basicGetTsTypeExpression(tsType) {
   return function () {
     return tsType;
   };
 };
 
-exports.basicFetTsTypeExpression = basicFetTsTypeExpression;
+exports.basicGetTsTypeExpression = basicGetTsTypeExpression;
 
 var capitalize = function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -153,6 +153,12 @@ var toInterfaceType = function toInterfaceType(str) {
 };
 
 exports.toInterfaceType = toInterfaceType;
+
+var toTypeForCreation = function toTypeForCreation(str) {
+  return "".concat(capitalize(str), "CreationAttributes");
+};
+
+exports.toTypeForCreation = toTypeForCreation;
 var typeConfigs;
 exports.typeConfigs = typeConfigs;
 exports.typeConfigs = typeConfigs = {
@@ -182,6 +188,8 @@ exports.typeConfigs = typeConfigs = {
         associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
       }
 
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = args.columnName;
       return _objectSpread(_objectSpread({}, args.column), {}, {
         type: [args.column.type[0], args.column.type[1], associationOptions]
       });
@@ -193,6 +201,9 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpression: function getTsTypeExpression(column) {
       return toInterfaceType(column.type[1]);
+    },
+    getTsTypeExpressionForCreation: function getTsTypeExpressionForCreation(column) {
+      return toTypeForCreation(column.type[1]);
     }
   },
   hasMany: {
@@ -237,6 +248,9 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpression: function getTsTypeExpression(column) {
       return "".concat(toInterfaceType(column.type[1]), "[]");
+    },
+    getTsTypeExpressionForCreation: function getTsTypeExpressionForCreation(column) {
+      return "".concat(toTypeForCreation(column.type[1]), "[]");
     }
   },
   belongsTo: {
@@ -266,6 +280,8 @@ exports.typeConfigs = typeConfigs = {
         associationOptions.targetKey = targetTable.primaryKey;
       }
 
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = args.columnName;
       return _objectSpread(_objectSpread({}, args.column), {}, {
         type: [args.column.type[0], args.column.type[1], associationOptions]
       });
@@ -277,6 +293,9 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpression: function getTsTypeExpression(column) {
       return toInterfaceType(column.type[1]);
+    },
+    getTsTypeExpressionForCreation: function getTsTypeExpressionForCreation(column) {
+      return toTypeForCreation(column.type[1]);
     }
   },
   belongsToMany: {
@@ -341,6 +360,9 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpression: function getTsTypeExpression(column) {
       return "".concat(toInterfaceType(column.type[1]), "[]");
+    },
+    getTsTypeExpressionForCreation: function getTsTypeExpressionForCreation(column) {
+      return "".concat(toTypeForCreation(column.type[1]), "[]");
     }
   },
   integer: {
@@ -350,7 +372,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].INTEGER),
-    getTsTypeExpression: basicFetTsTypeExpression('number')
+    getTsTypeExpression: basicGetTsTypeExpression('number'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
   },
   bigint: {
     sequleizeDataType: _sequelize["default"].BIGINT,
@@ -359,7 +382,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].BIGINT),
-    getTsTypeExpression: basicFetTsTypeExpression('string')
+    getTsTypeExpression: basicGetTsTypeExpression('string'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
   },
   decimal: {
     sequleizeDataType: _sequelize["default"].DECIMAL,
@@ -368,7 +392,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(2),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].DECIMAL, 2),
-    getTsTypeExpression: basicFetTsTypeExpression('number')
+    getTsTypeExpression: basicGetTsTypeExpression('number'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
   },
   real: {
     sequleizeDataType: _sequelize["default"].REAL,
@@ -377,7 +402,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].REAL),
-    getTsTypeExpression: basicFetTsTypeExpression('number')
+    getTsTypeExpression: basicGetTsTypeExpression('number'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
   },
   "float": {
     sequleizeDataType: _sequelize["default"].FLOAT,
@@ -386,7 +412,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].FLOAT),
-    getTsTypeExpression: basicFetTsTypeExpression('number')
+    getTsTypeExpression: basicGetTsTypeExpression('number'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
   },
   "double": {
     sequleizeDataType: _sequelize["default"].DOUBLE,
@@ -395,7 +422,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].DOUBLE),
-    getTsTypeExpression: basicFetTsTypeExpression('number')
+    getTsTypeExpression: basicGetTsTypeExpression('number'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
   },
   "boolean": {
     sequleizeDataType: _sequelize["default"].BOOLEAN,
@@ -404,7 +432,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].BOOLEAN),
-    getTsTypeExpression: basicFetTsTypeExpression('boolean')
+    getTsTypeExpression: basicGetTsTypeExpression('boolean'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('boolean')
   },
   string: {
     sequleizeDataType: _sequelize["default"].STRING,
@@ -413,7 +442,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(1),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].STRING, 1),
-    getTsTypeExpression: basicFetTsTypeExpression('string')
+    getTsTypeExpression: basicGetTsTypeExpression('string'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
   },
   binary: {
     sequleizeDataType: _sequelize["default"].BLOB,
@@ -422,7 +452,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].BLOB),
-    getTsTypeExpression: basicFetTsTypeExpression('Buffer')
+    getTsTypeExpression: basicGetTsTypeExpression('Buffer'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Buffer')
   },
   text: {
     sequleizeDataType: _sequelize["default"].TEXT,
@@ -431,7 +462,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].TEXT),
-    getTsTypeExpression: basicFetTsTypeExpression('string')
+    getTsTypeExpression: basicGetTsTypeExpression('string'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
   },
   date: {
     sequleizeDataType: _sequelize["default"].DATE,
@@ -440,7 +472,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].DATE),
-    getTsTypeExpression: basicFetTsTypeExpression('Date')
+    getTsTypeExpression: basicGetTsTypeExpression('Date'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date')
   },
   dateonly: {
     sequleizeDataType: _sequelize["default"].DATEONLY,
@@ -449,7 +482,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].DATEONLY),
-    getTsTypeExpression: basicFetTsTypeExpression('Date')
+    getTsTypeExpression: basicGetTsTypeExpression('Date'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date')
   },
   uuid: {
     sequleizeDataType: _sequelize["default"].UUID,
@@ -458,7 +492,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].UUID),
-    getTsTypeExpression: basicFetTsTypeExpression('string')
+    getTsTypeExpression: basicGetTsTypeExpression('string'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
   },
   range: {
     sequleizeDataType: _sequelize["default"].RANGE,
@@ -510,6 +545,16 @@ exports.typeConfigs = typeConfigs = {
         dateonly: '[Date, Date]'
       };
       return rangeTypes[column.type[1]];
+    },
+    getTsTypeExpressionForCreation: function getTsTypeExpressionForCreation(column) {
+      var rangeTypes = {
+        integer: '[number, number]',
+        bigint: '[string, string]',
+        decimal: '[number, number]',
+        date: '[Date, Date]',
+        dateonly: '[Date, Date]'
+      };
+      return rangeTypes[column.type[1]];
     }
   },
   json: {
@@ -519,7 +564,8 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].JSON),
-    getTsTypeExpression: basicFetTsTypeExpression('any')
+    getTsTypeExpression: basicGetTsTypeExpression('any'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('any')
   },
   jsonb: {
     sequleizeDataType: _sequelize["default"].JSONB,
@@ -528,6 +574,7 @@ exports.typeConfigs = typeConfigs = {
     },
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize["default"].JSONB),
-    getTsTypeExpression: basicFetTsTypeExpression('any')
+    getTsTypeExpression: basicGetTsTypeExpression('any'),
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('any')
   }
 };

@@ -85,10 +85,12 @@ var AmmOrm = function (_OriginalAmmOrm) {
     _defineProperty(_assertThisInitialized(_this), "getAssociationIncludeData", function (baseModelName, associationModelNameAs) {
       if (!_this.ammSchemas.models[baseModelName]) {
         console.log('baseModelName, this.ammSchemas.models :', baseModelName, _this.ammSchemas.models);
+        throw new Error("Base Model not found: ".concat(baseModelName));
         return null;
       }
 
       if (!_this.ammSchemas.models[baseModelName].columns[associationModelNameAs]) {
+        throw new Error("Association Model not found: ".concat(associationModelNameAs));
         return null;
       }
 
@@ -129,6 +131,7 @@ var AmmOrm = function (_OriginalAmmOrm) {
           nameAs = _item.as;
           options = _objectWithoutProperties(_item, ["as"]);
           _item;
+          console.log('nameAs :', nameAs);
         } else {
           nameAs = item;
         }
