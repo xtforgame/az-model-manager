@@ -30,12 +30,14 @@
   "license": "MIT",
   "peerDependencies": {
     "js-sql-parse": "^0.2.6",
-    "node-sql-parser": "^3.1.0",
     "pg": "^8.4.1",
     "pg-structure": "git+https://github.com/xtforgame/pg-structure.git#master",
     "sequelize": "^6.3.5"
   },
-  "dependencies": {},
+  "dependencies": {
+    "app-root-path": "^1.0.0",
+    "liquidjs": "^9.16.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.4.0",
     "@babel/plugin-proposal-class-properties": "^7.4.0",

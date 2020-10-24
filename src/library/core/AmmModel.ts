@@ -2,18 +2,15 @@
 import sequelize, {
   Model,
   ModelDefined,
-  ModelAttributes,
-  ModelOptions,
   ModelNameOptions,
   Sequelize,
-
-  BelongsToManyOptions,
-  HasOneOptions,
-  BelongsToOptions,
-  HasManyOptions,
 } from 'sequelize';
 import * as columnTypes from './columnTypes';
 import { AmmOrmI, AmmSchema } from './interfaces';
+import {
+  ModelAttributes,
+  ModelOptions,
+} from './utils';
 // import {
 //   defaultCallbackPromise,
 //   isFunction,
@@ -76,6 +73,19 @@ const autoInclude = (ammOrm : AmmOrmI, modelName : string, values, inputInclude 
   return include;
 };
 
+export const getNormalizedModelOptions = (modelName : string, options : ModelOptions) => sequelize.Utils.mergeDefaults(<any>{
+  timestamps: true,
+  paranoid: true,
+  underscored: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at',
+  name: {
+    plural: sequelize.Utils.pluralize(modelName),
+    singular: sequelize.Utils.singularize(modelName),
+  },
+}, options);
+
 export default class AmmModel {
   static columnTypes = columnTypes;
 
@@ -114,10 +124,10 @@ export default class AmmModel {
       throw new Error('no name');
     }
 
+    this.sqlzOptions = sqlzOptions;
     const sqlzModel = this.db.define(modelName, columns, sqlzOptions);
     this.columns = columns;
 
-    this.sqlzOptions = sqlzOptions;
     this.name = name;
     this.tableName = tableName;
     this.associations = associations;
@@ -243,15 +253,7 @@ export default class AmmModel {
       }
     });
 
-    const sqlzOptions : ModelOptions = sequelize.Utils.mergeDefaults(<any>{
-      timestamps: true,
-      paranoid: true,
-      underscored: true,
-      name: {
-        plural: sequelize.Utils.pluralize(modelName),
-        singular: sequelize.Utils.singularize(modelName),
-      },
-    }, options);
+    const sqlzOptions : ModelOptions = getNormalizedModelOptions(modelName, options)
 
     sqlzOptions.tableName = sqlzOptions.tableName || `${this.tablePrefix}${(<any>sequelize.Utils).underscore(sqlzOptions.name!.singular)}`;
 
@@ -271,22 +273,31 @@ export default class AmmModel {
       let throughModel;
       let options;
       if (association.type === 'belongsToMany') {
-        const o = <BelongsToManyOptions>association.options;
+        const o = <columnTypes.BelongsToManyOptions>association.options;
         throughModel = this.ammOrm.getSqlzAssociationModel((<columnTypes.ThroughOptions><any>o.through).ammModelName!);
         options = sequelize.Utils.mergeDefaults({
           through: {
             model: throughModel,
           },
           as: associationName,
+          ammAs: associationName,
         }, <any>association.options);
       } else {
         options = sequelize.Utils.mergeDefaults({
           as: associationName,
+          ammAs: associationName,
         }, <any>association.options);
       }
 
-      if (options.as && options.as !== associationName) {
-        throw new Error(`Association.as (${options.as}) should be the same as column name (${associationName}) in model (${this.modelName})`);
+      if (association.type === 'hasMany' || association.type === 'belongsToMany') {
+        options.as = {
+          plural: sequelize.Utils.pluralize(associationName),
+          singular: sequelize.Utils.singularize(associationName),
+        };
+      }
+
+      if (options.ammAs && options.ammAs !== associationName) {
+        throw new Error(`Association.as (${options.ammAs}) should be the same as column name (${associationName}) in model (${this.modelName})`);
       }
       (<any>this.sqlzModel)[association.type](TargetModel, options);
     });

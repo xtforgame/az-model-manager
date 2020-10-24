@@ -1,13 +1,10 @@
-import sequelize, {
-  AbstractDataTypeConstructor,
-
-  DataType,
+import path from 'path';
+import {
   Model,
-  ModelDefined,
-  ModelAttributes,
   ModelOptions,
-  ModelAttributeColumnOptions,
 } from 'sequelize';
+import { Liquid } from 'liquidjs';
+import appRootPath from 'app-root-path';
 import pgStructure, {
   Table,
   Column,
@@ -20,6 +17,7 @@ import {
   IJsonSchemas,
   JsonModelAllAttributeType,
   JsonModelAttributeInOptionsForm,
+  NormalizedJsonModelAttributes,
 } from './IJsonSchemas';
 
 import {
@@ -30,9 +28,13 @@ import {
   AmmSchema,
   AmmSchemas,
   Overwrite,
+  ModelAttributeColumnOptions,
+  getNormalizedModelOptions,
 } from '../../../core';
 
 // =======================
+
+const appRoot = appRootPath.resolve('./');
 
 export interface RawModelAttributeColumnOptions<M extends Model = Model> {
   type : [string, ...any[]];
@@ -90,7 +92,7 @@ export class JsonSchemasX {
   parsed!: boolean;
 
   schemasMetadata!: SchemasMetadata;
-  schema!: IJsonSchemas;
+  schemas!: IJsonSchemas;
 
   constructor(dbSchemaName : string, rawSchemas : RawSchemas) {
     this.dbSchemaName = dbSchemaName;
@@ -101,7 +103,7 @@ export class JsonSchemasX {
   clear() {
     this.parsed = false;
     this.schemasMetadata = { models: {}, associationModels: {} };
-    this.schema = {
+    this.schemas = {
       models: {},
       associationModels: {},
     };
@@ -149,7 +151,10 @@ export class JsonSchemasX {
     JsonSchemasX.forEachSchema(
       tableType,
       models,
-      (tableName) => { parsedTables[tableName] = {}; },
+      (tableName, tableType, table) => {
+        parsedTables[tableName] = {};
+        table.options = getNormalizedModelOptions(tableName, table.options || {});
+      },
       (tableName, tableType, table, columnName, column) => {
         if (typeof column === 'string' || Array.isArray(column)) {
           column = {
@@ -163,6 +168,7 @@ export class JsonSchemasX {
         if (typeof column.type === 'string') {
           column.type = <any>[column.type];
         }
+        column.extraOptions = column.extraOptions || {};
         if (column.primaryKey) {
           parsedTables[tableName].primaryKey = columnName;
         }
@@ -272,29 +278,29 @@ export class JsonSchemasX {
       return Error(`bad json data: no models provided`);
     }
 
-    this.schema.models = {
+    this.schemas.models = {
       ...<any>this.rawSchemas.models,
     };
 
     if (this.rawSchemas.associationModels) {
-      this.schema.associationModels = {
+      this.schemas.associationModels = {
         ...<any>this.rawSchemas.associationModels,
       };
     }
 
-    const err = JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.models, 'model', this.schema.models);
+    const err = JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.models, 'model', this.schemas.models);
     if (err) return err;
-    return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schema.associationModels);
+    return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels);
   }
 
   parseRawSchemas() : Error | void {
     this.parsed = false;
     let err = this.normalizeRawSchemas();
     if (err) { return err; }
-    const { schemasMetadata, schema } = this;
-    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'model', this.schema.models);
+    const { schemasMetadata, schemas } = this;
+    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
     if (err) return err;
-    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schema, 'associationModel', this.schema.associationModels);
+    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     this.parsed = false;
     return err;
   }
@@ -310,26 +316,51 @@ export class JsonSchemasX {
       if (err) return err;
     }
 
-    const { schemasMetadata, schema } = this;
+    const { schemasMetadata, schemas } = this;
 
     let err = JsonSchemasX.toCoreModels(
       schemasMetadata,
-      schema,
+      schemas,
       'model',
-      schema.models,
+      schemas.models,
       result.models,
     );
     if (err) { return err; }
 
     err = JsonSchemasX.toCoreModels(
       schemasMetadata,
-      schema,
+      schemas,
       'associationModel',
-      schema.associationModels,
+      schemas.associationModels,
       result.associationModels!,
     );
     if (err) { return err; }
     return result;
+  }
+
+  // ========================
+
+  buildModelTsFile(orders?: string[]) : Promise<string> {
+    const { schemasMetadata, schemas } = this;
+    const engine = new Liquid({
+      root: path.join(appRoot, 'liquids'),
+    });
+    engine.plugin(function (Liquid) {
+      this.registerFilter('toTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
+        return typeConfigs[column.type[0]].getTsTypeExpression(column);
+      });
+      this.registerFilter('toTsTypeExpressionForCreation', (column : JsonModelAttributeInOptionsForm) => {
+        return typeConfigs[column.type[0]].getTsTypeExpressionForCreation(column);
+      });
+      this.registerFilter('getOptionalMark', (column : JsonModelAttributeInOptionsForm, optionalMark = '?') => {
+        return column.extraOptions!.requiredOnCreation ? '' : optionalMark;
+      });
+      this.registerFilter('debugPrint', (value : any) => {
+        console.log('value :', value);
+        return value;
+      });
+    });
+    return engine.parseAndRender(`{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}`, { schemasMetadata, schemas, orders: orders || [...Object.keys(schemas.models), ...Object.keys(schemas.associationModels)] });
   }
 
   // ========================

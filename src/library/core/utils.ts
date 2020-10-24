@@ -24,7 +24,32 @@ idsToDelete.reduce(function(cur, next) {
 });
 
 */
-import { Sequelize, ModelCtor, Model } from 'sequelize';
+import {
+  ModelCtor,
+  Model,
+  DataType,
+  ModelAttributeColumnOptions as MACO,
+  ModelOptions as MO,
+} from 'sequelize';
+
+export type ColumnExtraOptions = {
+  requiredOnCreation?: boolean;
+  [s : string]: any;
+};
+
+export type ModelExtraOptions = {
+  [s : string]: any;
+};
+
+export type ModelAttributeColumnOptions<M extends Model = Model> = MACO<M> & { extraOptions?: ColumnExtraOptions };
+
+export type ModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
+  /**
+   * The description of a database column
+   */
+  [name in keyof TCreationAttributes]: DataType | ModelAttributeColumnOptions<M>;
+}
+export type ModelOptions<M extends Model = Model> = MO<M> & { extraOptions?: ModelExtraOptions };
 
 export type ToPromiseFunction<T> = (_ : any, value : T, index : number, array : T[]) => any;
 

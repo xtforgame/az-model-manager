@@ -1,0 +1,28 @@
+// ============== start model: {{ name | capitalize }} ==============
+export type {{ name | capitalize }}CreationAttributes = {
+{% for column in model.columns -%}
+{%- if column[1].autoIncrement -%}
+{%- else -%}
+{% render 'creating-column.liquid', name: column[0], column: column[1], optionMark: '?' %}
+{%- endif -%}
+{%- endfor -%} };
+
+export type {{ name | capitalize }}Attributes = Overwrite<{{ name | capitalize }}CreationAttributes, {
+{% for column in model.columns -%}
+{%- if column[1].autoIncrement -%}
+{% render 'column.liquid', name: column[0], column: column[1], optionMark: '' %}
+{%- else -%}
+{% render 'column.liquid', name: column[0], column: column[1], optionMark: '?' %}
+{%- endif -%}
+{%- endfor -%} }>;
+
+export type {{ name | capitalize }}I = {{ name | capitalize }}Attributes & {
+{% render 'timestamp-columns.liquid', model: model -%}
+
+{% for column in model.columns -%}
+{%- if column[1].type[0] == "hasOne" or column[1].type[0] == "hasMany" or column[1].type[0] == "belongsTo" or column[1].type[0] == "belongsToMany" -%}
+{% render 'associations.liquid', name: column[0], column: column[1] %}
+{% endif -%}
+{%- endfor -%} };
+// ============== end model: {{ name | capitalize }} ==============
+

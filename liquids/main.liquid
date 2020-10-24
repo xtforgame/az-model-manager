@@ -1,0 +1,43 @@
+import sequelize, {
+  Sequelize,
+
+  HasOneGetAssociationMixin,
+  HasOneSetAssociationMixin,
+  HasOneCreateAssociationMixin,
+
+  HasManyCountAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManyGetAssociationsMixin,
+  HasManySetAssociationsMixin,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManyCreateAssociationMixin,
+
+  BelongsToGetAssociationMixin,
+  BelongsToSetAssociationMixin,
+  BelongsToCreateAssociationMixin,
+
+  BelongsToManyCountAssociationsMixin,
+  BelongsToManyHasAssociationMixin,
+  BelongsToManyHasAssociationsMixin,
+  BelongsToManyGetAssociationsMixin,
+  BelongsToManySetAssociationsMixin,
+  BelongsToManyAddAssociationMixin,
+  BelongsToManyAddAssociationsMixin,
+  BelongsToManyRemoveAssociationMixin,
+  BelongsToManyRemoveAssociationsMixin,
+  BelongsToManyCreateAssociationMixin,
+} from 'sequelize';
+import { Overwrite, ExtendedModel } from 'library';
+
+{% for name in orders -%}
+  {%- if schemas.models[name] -%}
+    {% render 'model.liquid', name: name, model: schemas.models[name] %}
+  {%- endif -%}
+  {%- if schemas.associationModels[name] -%}
+    {% render 'model.liquid', name: name, model: schemas.associationModels[name] %}
+  {%- endif -%}
+{%- endfor -%}

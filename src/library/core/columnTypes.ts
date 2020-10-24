@@ -1,19 +1,13 @@
 import {
   BelongsToManyOptions as BTMO,
-  HasOneOptions,
-  BelongsToOptions,
-  HasManyOptions,
+  HasOneOptions as HOO,
+  BelongsToOptions as BTO,
+  HasManyOptions as HMO,
 
   ThroughOptions as TO,
 
   Model,
   ModelDefined,
-} from 'sequelize';
-
-export {
-  HasOneOptions,
-  BelongsToOptions,
-  HasManyOptions,
 } from 'sequelize';
 
 import {
@@ -42,9 +36,16 @@ export type ThroughOptions = Overwrite<TO, {
   };
 }>;
 
+export type ExtraAssociationOptions = {
+  ammAs?: string;
+};
+
 export type BelongsToManyOptions = Overwrite<BTMO, {
   through: string | ThroughOptions;
-}>;
+}> & ExtraAssociationOptions;
+export type HasOneOptions = HOO & ExtraAssociationOptions;
+export type BelongsToOptions = BTO & ExtraAssociationOptions;
+export type HasManyOptions = HMO & ExtraAssociationOptions;
 
 export type AssociationColumnOption = BelongsToManyOptions | HasOneOptions | BelongsToOptions | HasManyOptions;
 

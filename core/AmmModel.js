@@ -5,7 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.ThroughValues = void 0;
+exports["default"] = exports.getNormalizedModelOptions = exports.ThroughValues = void 0;
 
 var _sequelize = _interopRequireDefault(require("sequelize"));
 
@@ -69,6 +69,23 @@ var autoInclude = function autoInclude(ammOrm, modelName, values) {
   return include;
 };
 
+var getNormalizedModelOptions = function getNormalizedModelOptions(modelName, options) {
+  return _sequelize["default"].Utils.mergeDefaults({
+    timestamps: true,
+    paranoid: true,
+    underscored: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    name: {
+      plural: _sequelize["default"].Utils.pluralize(modelName),
+      singular: _sequelize["default"].Utils.singularize(modelName)
+    }
+  }, options);
+};
+
+exports.getNormalizedModelOptions = getNormalizedModelOptions;
+
 var AmmModel = function () {
   function AmmModel(ammOrm, modelName, tableDefine) {
     var tablePrefix = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'tbl_';
@@ -115,9 +132,9 @@ var AmmModel = function () {
       throw new Error('no name');
     }
 
+    this.sqlzOptions = sqlzOptions;
     var sqlzModel = this.db.define(modelName, columns, sqlzOptions);
     this.columns = columns;
-    this.sqlzOptions = sqlzOptions;
     this.name = name;
     this.tableName = tableName;
     this.associations = associations;
@@ -252,17 +269,7 @@ var AmmModel = function () {
           columns[columnName] = column;
         }
       });
-
-      var sqlzOptions = _sequelize["default"].Utils.mergeDefaults({
-        timestamps: true,
-        paranoid: true,
-        underscored: true,
-        name: {
-          plural: _sequelize["default"].Utils.pluralize(modelName),
-          singular: _sequelize["default"].Utils.singularize(modelName)
-        }
-      }, options);
-
+      var sqlzOptions = getNormalizedModelOptions(modelName, options);
       sqlzOptions.tableName = sqlzOptions.tableName || "".concat(this.tablePrefix).concat(_sequelize["default"].Utils.underscore(sqlzOptions.name.singular));
       return {
         columns: columns,
@@ -293,16 +300,25 @@ var AmmModel = function () {
             through: {
               model: throughModel
             },
-            as: associationName
+            as: associationName,
+            ammAs: associationName
           }, association.options);
         } else {
           options = _sequelize["default"].Utils.mergeDefaults({
-            as: associationName
+            as: associationName,
+            ammAs: associationName
           }, association.options);
         }
 
-        if (options.as && options.as !== associationName) {
-          throw new Error("Association.as (".concat(options.as, ") should be the same as column name (").concat(associationName, ") in model (").concat(_this4.modelName, ")"));
+        if (association.type === 'hasMany' || association.type === 'belongsToMany') {
+          options.as = {
+            plural: _sequelize["default"].Utils.pluralize(associationName),
+            singular: _sequelize["default"].Utils.singularize(associationName)
+          };
+        }
+
+        if (options.ammAs && options.ammAs !== associationName) {
+          throw new Error("Association.as (".concat(options.ammAs, ") should be the same as column name (").concat(associationName, ") in model (").concat(_this4.modelName, ")"));
         }
 
         _this4.sqlzModel[association.type](TargetModel, options);

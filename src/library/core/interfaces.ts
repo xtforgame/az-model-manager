@@ -3,11 +3,14 @@ import {
   Sequelize,
   Model,
   ModelDefined,
-  ModelAttributes,
-  ModelOptions,
+
 } from 'sequelize';
 import { AssociationColumn } from './columnTypes';
-import { ExtendedModelDefined } from './utils';
+import {
+  ExtendedModelDefined,
+  ModelAttributes,
+  ModelOptions,
+} from './utils';
 
 export type AmmOrmI<Extended = {}> = {
   db : Sequelize;

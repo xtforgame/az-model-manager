@@ -4,10 +4,13 @@ import sequelize, {
   DataType,
   Model,
   ModelDefined,
+} from 'sequelize';
+
+import {
   ModelAttributes,
   ModelOptions,
   ModelAttributeColumnOptions,
-} from 'sequelize';
+} from '../../../core/utils';
 
 import {
   AssociationColumn,
@@ -195,6 +198,10 @@ export interface JsonModelAttributeColumnOptions<M extends Model = Model> {
 }
 
 export type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
+export type NormalizedJsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
+  [name in keyof TCreationAttributes]: JsonModelAttributeInOptionsForm<M, TCreationAttributes>;
+};
+
 
 export type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes> | JsonModelAttributeColumn;
 
