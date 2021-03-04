@@ -11,7 +11,7 @@ Object.keys(_IJsonSchemas).forEach(function (key) {
   if (key in exports && exports[key] === _IJsonSchemas[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _IJsonSchemas[key];
     }
   });
@@ -24,7 +24,7 @@ Object.keys(_JsonSchemasX).forEach(function (key) {
   if (key in exports && exports[key] === _JsonSchemasX[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _JsonSchemasX[key];
     }
   });

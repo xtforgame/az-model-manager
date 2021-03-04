@@ -11,7 +11,7 @@ Object.keys(_azColumnTypes).forEach(function (key) {
   if (key in exports && exports[key] === _azColumnTypes[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _azColumnTypes[key];
     }
   });

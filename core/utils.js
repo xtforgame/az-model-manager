@@ -21,25 +21,20 @@ function defaultToPromiseFunc(_, value, index, array) {
   return Promise.resolve(value);
 }
 
-function toSeqPromise(inArray) {
-  var toPrmiseFunc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultToPromiseFunc;
-  return inArray.reduce(function (prev, curr, index, array) {
-    return prev.then(function () {
-      return toPrmiseFunc(prev, curr, index, array);
-    });
-  }, Promise.resolve());
+function toSeqPromise(inArray, toPrmiseFunc = defaultToPromiseFunc) {
+  return inArray.reduce((prev, curr, index, array) => prev.then(() => toPrmiseFunc(prev, curr, index, array)), Promise.resolve());
 }
 
 function promiseWait(waitMillisec) {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     setTimeout(resolve, waitMillisec);
   });
 }
 
-var defaultCallbackPromise = function defaultCallbackPromise(_ref) {
-  var result = _ref.result,
-      error = _ref.error;
-
+const defaultCallbackPromise = ({
+  result,
+  error
+}) => {
   if (error) {
     return Promise.reject(error);
   }
@@ -48,50 +43,38 @@ var defaultCallbackPromise = function defaultCallbackPromise(_ref) {
 };
 
 exports.defaultCallbackPromise = defaultCallbackPromise;
-var getClass = {}.toString;
+const getClass = {}.toString;
 
 function isFunction(object) {
   return object && getClass.call(object) === '[object Function]';
 }
 
-var toCamel = function toCamel(str) {
-  return str.replace(/_([a-z])/g, function (g) {
-    return g[1].toUpperCase();
-  });
-};
+const toCamel = str => str.replace(/_([a-z])/g, g => g[1].toUpperCase());
 
 exports.toCamel = toCamel;
 
-var toUnderscore = function toUnderscore(str) {
-  return str.replace(/([A-Z])/g, function (g) {
-    return "_".concat(g.toLowerCase());
-  });
-};
+const toUnderscore = str => str.replace(/([A-Z])/g, g => `_${g.toLowerCase()}`);
 
 exports.toUnderscore = toUnderscore;
 
-var capitalizeFirstLetter = function capitalizeFirstLetter(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
+const capitalizeFirstLetter = str => str.charAt(0).toUpperCase() + str.slice(1);
 
 exports.capitalizeFirstLetter = capitalizeFirstLetter;
 
-function handleValueArrayForMethod(self, method, input) {
-  var parent = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-
+function handleValueArrayForMethod(self, method, input, parent = null) {
   if (Array.isArray(input)) {
-    return Promise.all(input.map(function (_input) {
-      return method.call(self, _input, parent);
-    }));
+    return Promise.all(input.map(_input => method.call(self, _input, parent)));
   }
 
   if (input.values) {
-    var values = input.values;
+    const {
+      values
+    } = input;
 
-    var newArgs = _objectSpread({}, input);
+    const newArgs = _objectSpread({}, input);
 
     delete newArgs.values;
-    return Promise.all(values.map(function (_value) {
+    return Promise.all(values.map(_value => {
       newArgs.value = _value;
       return method.call(self, newArgs, parent);
     }));
@@ -101,28 +84,24 @@ function handleValueArrayForMethod(self, method, input) {
 }
 
 function handlePromiseCallback(promise, parent, callbackPromise) {
-  var result = null;
-  return promise.then(function (_result) {
+  let result = null;
+  return promise.then(_result => {
     result = _result;
     return Promise.resolve(callbackPromise({
-      result: result,
-      parent: parent,
+      result,
+      parent,
       error: null
-    })).then(function () {
-      return result;
-    })["catch"](function (error) {
+    })).then(() => result).catch(error => {
       console.log('failureInCallback');
       error.failureInCallback = true;
       return Promise.reject(error);
     });
-  })["catch"](function (error) {
+  }).catch(error => {
     console.log('error :', error);
     return Promise.resolve(callbackPromise({
-      result: result,
-      parent: parent,
-      error: error
-    })).then(function () {
-      return result;
-    });
+      result,
+      parent,
+      error
+    })).then(() => result);
   });
 }

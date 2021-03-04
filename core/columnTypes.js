@@ -9,24 +9,13 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var associations = ['hasOne', 'hasMany', 'belongsTo', 'belongsToMany'];
+const associations = ['hasOne', 'hasMany', 'belongsTo', 'belongsToMany'];
 exports.associations = associations;
 
-var AssociationColumn = function () {
-  function AssociationColumn(type, targetModel) {
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var extraOptions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
-    _classCallCheck(this, AssociationColumn);
-
+class AssociationColumn {
+  constructor(type, targetModel, options = {}, extraOptions = {}) {
     _defineProperty(this, "key", void 0);
 
     _defineProperty(this, "type", void 0);
@@ -51,24 +40,17 @@ var AssociationColumn = function () {
     this.as = '';
   }
 
-  _createClass(AssociationColumn, [{
-    key: "setAs",
-    value: function setAs(as) {
-      this.as = as;
-    }
-  }, {
-    key: "warn",
-    value: function warn(link, text) {}
-  }]);
+  setAs(as) {
+    this.as = as;
+  }
 
-  return AssociationColumn;
-}();
+  warn(link, text) {}
+
+}
 
 exports.AssociationColumn = AssociationColumn;
 
-var ASSOCIATION = function ASSOCIATION(type, targetModel, options) {
-  var extraOptions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
+const ASSOCIATION = (type, targetModel, options, extraOptions = {}) => {
   if (!type) {
     throw new Error('ASSOCIATION must has a type argument');
   }
@@ -78,31 +60,25 @@ var ASSOCIATION = function ASSOCIATION(type, targetModel, options) {
 
 exports.ASSOCIATION = ASSOCIATION;
 
-var HAS_ONE = function HAS_ONE(targetModel, options) {
-  return ASSOCIATION(HAS_ONE.type, targetModel, options);
-};
+const HAS_ONE = (targetModel, options) => ASSOCIATION(HAS_ONE.type, targetModel, options);
 
 exports.HAS_ONE = HAS_ONE;
 HAS_ONE.type = 'hasOne';
 
-var HAS_MANY = function HAS_MANY(targetModel, options) {
-  return ASSOCIATION(HAS_MANY.type, targetModel, options);
-};
+const HAS_MANY = (targetModel, options) => ASSOCIATION(HAS_MANY.type, targetModel, options);
 
 exports.HAS_MANY = HAS_MANY;
 HAS_MANY.type = 'hasMany';
 
-var BELONGS_TO = function BELONGS_TO(targetModel, options) {
-  return ASSOCIATION(BELONGS_TO.type, targetModel, options);
-};
+const BELONGS_TO = (targetModel, options) => ASSOCIATION(BELONGS_TO.type, targetModel, options);
 
 exports.BELONGS_TO = BELONGS_TO;
 BELONGS_TO.type = 'belongsTo';
 
-var BELONGS_TO_MANY = function BELONGS_TO_MANY(targetModel, o) {
-  var options = _objectSpread({}, o);
+const BELONGS_TO_MANY = (targetModel, o) => {
+  const options = _objectSpread({}, o);
 
-  var extraOptions = {};
+  const extraOptions = {};
 
   if (typeof options.through === 'string') {
     extraOptions.ammThroughAs = options.through;
@@ -125,8 +101,6 @@ ASSOCIATION.HAS_MANY = HAS_MANY;
 ASSOCIATION.BELONGS_TO = BELONGS_TO;
 ASSOCIATION.BELONGS_TO_MANY = BELONGS_TO_MANY;
 
-var isAssociationColumn = function isAssociationColumn(columnType) {
-  return columnType instanceof AssociationColumn;
-};
+const isAssociationColumn = columnType => columnType instanceof AssociationColumn;
 
 exports.isAssociationColumn = isAssociationColumn;
