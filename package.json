@@ -1,6 +1,6 @@
 {
   "name": "az-model-manager",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Az Model Manager",
   "main": "index.js",
   "repository": {
@@ -58,17 +58,17 @@
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.12.0",
     "gulp": "^4.0.1",
-    "gulp-typescript": "^5.0.1",
+    "gulp-typescript": "^6.0.0-alpha.1",
     "js-sql-parse": "^0.2.6",
     "mocha": "^5.2.0",
     "pg": "^8.4.1",
-    "pg-structure": "git+https://github.com/xtforgame/pg-structure.git#master",
+    "pg-structure": "^7.12.0",
     "rimraf": "^2.5.4",
     "sequelize": "^6.3.5",
     "sinon": "^4.3.0",
     "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
-    "typescript": "3.8.3"
+    "typescript": "^4.2.2"
   },
   "false": {}
 }

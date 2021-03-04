@@ -23,7 +23,7 @@ declare const defaultCallbackPromise: ({ result, error }: {
     result: any;
     error: any;
 }) => Promise<any>;
-declare function isFunction(object: any): boolean;
+declare function isFunction(object: any): any;
 declare const toCamel: (str: any) => any;
 declare const toUnderscore: (str: any) => any;
 declare const capitalizeFirstLetter: (str: any) => any;

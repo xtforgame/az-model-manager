@@ -26,7 +26,7 @@ export default class AmmOrm extends OriginalAmmOrm {
     }, S, T> | undefined;
     isAssociation: (baseModelName: string, associationModelNameAs: string) => boolean;
     getAssociationIncludeData: (baseModelName: string, associationModelNameAs: string) => {
-        targetModelName: string | import("sequelize/types").ModelCtor<import("sequelize/types").Model<import("sequelize/types").Model<any, any>, any>>;
+        targetModelName: string | import("sequelize").ModelDefined<import("sequelize").Model<any, any>, any>;
         model: ExtendedModelDefined<{
             _orm: AmmOrm;
         }, any, any> | undefined;
