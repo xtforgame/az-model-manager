@@ -255,13 +255,13 @@ class JsonSchemasX {
     return result;
   }
 
-  buildModelTsFile(orders) {
+  buildModelTsFile(args = {}) {
     const {
       schemasMetadata,
       schemas
     } = this;
     const engine = new _liquidjs.Liquid({
-      root: _path.default.join(appRoot, 'liquids')
+      root: args.liquidRoot || _path.default.join(appRoot, 'liquids')
     });
     engine.plugin(function (Liquid) {
       this.registerFilter('toTsTypeExpression', column => {
@@ -281,7 +281,7 @@ class JsonSchemasX {
     return engine.parseAndRender(`{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}`, {
       schemasMetadata,
       schemas,
-      orders: orders || [...Object.keys(schemas.models), ...Object.keys(schemas.associationModels)]
+      orders: args.orders || [...Object.keys(schemas.models), ...Object.keys(schemas.associationModels)]
     });
   }
 

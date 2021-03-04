@@ -340,10 +340,13 @@ export class JsonSchemasX {
 
   // ========================
 
-  buildModelTsFile(orders?: string[]) : Promise<string> {
+  buildModelTsFile(args : {
+    orders?: string[],
+    liquidRoot?: string
+  } = {}) : Promise<string> {
     const { schemasMetadata, schemas } = this;
     const engine = new Liquid({
-      root: path.join(appRoot, 'liquids'),
+      root: args.liquidRoot || path.join(appRoot, 'liquids'),
     });
     engine.plugin(function (Liquid) {
       this.registerFilter('toTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
@@ -360,7 +363,7 @@ export class JsonSchemasX {
         return value;
       });
     });
-    return engine.parseAndRender(`{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}`, { schemasMetadata, schemas, orders: orders || [...Object.keys(schemas.models), ...Object.keys(schemas.associationModels)] });
+    return engine.parseAndRender(`{% render 'main.liquid', schemasMetadata: schemasMetadata, schemas: schemas, orders: orders, models: models %}`, { schemasMetadata, schemas, orders: args.orders || [...Object.keys(schemas.models), ...Object.keys(schemas.associationModels)] });
   }
 
   // ========================

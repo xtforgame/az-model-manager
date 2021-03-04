@@ -70,7 +70,10 @@ export declare class JsonSchemasX {
     normalizeRawSchemas(): Error | void;
     parseRawSchemas(): Error | void;
     toCoreSchemas(): AmmSchemas | Error;
-    buildModelTsFile(orders?: string[]): Promise<string>;
+    buildModelTsFile(args?: {
+        orders?: string[];
+        liquidRoot?: string;
+    }): Promise<string>;
     parseSchemaFromDb(db: Db): void;
     parseTableFromDb(table: Table): void;
     reportColumn(column: Column): void;

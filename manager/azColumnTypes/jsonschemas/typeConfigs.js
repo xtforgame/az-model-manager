@@ -174,7 +174,7 @@ exports.typeConfigs = typeConfigs = {
       });
     },
     getTsTypeExpression: column => {
-      return toInterfaceType(column.type[1]);
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>`;
     },
     getTsTypeExpressionForCreation: column => {
       return toTypeForCreation(column.type[1]);
@@ -219,7 +219,7 @@ exports.typeConfigs = typeConfigs = {
       });
     },
     getTsTypeExpression: column => {
-      return `${toInterfaceType(column.type[1])}[]`;
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>[]`;
     },
     getTsTypeExpressionForCreation: column => {
       return `${toTypeForCreation(column.type[1])}[]`;
@@ -262,7 +262,7 @@ exports.typeConfigs = typeConfigs = {
       });
     },
     getTsTypeExpression: column => {
-      return toInterfaceType(column.type[1]);
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>`;
     },
     getTsTypeExpressionForCreation: column => {
       return toTypeForCreation(column.type[1]);
@@ -327,7 +327,7 @@ exports.typeConfigs = typeConfigs = {
       });
     },
     getTsTypeExpression: column => {
-      return `${toInterfaceType(column.type[1])}[]`;
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>[]`;
     },
     getTsTypeExpressionForCreation: column => {
       return `${toTypeForCreation(column.type[1])}[]`;

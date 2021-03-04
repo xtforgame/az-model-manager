@@ -174,7 +174,7 @@ typeConfigs = {
       };
     },
     getTsTypeExpression: (column : JsonModelAttributeInOptionsForm) => {
-      return toInterfaceType(column.type[1]);
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>`;
     },
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return toTypeForCreation(column.type[1]);
@@ -215,7 +215,7 @@ typeConfigs = {
       };
     },
     getTsTypeExpression: (column : JsonModelAttributeInOptionsForm) => {
-      return `${toInterfaceType(column.type[1])}[]`;
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>[]`;
     },
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return `${toTypeForCreation(column.type[1])}[]`;
@@ -254,7 +254,7 @@ typeConfigs = {
       };
     },
     getTsTypeExpression: (column : JsonModelAttributeInOptionsForm) => {
-      return toInterfaceType(column.type[1]);
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>`;
     },
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return toTypeForCreation(column.type[1]);
@@ -308,7 +308,7 @@ typeConfigs = {
       };
     },
     getTsTypeExpression: (column : JsonModelAttributeInOptionsForm) => {
-      return `${toInterfaceType(column.type[1])}[]`;
+      return `ExtendedModel<${toInterfaceType(column.type[1])}>[]`;
     },
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return `${toTypeForCreation(column.type[1])}[]`;

@@ -31,7 +31,7 @@ import sequelize, {
   BelongsToManyRemoveAssociationsMixin,
   BelongsToManyCreateAssociationMixin,
 } from 'sequelize';
-import { Overwrite, ExtendedModel } from 'library';
+import { Overwrite, ExtendedModel } from 'az-model-manager';
 
 {% for name in orders -%}
   {%- if schemas.models[name] -%}
