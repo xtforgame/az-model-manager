@@ -3,7 +3,29 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var _exportNames = {};
+var _exportNames = {
+  AmmOrm: true,
+  AmmModel: true,
+  AssociationModel: true
+};
+Object.defineProperty(exports, "AmmOrm", {
+  enumerable: true,
+  get: function () {
+    return _AmmOrm.default;
+  }
+});
+Object.defineProperty(exports, "AmmModel", {
+  enumerable: true,
+  get: function () {
+    return _AmmModel.default;
+  }
+});
+Object.defineProperty(exports, "AssociationModel", {
+  enumerable: true,
+  get: function () {
+    return _AssociationModel.default;
+  }
+});
 exports.default = void 0;
 
 var _AmmOrm = _interopRequireWildcard(require("./AmmOrm"));
@@ -34,7 +56,7 @@ Object.keys(_interfaces).forEach(function (key) {
   });
 });
 
-var _AmmModel = require("./AmmModel");
+var _AmmModel = _interopRequireWildcard(require("./AmmModel"));
 
 Object.keys(_AmmModel).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -44,6 +66,20 @@ Object.keys(_AmmModel).forEach(function (key) {
     enumerable: true,
     get: function () {
       return _AmmModel[key];
+    }
+  });
+});
+
+var _AssociationModel = _interopRequireWildcard(require("./AssociationModel"));
+
+Object.keys(_AssociationModel).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _AssociationModel[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _AssociationModel[key];
     }
   });
 });

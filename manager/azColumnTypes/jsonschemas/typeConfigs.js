@@ -9,6 +9,8 @@ var _sequelize = _interopRequireDefault(require("sequelize"));
 
 var _columnTypes = require("../../../core/columnTypes");
 
+var _utils = require("../../../core/utils");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
@@ -20,6 +22,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
 
 function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+
+let xid = 0;
 
 const basicParse = (extraNumber = 0) => args => {
   const _args$column = args.column,
@@ -70,9 +74,9 @@ const basicToCoreColumn = (dataType, extraNumber = 0) => args => {
 exports.basicToCoreColumn = basicToCoreColumn;
 
 const parseAssociationOptions = args => {
-  const targetTable = args.schemasMetadata.models[args.column.type[1]];
+  const targetTableMetadata = args.schemasMetadata.models[args.column.type[1]];
 
-  if (!targetTable) {
+  if (!targetTableMetadata) {
     return new Error(`target table(${args.column.type[1]}) not found`);
   }
 
@@ -137,6 +141,90 @@ const toTypeForCreation = str => `${capitalize(str)}CreationAttributes`;
 exports.toTypeForCreation = toTypeForCreation;
 let typeConfigs;
 exports.typeConfigs = typeConfigs;
+
+const getPrimaryKeyFromModel = (args, tableName) => {
+  const table = args.schemas.models[tableName];
+  const tableMetadata = args.schemasMetadata.models[tableName];
+  const primaryKey = tableMetadata && tableMetadata.primaryKey;
+
+  if (!primaryKey || !table.columns[primaryKey]) {
+    return '';
+  }
+
+  return primaryKey;
+};
+
+const normalizeForeignKey = (args, tableName, associationOptions) => {
+  const options = args.column.type[2];
+
+  if (options.foreignKey) {
+    associationOptions.foreignKey = options.foreignKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+
+    if (!primaryKey) {
+      return new Error('no primaryKey or foreignKey provided');
+    }
+
+    associationOptions.foreignKey = (0, _utils.toUnderscore)(`${tableName}_${primaryKey}`);
+    options.foreignKey = associationOptions.foreignKey;
+  }
+};
+
+const normalizeSourceKey = (args, associationOptions) => {
+  const tableName = args.tableName;
+  const options = args.column.type[2];
+
+  if (options.sourceKey) {
+    associationOptions.sourceKey = options.sourceKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+
+    if (!primaryKey) {
+      return new Error('no primaryKey or sourceKey provided');
+    }
+
+    associationOptions.sourceKey = (0, _utils.toUnderscore)(primaryKey);
+    options.sourceKey = associationOptions.sourceKey;
+  }
+};
+
+const normalizeTargetKey = (args, associationOptions) => {
+  const tableName = args.column.type[1];
+  const options = args.column.type[2];
+
+  if (options.targetKey) {
+    associationOptions.targetKey = options.targetKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+
+    if (!primaryKey) {
+      return new Error('no primaryKey or targetKey provided');
+    }
+
+    associationOptions.targetKey = (0, _utils.toUnderscore)(primaryKey);
+    options.targetKey = associationOptions.targetKey;
+  }
+};
+
+const normalizeOtherKey = (args, associationOptions) => {
+  const tableName = args.column.type[1];
+  const options = args.column.type[2];
+
+  if (options.otherKey) {
+    associationOptions.otherKey = options.otherKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+
+    if (!primaryKey) {
+      return new Error('no primaryKey or otherKey provided');
+    }
+
+    associationOptions.otherKey = (0, _utils.toUnderscore)(`${tableName}_${primaryKey}`);
+    options.otherKey = associationOptions.otherKey;
+  }
+};
+
 exports.typeConfigs = typeConfigs = {
   hasOne: {
     associationType: 'hasOne',
@@ -149,19 +237,8 @@ exports.typeConfigs = typeConfigs = {
       }
 
       const options = args.column.type[2];
-
-      if (options.sourceKey) {
-        associationOptions.sourceKey = options.sourceKey;
-      } else {
-        const primaryKey = args.schemasMetadata.models[args.tableName].primaryKey;
-
-        if (!primaryKey || !args.table.columns[primaryKey]) {
-          return new Error('no primaryKey or sourceKey provided');
-        }
-
-        associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
-      }
-
+      normalizeForeignKey(args, args.tableName, associationOptions);
+      normalizeSourceKey(args, associationOptions);
       associationOptions.ammAs = args.columnName;
       associationOptions.as = args.columnName;
       return _objectSpread(_objectSpread({}, args.column), {}, {
@@ -191,19 +268,8 @@ exports.typeConfigs = typeConfigs = {
       }
 
       const options = args.column.type[2];
-
-      if (options.sourceKey) {
-        associationOptions.sourceKey = options.sourceKey;
-      } else {
-        const primaryKey = args.schemasMetadata.models[args.tableName].primaryKey;
-
-        if (!primaryKey || !args.table.columns[primaryKey]) {
-          return new Error('no primaryKey or sourceKey provided');
-        }
-
-        associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
-      }
-
+      normalizeForeignKey(args, args.tableName, associationOptions);
+      normalizeSourceKey(args, associationOptions);
       associationOptions.ammAs = args.columnName;
       associationOptions.as = {
         plural: _sequelize.default.Utils.pluralize(associationOptions.ammAs),
@@ -236,20 +302,8 @@ exports.typeConfigs = typeConfigs = {
       }
 
       const options = args.column.type[2];
-
-      if (options.targetKey) {
-        associationOptions.targetKey = options.targetKey;
-      } else {
-        const targetTable = args.schemasMetadata.models[args.column.type[1]];
-        const primaryKey = targetTable && targetTable.primaryKey;
-
-        if (!primaryKey || !args.table.columns[primaryKey]) {
-          return new Error('no primaryKey or targetKey provided');
-        }
-
-        associationOptions.targetKey = targetTable.primaryKey;
-      }
-
+      normalizeForeignKey(args, args.column.type[1], associationOptions);
+      normalizeTargetKey(args, associationOptions);
       associationOptions.ammAs = args.columnName;
       associationOptions.as = args.columnName;
       return _objectSpread(_objectSpread({}, args.column), {}, {
@@ -279,11 +333,9 @@ exports.typeConfigs = typeConfigs = {
       }
 
       const options = args.column.type[2];
-
-      if (options.otherKey) {
-        associationOptions.otherKey = options.otherKey;
-      }
-
+      normalizeSourceKey(args, associationOptions);
+      normalizeForeignKey(args, args.tableName, associationOptions);
+      normalizeOtherKey(args, associationOptions);
       associationOptions.onDelete = 'SET NULL';
 
       if (!options.through) {
@@ -316,6 +368,18 @@ exports.typeConfigs = typeConfigs = {
       associationOptions.as = {
         plural: _sequelize.default.Utils.pluralize(associationOptions.ammAs),
         singular: _sequelize.default.Utils.singularize(associationOptions.ammAs)
+      };
+      const associationModel = args.schemas.associationModels[throughTableName];
+      associationModel.columns[args.tableName] = {
+        "type": ["belongsTo", args.tableName, {
+          "foreignKey": associationOptions.foreignKey,
+          "onDelete": "CASCADE",
+          "onUpdate": "CASCADE",
+          "targetKey": "id",
+          "ammAs": args.tableName,
+          "as": args.tableName
+        }],
+        "extraOptions": {}
       };
       return _objectSpread(_objectSpread({}, args.column), {}, {
         type: [args.column.type[0], args.column.type[1], associationOptions]

@@ -235,9 +235,6 @@ export class JsonSchemasX {
         table.columns[columnName] = result;
       },
     );
-    // if (!models['userUserGroup']) {
-    //   fs.writeFileSync('xxx.json', JSON.stringify(models, null, 2), { encoding: 'utf-8' });
-    // }
   }
 
   static toCoreModels(
@@ -323,6 +320,9 @@ export class JsonSchemasX {
     }
 
     const { schemasMetadata, schemas } = this;
+    // if (schemas.associationModels['userUserGroup']) {
+    //   fs.writeFileSync('xxx.json', JSON.stringify(schemas, null, 2), { encoding: 'utf-8' });
+    // }
 
     let err = JsonSchemasX.toCoreModels(
       schemasMetadata,

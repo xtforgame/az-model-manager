@@ -91,7 +91,6 @@ class AmmOrm extends _OriginalAmmOrm.default {
           } = _item);
           options = _objectWithoutProperties(_item, ["as"]);
           _item;
-          console.log('nameAs :', nameAs);
         } else {
           nameAs = item;
         }

@@ -28,6 +28,7 @@ import {
 
 import {
   ModelAttributeColumnOptions,
+  toUnderscore,
 } from '../../../core/utils';
 
 let xid = 0;
@@ -81,8 +82,8 @@ export const basicToCoreColumn : (dataType : DataType, extraNumber? : number) =>
 };
 
 export const parseAssociationOptions : (a : ParseJsonFuncArgs) => AssociationOptions | Error = (args : ParseJsonFuncArgs) => {
-  const targetTable = args.schemasMetadata.models[args.column.type[1]];
-  if (!targetTable) {
+  const targetTableMetadata = args.schemasMetadata.models[args.column.type[1]];
+  if (!targetTableMetadata) {
     return new Error(`target table(${args.column.type[1]}) not found`);
   }
   if (args.column.type.length < 3) {
@@ -143,6 +144,75 @@ export const toTypeForCreation = str => `${capitalize(str)}CreationAttributes`;
 
 export let typeConfigs : TypeConfigs;
 
+const getPrimaryKeyFromModel = (args : ParseJsonFuncArgs, tableName : string) : string => {
+  const table = args.schemas.models[tableName];
+  const tableMetadata = args.schemasMetadata.models[tableName];
+  const primaryKey = tableMetadata && tableMetadata.primaryKey;
+  if (!primaryKey || !table.columns[primaryKey]) {
+    return '';
+  }
+  return primaryKey;
+}
+
+const normalizeForeignKey = (args : ParseJsonFuncArgs, tableName : string, associationOptions : HasOneOptions | HasManyOptions | BelongsToOptions) => {
+  const options = args.column.type[2];
+  if (options.foreignKey) {
+    associationOptions.foreignKey = options.foreignKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+    if (!primaryKey) {
+      return new Error('no primaryKey or foreignKey provided');
+    }
+    associationOptions.foreignKey = toUnderscore(`${tableName}_${primaryKey}`);
+    options.foreignKey = associationOptions.foreignKey;
+  }
+}
+
+const normalizeSourceKey = (args : ParseJsonFuncArgs, associationOptions : HasOneOptions | HasManyOptions | BelongsToManyOptions) => {
+  const tableName = args.tableName;
+  const options = args.column.type[2];
+  if (options.sourceKey) {
+    associationOptions.sourceKey = options.sourceKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+    if (!primaryKey) {
+      return new Error('no primaryKey or sourceKey provided');
+    }
+    associationOptions.sourceKey = toUnderscore(primaryKey);
+    options.sourceKey = associationOptions.sourceKey;
+  }
+}
+
+const normalizeTargetKey = (args : ParseJsonFuncArgs, associationOptions : BelongsToOptions) => {
+  const tableName = args.column.type[1];
+  const options = args.column.type[2];
+  if (options.targetKey) {
+    associationOptions.targetKey = options.targetKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+    if (!primaryKey) {
+      return new Error('no primaryKey or targetKey provided');
+    }
+    associationOptions.targetKey = toUnderscore(primaryKey);
+    options.targetKey = associationOptions.targetKey;
+  }
+}
+
+const normalizeOtherKey = (args : ParseJsonFuncArgs, associationOptions : BelongsToManyOptions) => {
+  const tableName = args.column.type[1];
+  const options = args.column.type[2];
+  if (options.otherKey) {
+    associationOptions.otherKey = options.otherKey;
+  } else {
+    const primaryKey = getPrimaryKeyFromModel(args, tableName);
+    if (!primaryKey) {
+      return new Error('no primaryKey or otherKey provided');
+    }
+    associationOptions.otherKey = toUnderscore(`${tableName}_${primaryKey}`);
+    options.otherKey = associationOptions.otherKey;
+  }
+}
+
 typeConfigs = {
   hasOne: {
     associationType: 'hasOne',
@@ -153,15 +223,8 @@ typeConfigs = {
         return associationOptions;
       }
       const options = args.column.type[2];
-      if (options.sourceKey) {
-        associationOptions.sourceKey = options.sourceKey;
-      } else {
-        const primaryKey = args.schemasMetadata.models[args.tableName].primaryKey;
-        if (!primaryKey || !args.table.columns[primaryKey]) {
-          return new Error('no primaryKey or sourceKey provided');
-        }
-        associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
-      }
+      normalizeForeignKey(args, args.tableName, associationOptions);
+      normalizeSourceKey(args, associationOptions);
       associationOptions.ammAs = args.columnName;
       associationOptions.as = args.columnName;
       return {
@@ -191,15 +254,8 @@ typeConfigs = {
         return associationOptions;
       }
       const options = args.column.type[2];
-      if (options.sourceKey) {
-        associationOptions.sourceKey = options.sourceKey;
-      } else {
-        const primaryKey = args.schemasMetadata.models[args.tableName].primaryKey;
-        if (!primaryKey || !args.table.columns[primaryKey]) {
-          return new Error('no primaryKey or sourceKey provided');
-        }
-        associationOptions.sourceKey = args.schemasMetadata.models[args.tableName].primaryKey;
-      }
+      normalizeForeignKey(args, args.tableName, associationOptions);
+      normalizeSourceKey(args, associationOptions);
       associationOptions.ammAs = args.columnName;
       associationOptions.as = {
         plural: sequelize.Utils.pluralize(associationOptions.ammAs),
@@ -232,16 +288,8 @@ typeConfigs = {
         return associationOptions;
       }
       const options = args.column.type[2];
-      if (options.targetKey) {
-        associationOptions.targetKey = options.targetKey;
-      } else {
-        const targetTable = args.schemasMetadata.models[args.column.type[1]];
-        const primaryKey = targetTable && targetTable.primaryKey;
-        if (!primaryKey || !args.table.columns[primaryKey]) {
-          return new Error('no primaryKey or targetKey provided');
-        }
-        associationOptions.targetKey = targetTable.primaryKey;
-      }
+      normalizeForeignKey(args, args.column.type[1], associationOptions);
+      normalizeTargetKey(args, associationOptions);
       associationOptions.ammAs = args.columnName;
       associationOptions.as = args.columnName;
       return {
@@ -271,9 +319,9 @@ typeConfigs = {
         return associationOptions;
       }
       const options = args.column.type[2];
-      if (options.otherKey) {
-        associationOptions.otherKey = options.otherKey;
-      }
+      normalizeSourceKey(args, associationOptions);
+      normalizeForeignKey(args, args.tableName, associationOptions);
+      normalizeOtherKey(args, associationOptions);
       associationOptions.onDelete = 'SET NULL';
       if (!options.through) {
         return new Error('no through provided');

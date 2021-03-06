@@ -99,7 +99,6 @@ export default class AmmOrm extends OriginalAmmOrm {
       let options = {};
       if (typeof item !== 'string') {
         ({ as: nameAs, ...options } = item);
-        console.log('nameAs :', nameAs);
       } else {
         nameAs = item;
       }

@@ -263,12 +263,69 @@ class JsonSchemasX {
     const engine = new _liquidjs.Liquid({
       root: args.liquidRoot || _path.default.join(appRoot, 'liquids')
     });
+
+    const getForeignKey = column => {
+      const {
+        associationType
+      } = _typeConfigs.typeConfigs[column.type[0]];
+
+      if (!associationType) {
+        return null;
+      }
+
+      if (associationType === 'belongsTo') {
+        const option = column.type[2];
+
+        if (option.foreignKey) {
+          if (typeof option.foreignKey === 'string') {
+            return option.foreignKey;
+          }
+
+          return option.foreignKey.name;
+        }
+      }
+
+      return null;
+    };
+
+    const getTargetKey = column => {
+      const {
+        associationType
+      } = _typeConfigs.typeConfigs[column.type[0]];
+
+      if (!associationType) {
+        return null;
+      }
+
+      if (associationType === 'belongsTo') {
+        const option = column.type[2];
+
+        if (option.targetKey) {
+          return option.targetKey;
+        }
+      }
+
+      return null;
+    };
+
     engine.plugin(function (Liquid) {
       this.registerFilter('toTsTypeExpression', column => {
         return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpression(column);
       });
       this.registerFilter('toTsTypeExpressionForCreation', column => {
         return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpressionForCreation(column);
+      });
+      this.registerFilter('getForeignKey', column => {
+        return getForeignKey(column);
+      });
+      this.registerFilter('getForeignKeyTsTypeExpression', column => {
+        const targetKey = getTargetKey(column);
+        const c = schemas.models[column.type[1]].columns[targetKey];
+        return _typeConfigs.typeConfigs[c.type[0]].getTsTypeExpressionForCreation(column);
+      });
+      this.registerFilter('hasForeignKey', column => {
+        const foreignKey = getForeignKey(column);
+        return !!foreignKey;
       });
       this.registerFilter('getOptionalMark', (column, optionalMark = '?') => {
         return column.extraOptions.requiredOnCreation ? '' : optionalMark;

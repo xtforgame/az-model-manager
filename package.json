@@ -1,6 +1,6 @@
 {
   "name": "az-model-manager",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Az Model Manager",
   "main": "index.js",
   "repository": {
@@ -31,7 +31,7 @@
   "peerDependencies": {
     "js-sql-parse": "^0.2.6",
     "pg": "^8.4.1",
-    "pg-structure": "git+https://github.com/xtforgame/pg-structure.git#master",
+    "pg-structure": "^7.12.1",
     "sequelize": "^6.3.5"
   },
   "dependencies": {
@@ -65,7 +65,7 @@
     "js-sql-parse": "^0.2.6",
     "mocha": "^5.2.0",
     "pg": "^8.4.1",
-    "pg-structure": "^7.12.0",
+    "pg-structure": "^7.12.1",
     "rimraf": "^2.5.4",
     "sequelize": "^6.3.5",
     "sinon": "^4.3.0",
