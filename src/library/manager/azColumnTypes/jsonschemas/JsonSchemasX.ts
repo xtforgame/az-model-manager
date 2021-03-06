@@ -18,6 +18,7 @@ import {
   JsonModelAllAttributeType,
   JsonModelAttributeInOptionsForm,
   NormalizedJsonModelAttributes,
+  JsonModelAttributeColumn,
 } from './IJsonSchemas';
 
 import {
@@ -30,6 +31,7 @@ import {
   Overwrite,
   ModelAttributeColumnOptions,
   getNormalizedModelOptions,
+  BelongsToOptions,
 } from '../../../core';
 
 // =======================
@@ -348,12 +350,61 @@ export class JsonSchemasX {
     const engine = new Liquid({
       root: args.liquidRoot || path.join(appRoot, 'liquids'),
     });
+    const getForeignKey = (column : JsonModelAttributeInOptionsForm) => {
+      const {
+        associationType,
+      } = typeConfigs[column.type[0]];
+      if (!associationType) {
+        return null;
+      }
+      if (associationType === 'belongsTo') {
+        // console.log('column.type[1] :', column.type[1]);
+        const option = column.type[2] as BelongsToOptions;
+        // console.log('option :', option);
+        if (option.foreignKey) {
+          if (typeof option.foreignKey === 'string') {
+            return option.foreignKey;
+          }
+          return option.foreignKey.name!;
+        }
+      }
+      return null;
+    };
+    const getTargetKey = (column : JsonModelAttributeInOptionsForm) => {
+      const {
+        associationType,
+      } = typeConfigs[column.type[0]];
+      if (!associationType) {
+        return null;
+      }
+      if (associationType === 'belongsTo') {
+        // console.log('column.type[1] :', column.type[1]);
+        const option = column.type[2] as BelongsToOptions;
+        // console.log('option :', option);
+        if (option.targetKey) {
+          return option.targetKey;
+        }
+      }
+      return null;
+    };
     engine.plugin(function (Liquid) {
       this.registerFilter('toTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
         return typeConfigs[column.type[0]].getTsTypeExpression(column);
       });
       this.registerFilter('toTsTypeExpressionForCreation', (column : JsonModelAttributeInOptionsForm) => {
         return typeConfigs[column.type[0]].getTsTypeExpressionForCreation(column);
+      });
+      this.registerFilter('getForeignKey', (column : JsonModelAttributeInOptionsForm) => {
+        return getForeignKey(column) as string;
+      });
+      this.registerFilter('getForeignKeyTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
+        const targetKey = getTargetKey(column)!;
+        const c = schemas.models[column.type[1]!].columns[targetKey] as JsonModelAttributeInOptionsForm;
+        return typeConfigs[c.type[0]].getTsTypeExpressionForCreation(column);
+      });
+      this.registerFilter('hasForeignKey', (column : JsonModelAttributeInOptionsForm) => {
+        const foreignKey = getForeignKey(column);
+        return !!foreignKey;
       });
       this.registerFilter('getOptionalMark', (column : JsonModelAttributeInOptionsForm, optionalMark = '?') => {
         return column.extraOptions!.requiredOnCreation ? '' : optionalMark;

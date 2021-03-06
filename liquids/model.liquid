@@ -3,6 +3,10 @@ export type {{ name | capitalize }}CreationAttributes = {
 {% for column in model.columns -%}
 {%- if column[1].autoIncrement -%}
 {%- else -%}
+{%- assign my_variable = column[1] | hasForeignKey -%}
+{%- if my_variable == true -%}
+{% render 'association-foreign-key.liquid', name: column[0], column: column[1], optionMark: '?' %}
+{%- endif -%}
 {% render 'creating-column.liquid', name: column[0], column: column[1], optionMark: '?' %}
 {%- endif -%}
 {%- endfor -%} };
@@ -12,6 +16,10 @@ export type {{ name | capitalize }}Attributes = {
 {%- if column[1].autoIncrement -%}
 {% render 'column.liquid', name: column[0], column: column[1], optionMark: '' %}
 {%- else -%}
+{%- assign my_variable = column[1] | hasForeignKey -%}
+{%- if my_variable == true -%}
+{% render 'association-foreign-key.liquid', name: column[0], column: column[1], optionMark: '?' %}
+{%- endif -%}
 {% render 'column.liquid', name: column[0], column: column[1], optionMark: '?' %}
 {%- endif -%}
 {%- endfor -%} };

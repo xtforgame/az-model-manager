@@ -37,8 +37,8 @@ export type TypeConfig = {
   normalize(args : NormalizeJsonFuncArgs) : Error | void;
   parse(args : ParseJsonFuncArgs) : Error | JsonModelAttributeInOptionsForm;
   toCoreColumn(args : ParseJsonFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
-  getTsTypeExpression(column : JsonModelAttributeInOptionsForm) : string
-  getTsTypeExpressionForCreation(column : JsonModelAttributeInOptionsForm) : string
+  getTsTypeExpression(column : JsonModelAttributeInOptionsForm) : string;
+  getTsTypeExpressionForCreation(column : JsonModelAttributeInOptionsForm) : string;
 };
 
 export type TypeConfigs = {
