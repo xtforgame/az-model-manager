@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import {
   Model,
   ModelOptions,
@@ -234,6 +235,9 @@ export class JsonSchemasX {
         table.columns[columnName] = result;
       },
     );
+    // if (!models['userUserGroup']) {
+    //   fs.writeFileSync('xxx.json', JSON.stringify(models, null, 2), { encoding: 'utf-8' });
+    // }
   }
 
   static toCoreModels(
@@ -347,6 +351,8 @@ export class JsonSchemasX {
     liquidRoot?: string
   } = {}) : Promise<string> {
     const { schemasMetadata, schemas } = this;
+    // console.log('schemasMetadata.associationModels :', schemasMetadata.associationModels);
+    // console.log('schemas.associationModels :', schemas.associationModels);
     const engine = new Liquid({
       root: args.liquidRoot || path.join(appRoot, 'liquids'),
     });

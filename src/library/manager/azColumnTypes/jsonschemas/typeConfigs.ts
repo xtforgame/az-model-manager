@@ -30,6 +30,8 @@ import {
   ModelAttributeColumnOptions,
 } from '../../../core/utils';
 
+let xid = 0;
+
 // =========================================
 export type TypeConfig = {
   sequleizeDataType?: AbstractDataTypeConstructor,
@@ -296,6 +298,25 @@ typeConfigs = {
         plural: sequelize.Utils.pluralize(associationOptions.ammAs),
         singular: sequelize.Utils.singularize(associationOptions.ammAs),
       };
+      const associationModel = args.schemas.associationModels[throughTableName];
+      associationModel.columns[args.tableName] = {
+        "type": [
+          "belongsTo",
+          args.tableName,
+          {
+            "foreignKey": associationOptions.foreignKey as string,
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "targetKey": "id",
+            "ammAs": args.tableName,
+            "as": args.tableName
+          }
+        ],
+        "extraOptions": {}
+      };
+      // console.log('associationModel :', associationModel.columns.id.type);
+      // console.log('otherKey :', associationOptions.otherKey);
+      // associationOptions.foreignKey = `ssss:${xid++}`;
       return {
         ...args.column,
         type: [args.column.type[0], args.column.type[1], associationOptions],
