@@ -347,7 +347,8 @@ typeConfigs = {
         singular: sequelize.Utils.singularize(associationOptions.ammAs),
       };
       const associationModel = args.schemas.associationModels[throughTableName];
-      associationModel.columns[associationOptions.through.ammThroughTableColumnAs] = {
+      const { ammThroughTableColumnAs } = associationOptions.through;
+      associationModel.columns[ammThroughTableColumnAs] = {
         type: [
           'belongsTo',
           args.tableName,
@@ -356,8 +357,8 @@ typeConfigs = {
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
             targetKey: 'id',
-            ammAs: args.tableName,
-            as: args.tableName,
+            ammAs: ammThroughTableColumnAs,
+            as: ammThroughTableColumnAs,
           },
         ],
         extraOptions: {},
