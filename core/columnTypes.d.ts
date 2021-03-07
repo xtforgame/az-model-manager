@@ -8,6 +8,7 @@ export declare type AssociationType = AssociationTypeHasOne | AssociationTypeHas
 export declare const associations: AssociationType[];
 export declare type ThroughOptions = Overwrite<TO, {
     ammModelName: string;
+    ammThroughTableColumnAs: string;
     ammThroughAs?: string;
     model?: {
         name: string;
@@ -17,7 +18,7 @@ export declare type ExtraAssociationOptions = {
     ammAs?: string;
 };
 export declare type BelongsToManyOptions = Overwrite<BTMO, {
-    through: string | ThroughOptions;
+    through: ThroughOptions;
 }> & ExtraAssociationOptions;
 export declare type HasOneOptions = HOO & ExtraAssociationOptions;
 export declare type BelongsToOptions = BTO & ExtraAssociationOptions;

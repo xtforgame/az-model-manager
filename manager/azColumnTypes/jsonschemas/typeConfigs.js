@@ -349,7 +349,8 @@ exports.typeConfigs = typeConfigs = {
         throughTableName = associationOptions.through.ammModelName;
       } else {
         associationOptions.through = {
-          ammModelName: associationOptions.through
+          ammModelName: associationOptions.through,
+          ammThroughTableColumnAs: args.tableName
         };
         throughTableName = associationOptions.through.ammModelName;
       }
@@ -370,16 +371,16 @@ exports.typeConfigs = typeConfigs = {
         singular: _sequelize.default.Utils.singularize(associationOptions.ammAs)
       };
       const associationModel = args.schemas.associationModels[throughTableName];
-      associationModel.columns[args.tableName] = {
-        "type": ["belongsTo", args.tableName, {
-          "foreignKey": associationOptions.foreignKey,
-          "onDelete": "CASCADE",
-          "onUpdate": "CASCADE",
-          "targetKey": "id",
-          "ammAs": args.tableName,
-          "as": args.tableName
+      associationModel.columns[associationOptions.through.ammThroughTableColumnAs] = {
+        type: ['belongsTo', args.tableName, {
+          foreignKey: associationOptions.foreignKey,
+          onDelete: 'CASCADE',
+          onUpdate: 'CASCADE',
+          targetKey: 'id',
+          ammAs: args.tableName,
+          as: args.tableName
         }],
-        "extraOptions": {}
+        extraOptions: {}
       };
       return _objectSpread(_objectSpread({}, args.column), {}, {
         type: [args.column.type[0], args.column.type[1], associationOptions]

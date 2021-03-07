@@ -87,6 +87,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'userUserGroup',
+            ammThroughTableColumnAs: 'user',
             ammThroughAs: 'relation'
           },
           foreignKey: 'user_id',
@@ -96,15 +97,27 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'groupInvitation',
+            ammThroughTableColumnAs: 'invitee',
             ammThroughAs: 'state'
           },
           foreignKey: 'invitee_id',
+          otherKey: 'group_id'
+        }],
+        invitedGroupUsers: ['belongsToMany', 'userGroup', {
+          through: {
+            unique: false,
+            ammModelName: 'groupInvitation',
+            ammThroughTableColumnAs: 'inviter',
+            ammThroughAs: 'state'
+          },
+          foreignKey: 'inviter_id',
           otherKey: 'group_id'
         }],
         organizations: ['belongsToMany', 'organization', {
           through: {
             unique: false,
             ammModelName: 'userOrganization',
+            ammThroughTableColumnAs: 'user',
             ammThroughAs: 'relation'
           },
           foreignKey: 'user_id',
@@ -114,15 +127,27 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'organizationInvitation',
+            ammThroughTableColumnAs: 'invitee',
             ammThroughAs: 'state'
           },
           foreignKey: 'invitee_id',
+          otherKey: 'organization_id'
+        }],
+        invitedOrganizationUsers: ['belongsToMany', 'organization', {
+          through: {
+            unique: false,
+            ammModelName: 'organizationInvitation',
+            ammThroughTableColumnAs: 'inviter',
+            ammThroughAs: 'state'
+          },
+          foreignKey: 'inviter_id',
           otherKey: 'organization_id'
         }],
         projects: ['belongsToMany', 'project', {
           through: {
             unique: false,
             ammModelName: 'userProject',
+            ammThroughTableColumnAs: 'user',
             ammThroughAs: 'relation'
           },
           foreignKey: 'user_id',
@@ -132,9 +157,20 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'projectInvitation',
+            ammThroughTableColumnAs: 'invitee',
             ammThroughAs: 'state'
           },
           foreignKey: 'invitee_id',
+          otherKey: 'project_id'
+        }],
+        invitedProjectUsers: ['belongsToMany', 'project', {
+          through: {
+            unique: false,
+            ammModelName: 'projectInvitation',
+            ammThroughTableColumnAs: 'inviter',
+            ammThroughAs: 'state'
+          },
+          foreignKey: 'inviter_id',
           otherKey: 'project_id'
         }],
         userSettings: ['hasMany', 'userSetting', {
@@ -144,6 +180,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'userMemo',
+            ammThroughTableColumnAs: 'user',
             ammThroughAs: 'relation'
           },
           foreignKey: 'user_id',
@@ -159,7 +196,7 @@ const getSchemas = () => ({
           beforeSync(options) {},
 
           afterSync(options) {
-            return options.sequelize.query('SELECT start_value, last_value, is_called FROM tbl_user_id_seq', {
+            return options.sequelize.query('SELECT last_value, is_called FROM public.tbl_user_id_seq', {
               type: _sequelize.default.QueryTypes.SELECT
             }).then(([result]) => {
               if (!result.is_called) {
@@ -255,6 +292,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'userUserGroup',
+            ammThroughTableColumnAs: 'group',
             ammThroughAs: 'relation'
           },
           foreignKey: 'group_id',
@@ -264,6 +302,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'groupInvitation',
+            ammThroughTableColumnAs: 'group',
             ammThroughAs: 'state'
           },
           foreignKey: 'group_id',
@@ -273,6 +312,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'groupInvitation',
+            ammThroughTableColumnAs: 'group',
             ammThroughAs: 'state'
           },
           foreignKey: 'group_id',
@@ -292,6 +332,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'userOrganization',
+            ammThroughTableColumnAs: 'organization',
             ammThroughAs: 'relation'
           },
           foreignKey: 'organization_id',
@@ -304,6 +345,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'organizationInvitation',
+            ammThroughTableColumnAs: 'organization',
             ammThroughAs: 'state'
           },
           foreignKey: 'organization_id',
@@ -313,6 +355,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'organizationInvitation',
+            ammThroughTableColumnAs: 'organization',
             ammThroughAs: 'state'
           },
           foreignKey: 'organization_id',
@@ -337,6 +380,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'userProject',
+            ammThroughTableColumnAs: 'project',
             ammThroughAs: 'relation'
           },
           foreignKey: 'project_id',
@@ -349,6 +393,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'projectInvitation',
+            ammThroughTableColumnAs: 'project',
             ammThroughAs: 'state'
           },
           foreignKey: 'project_id',
@@ -358,6 +403,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'projectInvitation',
+            ammThroughTableColumnAs: 'project',
             ammThroughAs: 'state'
           },
           foreignKey: 'project_id',
@@ -380,6 +426,7 @@ const getSchemas = () => ({
           through: {
             unique: false,
             ammModelName: 'userMemo',
+            ammThroughTableColumnAs: 'memo',
             ammThroughAs: 'relation'
           },
           foreignKey: 'memo_id',

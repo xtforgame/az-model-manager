@@ -331,7 +331,7 @@ typeConfigs = {
       if (typeof associationOptions.through !== 'string') {
         throughTableName = associationOptions.through.ammModelName;
       } else {
-        associationOptions.through = { ammModelName: associationOptions.through };
+        associationOptions.through = { ammModelName: associationOptions.through, ammThroughTableColumnAs: args.tableName };
         throughTableName = associationOptions.through.ammModelName;
       }
       if (!args.schemas.associationModels || !args.schemas.associationModels[throughTableName]) {
@@ -347,20 +347,20 @@ typeConfigs = {
         singular: sequelize.Utils.singularize(associationOptions.ammAs),
       };
       const associationModel = args.schemas.associationModels[throughTableName];
-      associationModel.columns[args.tableName] = {
-        "type": [
-          "belongsTo",
+      associationModel.columns[associationOptions.through.ammThroughTableColumnAs] = {
+        type: [
+          'belongsTo',
           args.tableName,
           {
-            "foreignKey": associationOptions.foreignKey as string,
-            "onDelete": "CASCADE",
-            "onUpdate": "CASCADE",
-            "targetKey": "id",
-            "ammAs": args.tableName,
-            "as": args.tableName
-          }
+            foreignKey: associationOptions.foreignKey as string,
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
+            targetKey: 'id',
+            ammAs: args.tableName,
+            as: args.tableName,
+          },
         ],
-        "extraOptions": {}
+        extraOptions: {},
       };
       // console.log('associationModel :', associationModel.columns.id.type);
       // console.log('otherKey :', associationOptions.otherKey);
