@@ -209,12 +209,14 @@ export type JsonModelAttributes<M extends Model = Model, TCreationAttributes = a
   [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes>;
 };
 
-export type IJsonSchema = {
+export type IJsonSchema<ModelExtraOptions = any> = {
   columns: JsonModelAttributes;
   options?: ModelOptions;
+  extraOptions?: ModelExtraOptions;
 };
 
-export type IJsonSchemas = {
-  models: { [s: string]: IJsonSchema; };
-  associationModels: { [s: string]: IJsonSchema; };
+export type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any> = {
+  models: { [s: string]: IJsonSchema<ModelExtraOptions>; };
+  associationModels: { [s: string]: IJsonSchema<ModelExtraOptions>; };
+  extraOptions?: ExtraOptions;
 };

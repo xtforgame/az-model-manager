@@ -106,15 +106,17 @@ export declare type JsonModelAllAttributeType<M extends Model = Model, TCreation
 export declare type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
     [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes>;
 };
-export declare type IJsonSchema = {
+export declare type IJsonSchema<ModelExtraOptions = any> = {
     columns: JsonModelAttributes;
     options?: ModelOptions;
+    extraOptions?: ModelExtraOptions;
 };
-export declare type IJsonSchemas = {
+export declare type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any> = {
     models: {
-        [s: string]: IJsonSchema;
+        [s: string]: IJsonSchema<ModelExtraOptions>;
     };
     associationModels: {
-        [s: string]: IJsonSchema;
+        [s: string]: IJsonSchema<ModelExtraOptions>;
     };
+    extraOptions?: ExtraOptions;
 };
