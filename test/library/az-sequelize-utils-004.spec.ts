@@ -5,6 +5,7 @@ import sequelize, {
   Sequelize,
   HasManyAddAssociationMixin,
   HasManyCreateAssociationMixin,
+  DataTypes,
 } from 'sequelize';
 import parser from 'js-sql-parse';
 import AmmOrm, { AmmSchemas } from 'library/core';
@@ -57,6 +58,45 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 }
 
 // const { expect } = chai;
+
+const addColumnTest = async (ammMgr : AzRdbmsMgr) => {
+  const queryInterface = ammMgr.sequelizeDb.getQueryInterface();
+  await queryInterface.addColumn(
+    {
+      schema: 'public',
+      tableName: 'tbl_account_link',
+    },
+    'extra_user_id',
+    {
+      type: DataTypes.BIGINT,
+    },
+  );
+  await queryInterface.addConstraint('tbl_account_link', {
+    type: 'foreign key',
+    fields: ['extra_user_id'],
+    name: 'my_constraint_name',
+    references: {
+      table: 'tbl_user',
+      field: 'id'
+    },
+    onDelete: 'CASCADE', // 'SET NULL' for mn tables
+    onUpdate: 'CASCADE',
+  });
+  await queryInterface.addColumn(
+    {
+      schema: 'public',
+      tableName: 'tbl_account_link',
+    },
+    'extra_user_id2',
+    {
+      type: DataTypes.BIGINT,
+      references: {
+        model: 'tbl_user',
+        key: 'id',
+      },
+    },
+  );
+}
 
 describe('AmmOrm test 04', () => {
   describe('Basic', () => {
@@ -140,6 +180,7 @@ describe('AmmOrm test 04', () => {
       write(path.resolve(__dirname, 'models.tsx'), tsFile);
       const testResult = jsonSchemaX.toCoreSchemas();
       const amMgr = new AzModelManager(getConnectString(postgresUser));
+      await addColumnTest(ammMgr);
       return amMgr.reportDb();
     });
 
@@ -181,7 +222,6 @@ describe('AmmOrm test 04', () => {
       this.timeout(900000);
       const User = ammMgr.ammOrm.getSqlzModel('user');
       const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
-
       return ammMgr.sync()
       .then(() => ammMgr.sequelizeDb.transaction({
         isolationLevel: sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
@@ -235,7 +275,8 @@ describe('AmmOrm test 04', () => {
           transaction: t,
         })
           .then(result => t.commit()
-            .then(() => result)).catch(error => t.rollback())));
+            .then(() => result)).catch(error => t.rollback())))
+      .then(() => addColumnTest(ammMgr));
     });
   });
 });

@@ -60,6 +60,7 @@ export type RawSchemas = {
 export type RawSchemaType = 'model' | 'associationModel';
 
 export type ParsedTableInfo = {
+  isAssociationModel: boolean,
   primaryKey?: string,
 };
 
@@ -68,6 +69,9 @@ export type SchemasMetadata = {
     [s : string]: ParsedTableInfo;
   };
   associationModels: {
+    [s : string]: ParsedTableInfo;
+  };
+  allModels: {
     [s : string]: ParsedTableInfo;
   };
 };
@@ -105,7 +109,7 @@ export class JsonSchemasX {
 
   clear() {
     this.parsed = false;
-    this.schemasMetadata = { models: {}, associationModels: {} };
+    this.schemasMetadata = { models: {}, associationModels: {}, allModels: {} };
     this.schemas = {
       models: {},
       associationModels: {},
@@ -155,7 +159,7 @@ export class JsonSchemasX {
       tableType,
       models,
       (tableName, tableType, table) => {
-        parsedTables[tableName] = {};
+        parsedTables[tableName] = { isAssociationModel: tableType === 'associationModel' };
         table.options = getNormalizedModelOptions(tableName, table.options || {});
       },
       (tableName, tableType, table, columnName, column) => {
@@ -428,7 +432,10 @@ export class JsonSchemasX {
   parseSchemaFromDb(db : Db) {
     const dbSchema = db.schemas.get(this.dbSchemaName);
     const table = db.get('tbl_account_link') as Table;
-    return this.parseTableFromDb(table);
+    dbSchema.tables.forEach((table) => {
+      this.parseTableFromDb(table);
+    });
+    // return this.parseTableFromDb(table);
     // console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
     // const table = db.get('tbl_account_link') as Table;
     // return this.reportTable(table);
@@ -454,6 +461,16 @@ export class JsonSchemasX {
     // const columnTypeName = table.columns.get('owner_id').type.name;
     // const indexColumnNames = table.indexes.get('ix_mail').columns;
     const relatedTables = table.hasManyTables;
+    // console.log('============ table.name ============ :', table.name);
+    // table.m2mRelations.forEach((r) => {
+    //   console.log('=================== r ===================');
+    //   console.log('r.sourceTable.name :', r.sourceTable.name);
+    //   console.log('r.joinTable.name :', r.joinTable.name);
+    //   console.log('r.targetTable.name :', r.targetTable.name);
+    //   console.log('r.foreignKey :', r.foreignKey.columns[0].name);
+    //   console.log('=================== r ===================');
+    // });
+    // console.log('table.m2mRelations, table.m2oRelations :', table.m2mRelations, table.m2oRelations);
     console.log('relatedTables :', relatedTables);
   }
 
@@ -473,9 +490,16 @@ export class JsonSchemasX {
   reportIndex(index : Index) {
     // console.log('index.isPrimaryKey :', index.isPrimaryKey);
     if (index.isPrimaryKey) {
-      console.log('index.columnsAndExpressions :', index.columnsAndExpressions.map(col => typeof col === 'string' ? col : col.name).join(', '));
+      // console.log('index.columnsAndExpressions :', index.columnsAndExpressions.map(col => typeof col === 'string' ? col : col.name).join(', '));
     } else if (index.isUnique) {
-      console.log('index.partialIndexExpression :', index.partialIndexExpression);
+      // console.log('index.partialIndexExpression :', index.partialIndexExpression);
     }
+
+    // if (index.columnsAndExpressions) {
+    //   console.log('index.columnsAndExpressions :', index.columnsAndExpressions.map(col => typeof col === 'string' ? col : col.name).join(', '));
+    // }
+    // if (index.partialIndexExpression) {
+    //   console.log('index.partialIndexExpression :', index.partialIndexExpression);
+    // }
   }
 }
