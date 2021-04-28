@@ -1,7 +1,8 @@
-import { Model, ModelOptions } from 'sequelize';
+import { Model } from 'sequelize';
 import { Table, Column, Index, Db } from 'pg-structure';
 import { IJsonSchema, IJsonSchemas, JsonModelAllAttributeType } from './IJsonSchemas';
 import { AmmSchema, AmmSchemas, Overwrite, ModelAttributeColumnOptions } from '../../../core';
+import { ModelOptions } from '../../../core';
 export interface RawModelAttributeColumnOptions<M extends Model = Model> {
     type: [string, ...any[]];
 }
@@ -21,14 +22,21 @@ export declare type RawSchemas = {
     };
 };
 export declare type RawSchemaType = 'model' | 'associationModel';
+export declare type ParsedColumnInfo = {};
 export declare type ParsedTableInfo = {
+    isAssociationModel: boolean;
     primaryKey?: string;
+    modelOptions: ModelOptions;
+    columns: ParsedColumnInfo[];
 };
 export declare type SchemasMetadata = {
     models: {
         [s: string]: ParsedTableInfo;
     };
     associationModels: {
+        [s: string]: ParsedTableInfo;
+    };
+    allModels: {
         [s: string]: ParsedTableInfo;
     };
 };
@@ -59,6 +67,11 @@ export declare class JsonSchemasX {
     }, tableType: RawSchemaType, models: {
         [s: string]: IJsonSchema;
     }): Error | void;
+    static afterNormalizeRawSchemas(parsedTables: {
+        [s: string]: ParsedTableInfo;
+    }, tableType: RawSchemaType, models: {
+        [s: string]: IJsonSchema;
+    }, metadata: SchemasMetadata, schemas: IJsonSchemas): Error | void;
     static parseRawSchemas(schemasMetadata: SchemasMetadata, rawSchemas: IJsonSchemas, tableType: RawSchemaType, models: {
         [s: string]: IJsonSchema;
     }): Error | void;
@@ -68,6 +81,7 @@ export declare class JsonSchemasX {
         [s: string]: AmmSchema;
     }): (Error | void);
     normalizeRawSchemas(): Error | void;
+    afterNormalizeRawSchemas(): Error | void;
     parseRawSchemas(): Error | void;
     toCoreSchemas(): AmmSchemas | Error;
     buildModelTsFile(args?: {

@@ -11,6 +11,8 @@ var _liquidjs = require("liquidjs");
 
 var _appRootPath = _interopRequireDefault(require("app-root-path"));
 
+var _utils = require("../../../core/utils");
+
 var _typeConfigs = require("./typeConfigs");
 
 var _core = require("../../../core");
@@ -46,7 +48,8 @@ class JsonSchemasX {
     this.parsed = false;
     this.schemasMetadata = {
       models: {},
-      associationModels: {}
+      associationModels: {},
+      allModels: {}
     };
     this.schemas = {
       models: {},
@@ -86,8 +89,12 @@ class JsonSchemasX {
 
   static normalizeRawSchemas(parsedTables, tableType, models) {
     JsonSchemasX.forEachSchema(tableType, models, (tableName, tableType, table) => {
-      parsedTables[tableName] = {};
-      table.options = (0, _core.getNormalizedModelOptions)(tableName, table.options || {});
+      table.options = (0, _core.getNormalizedModelOptions)(tableName, tableType === 'associationModel' ? 'mn_' : 'tbl_', table.options || {});
+      parsedTables[tableName] = {
+        isAssociationModel: tableType === 'associationModel',
+        modelOptions: table.options,
+        columns: []
+      };
     }, (tableName, tableType, table, columnName, column) => {
       if (typeof column === 'string' || Array.isArray(column)) {
         column = {
@@ -137,6 +144,10 @@ class JsonSchemasX {
         return err;
       }
     });
+  }
+
+  static afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, schemas) {
+    JsonSchemasX.forEachSchema(tableType, models, (tableName, tableType, table) => {}, (tableName, tableType, table, columnName, column) => {});
   }
 
   static parseRawSchemas(schemasMetadata, rawSchemas, tableType, models) {
@@ -206,9 +217,27 @@ class JsonSchemasX {
     return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels);
   }
 
+  afterNormalizeRawSchemas() {
+    this.schemas.models = _objectSpread({}, this.rawSchemas.models);
+
+    if (this.rawSchemas.associationModels) {
+      this.schemas.associationModels = _objectSpread({}, this.rawSchemas.associationModels);
+    }
+
+    const err = JsonSchemasX.afterNormalizeRawSchemas(this.schemasMetadata.models, 'model', this.schemas.models, this.schemasMetadata, this.schemas);
+    if (err) return err;
+    return JsonSchemasX.afterNormalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels, this.schemasMetadata, this.schemas);
+  }
+
   parseRawSchemas() {
     this.parsed = false;
     let err = this.normalizeRawSchemas();
+
+    if (err) {
+      return err;
+    }
+
+    err = this.afterNormalizeRawSchemas();
 
     if (err) {
       return err;
@@ -309,6 +338,7 @@ class JsonSchemasX {
     };
 
     engine.plugin(function (Liquid) {
+      this.registerFilter('capitalizeFirstLetter', _utils.capitalizeFirstLetter);
       this.registerFilter('toTsTypeExpression', column => {
         return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpression(column);
       });
@@ -345,7 +375,9 @@ class JsonSchemasX {
   parseSchemaFromDb(db) {
     const dbSchema = db.schemas.get(this.dbSchemaName);
     const table = db.get('tbl_account_link');
-    return this.parseTableFromDb(table);
+    dbSchema.tables.forEach(table => {
+      this.parseTableFromDb(table);
+    });
   }
 
   parseTableFromDb(table) {
@@ -366,11 +398,7 @@ class JsonSchemasX {
   reportColumn(column) {}
 
   reportIndex(index) {
-    if (index.isPrimaryKey) {
-      console.log('index.columnsAndExpressions :', index.columnsAndExpressions.map(col => typeof col === 'string' ? col : col.name).join(', '));
-    } else if (index.isUnique) {
-      console.log('index.partialIndexExpression :', index.partialIndexExpression);
-    }
+    if (index.isPrimaryKey) {} else if (index.isUnique) {}
   }
 
 }

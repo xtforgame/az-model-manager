@@ -1,5 +1,5 @@
-// ============== start model: {{ name | capitalize }} ==============
-export type {{ name | capitalize }}CreationAttributes = {
+// ============== start model: {{ name | capitalizeFirstLetter }} ==============
+export type {{ name | capitalizeFirstLetter }}CreationAttributes = {
 {% for column in model.columns -%}
 {%- if column[1].autoIncrement -%}
 {%- else -%}
@@ -11,7 +11,7 @@ export type {{ name | capitalize }}CreationAttributes = {
 {%- endif -%}
 {%- endfor -%} };
 
-export type {{ name | capitalize }}Attributes = {
+export type {{ name | capitalizeFirstLetter }}Attributes = {
 {% for column in model.columns -%}
 {%- if column[1].autoIncrement -%}
 {% render 'column.liquid', name: column[0], column: column[1], optionMark: '' %}
@@ -24,7 +24,7 @@ export type {{ name | capitalize }}Attributes = {
 {%- endif -%}
 {%- endfor -%} };
 
-export type {{ name | capitalize }}I = {{ name | capitalize }}Attributes & {
+export type {{ name | capitalizeFirstLetter }}I = {{ name | capitalizeFirstLetter }}Attributes & {
 {% render 'timestamp-columns.liquid', model: model -%}
 
 {% for column in model.columns -%}
@@ -32,5 +32,5 @@ export type {{ name | capitalize }}I = {{ name | capitalize }}Attributes & {
 {% render 'associations.liquid', name: column[0], column: column[1] %}
 {% endif -%}
 {%- endfor -%} };
-// ============== end model: {{ name | capitalize }} ==============
+// ============== end model: {{ name | capitalizeFirstLetter }} ==============
 

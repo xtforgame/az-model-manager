@@ -58,7 +58,7 @@ const autoInclude = (ammOrm, modelName, values, inputInclude = undefined) => {
   return include;
 };
 
-const getNormalizedModelOptions = (modelName, options) => _sequelize.default.Utils.mergeDefaults({
+const getNormalizedModelOptions = (modelName, tablePrefix, options) => _sequelize.default.Utils.mergeDefaults({
   timestamps: true,
   paranoid: true,
   underscored: true,
@@ -68,7 +68,8 @@ const getNormalizedModelOptions = (modelName, options) => _sequelize.default.Uti
   name: {
     plural: _sequelize.default.Utils.pluralize(modelName),
     singular: _sequelize.default.Utils.singularize(modelName)
-  }
+  },
+  tableName: options.tableName || `${tablePrefix}${_sequelize.default.Utils.underscore(_sequelize.default.Utils.singularize(modelName))}`
 }, options);
 
 exports.getNormalizedModelOptions = getNormalizedModelOptions;
@@ -245,7 +246,7 @@ class AmmModel {
         columns[columnName] = column;
       }
     });
-    const sqlzOptions = getNormalizedModelOptions(modelName, options);
+    const sqlzOptions = getNormalizedModelOptions(modelName, this.tablePrefix, options);
     sqlzOptions.tableName = sqlzOptions.tableName || `${this.tablePrefix}${_sequelize.default.Utils.underscore(sqlzOptions.name.singular)}`;
     return {
       columns,

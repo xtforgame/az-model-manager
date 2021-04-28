@@ -2,7 +2,6 @@ import path from 'path';
 import fs from 'fs';
 import {
   Model,
-  ModelOptions,
 } from 'sequelize';
 import { Liquid } from 'liquidjs';
 import appRootPath from 'app-root-path';
@@ -12,7 +11,7 @@ import pgStructure, {
   Index,
   Db,
 } from 'pg-structure';
-
+import { capitalizeFirstLetter } from '../../../core/utils';
 import {
   IJsonSchema,
   IJsonSchemas,
@@ -33,6 +32,10 @@ import {
   ModelAttributeColumnOptions,
   getNormalizedModelOptions,
   BelongsToOptions,
+} from '../../../core';
+
+import {
+  ModelOptions,
 } from '../../../core';
 
 // =======================
@@ -59,9 +62,14 @@ export type RawSchemas = {
 
 export type RawSchemaType = 'model' | 'associationModel';
 
+export type ParsedColumnInfo = {
+};
+
 export type ParsedTableInfo = {
-  isAssociationModel: boolean,
-  primaryKey?: string,
+  isAssociationModel: boolean;
+  primaryKey?: string;
+  modelOptions: ModelOptions;
+  columns: ParsedColumnInfo[];
 };
 
 export type SchemasMetadata = {
@@ -159,8 +167,12 @@ export class JsonSchemasX {
       tableType,
       models,
       (tableName, tableType, table) => {
-        parsedTables[tableName] = { isAssociationModel: tableType === 'associationModel' };
-        table.options = getNormalizedModelOptions(tableName, table.options || {});
+        table.options = getNormalizedModelOptions(tableName, tableType === 'associationModel' ? 'mn_' : 'tbl_', table.options || {});
+        parsedTables[tableName] = {
+          isAssociationModel: tableType === 'associationModel',
+          modelOptions: table.options!,
+          columns: [],
+        };
       },
       (tableName, tableType, table, columnName, column) => {
         if (typeof column === 'string' || Array.isArray(column)) {
@@ -207,6 +219,27 @@ export class JsonSchemasX {
         if (err) {
           return err;
         }
+      },
+    );
+  }
+
+  static afterNormalizeRawSchemas(
+    parsedTables : {
+      [s : string]: ParsedTableInfo;
+    },
+    tableType : RawSchemaType,
+    models : { [s: string]: IJsonSchema; },
+    metadata: SchemasMetadata,
+    schemas: IJsonSchemas,
+  ) : Error | void {
+    JsonSchemasX.forEachSchema(
+      tableType,
+      models,
+      (tableName, tableType, table) => {
+        
+      },
+      (tableName, tableType, table, columnName, column) => {
+        
       },
     );
   }
@@ -300,9 +333,39 @@ export class JsonSchemasX {
     return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels);
   }
 
+  afterNormalizeRawSchemas() : Error | void {
+    this.schemas.models = {
+      ...<any>this.rawSchemas.models,
+    };
+
+    if (this.rawSchemas.associationModels) {
+      this.schemas.associationModels = {
+        ...<any>this.rawSchemas.associationModels,
+      };
+    }
+
+    const err = JsonSchemasX.afterNormalizeRawSchemas(
+      this.schemasMetadata.models,
+      'model',
+      this.schemas.models,
+      this.schemasMetadata,
+      this.schemas,
+    );
+    if (err) return err;
+    return JsonSchemasX.afterNormalizeRawSchemas(
+      this.schemasMetadata.associationModels,
+      'associationModel',
+      this.schemas.associationModels,
+      this.schemasMetadata,
+      this.schemas,
+    );
+  }
+
   parseRawSchemas() : Error | void {
     this.parsed = false;
     let err = this.normalizeRawSchemas();
+    if (err) { return err; }
+    err = this.afterNormalizeRawSchemas();
     if (err) { return err; }
     const { schemasMetadata, schemas } = this;
     err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
@@ -398,6 +461,7 @@ export class JsonSchemasX {
       return null;
     };
     engine.plugin(function (Liquid) {
+      this.registerFilter('capitalizeFirstLetter', capitalizeFirstLetter);
       this.registerFilter('toTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
         return typeConfigs[column.type[0]].getTsTypeExpression(column);
       });
