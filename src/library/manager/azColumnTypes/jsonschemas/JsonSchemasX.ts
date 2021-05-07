@@ -19,6 +19,7 @@ import {
   JsonModelAttributeInOptionsForm,
   NormalizedJsonModelAttributes,
   JsonModelAttributeColumn,
+  IJsonSchemasOptions,
 } from './IJsonSchemas';
 
 import {
@@ -58,6 +59,7 @@ export type RawSchema = {
 export type RawSchemas = {
   models: { [s: string]: RawSchema; };
   associationModels?: { [s: string]: RawSchema; };
+  options?: IJsonSchemasOptions;
 };
 
 export type RawSchemaType = 'model' | 'associationModel';
@@ -156,18 +158,45 @@ export class JsonSchemasX {
     }
   }
 
+  static beforeNormalizeRawSchemas(
+    metadata: SchemasMetadata,
+    schemas: IJsonSchemas,
+    rawSchemas: RawSchemas,
+  ) : Error | void {
+    if (!rawSchemas.options) {
+      rawSchemas.options = {};
+    }
+    if (!rawSchemas.options.model) {
+      rawSchemas.options.model = {};
+    }
+    if (!rawSchemas.options.model.tablePrefix) {
+      rawSchemas.options.model.tablePrefix = 'tbl_';
+    }
+
+    if (!rawSchemas.options.associationModel) {
+      rawSchemas.options.associationModel = {};
+    }
+    if (!rawSchemas.options.associationModel.tablePrefix) {
+      rawSchemas.options.associationModel.tablePrefix = 'mn_';
+    }
+
+    schemas.options = rawSchemas.options;
+  }
+
   static normalizeRawSchemas(
     parsedTables : {
       [s : string]: ParsedTableInfo;
     },
     tableType : RawSchemaType,
     models : { [s: string]: IJsonSchema; },
+    schemas: IJsonSchemas,
+    rawSchemas: RawSchemas,
   ) : Error | void {
     JsonSchemasX.forEachSchema(
       tableType,
       models,
       (tableName, tableType, table) => {
-        table.options = getNormalizedModelOptions(tableName, tableType === 'associationModel' ? 'mn_' : 'tbl_', table.options || {});
+        table.options = getNormalizedModelOptions(tableName, tableType === 'associationModel' ? (schemas.options?.associationModel?.tablePrefix!) : (schemas.options?.model?.tablePrefix!), table.options || {});
         parsedTables[tableName] = {
           isAssociationModel: tableType === 'associationModel',
           modelOptions: table.options!,
@@ -236,7 +265,7 @@ export class JsonSchemasX {
       tableType,
       models,
       (tableName, tableType, table) => {
-        
+        console.log('tableName :', tableName);
       },
       (tableName, tableType, table, columnName, column) => {
         
@@ -328,9 +357,27 @@ export class JsonSchemasX {
       };
     }
 
-    const err = JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.models, 'model', this.schemas.models);
+    let err = JsonSchemasX.beforeNormalizeRawSchemas(
+      this.schemasMetadata,
+      this.schemas,
+      this.rawSchemas,
+    );
     if (err) return err;
-    return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels);
+    err = JsonSchemasX.normalizeRawSchemas(
+      this.schemasMetadata.models,
+      'model',
+      this.schemas.models,
+      this.schemas,
+      this.rawSchemas,
+    );
+    if (err) return err;
+    return JsonSchemasX.normalizeRawSchemas(
+      this.schemasMetadata.associationModels,
+      'associationModel',
+      this.schemas.associationModels,
+      this.schemas,
+      this.rawSchemas,
+    );
   }
 
   afterNormalizeRawSchemas() : Error | void {
@@ -390,6 +437,10 @@ export class JsonSchemasX {
     // if (schemas.associationModels['userUserGroup']) {
     //   fs.writeFileSync('xxx.json', JSON.stringify(schemas, null, 2), { encoding: 'utf-8' });
     // }
+
+    this.rawSchemas.options
+
+    result.options = this.schemas.options;
 
     let err = JsonSchemasX.toCoreModels(
       schemasMetadata,

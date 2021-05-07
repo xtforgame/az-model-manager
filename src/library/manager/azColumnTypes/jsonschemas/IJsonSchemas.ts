@@ -35,6 +35,7 @@ import {
 
 import {
   AmmSchema,
+  AmmSchemasModelOptions,
   Overwrite,
 } from '../../../core';
 
@@ -215,8 +216,18 @@ export type IJsonSchema<ModelExtraOptions = any> = {
   extraOptions?: ModelExtraOptions;
 };
 
+export type IJsonSchemasModelOptions<ModelExtraOptions = any, ExtraOptions = any> = AmmSchemasModelOptions & {
+  tablePrefix?: string;
+};
+
+export type IJsonSchemasOptions<ModelExtraOptions = any, ExtraOptions = any> = {
+  model?: IJsonSchemasModelOptions<ModelExtraOptions, ExtraOptions>;
+  associationModel?: IJsonSchemasModelOptions<ModelExtraOptions, ExtraOptions>;
+};
+
 export type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any> = {
   models: { [s: string]: IJsonSchema<ModelExtraOptions>; };
   associationModels: { [s: string]: IJsonSchema<ModelExtraOptions>; };
+  options?: IJsonSchemasOptions<ModelExtraOptions, ExtraOptions>;
   extraOptions?: ExtraOptions;
 };

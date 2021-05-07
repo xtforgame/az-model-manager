@@ -32,7 +32,17 @@ export type AmmSchema = {
   options?: ModelOptions;
 };
 
+export type AmmSchemasModelOptions = {
+  tablePrefix?: string;
+};
+
+export type AmmSchemasOptions = {
+  model?: AmmSchemasModelOptions;
+  associationModel?: AmmSchemasModelOptions;
+};
+
 export type AmmSchemas = {
   models: { [s: string]: AmmSchema; };
   associationModels?: { [s: string]: AmmSchema; };
+  options?: AmmSchemasOptions;
 };
