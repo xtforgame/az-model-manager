@@ -83,6 +83,16 @@ function isFunction(object) {
   return object && getClass.call(object) === '[object Function]';
 }
 
+export function toMap<T>(
+  inArray : T[],
+  getId : (t: T) => any,
+) {
+  return inArray.reduce((prev, curr, index, array) => {
+    prev[getId(curr)] = curr;
+    return prev;
+  }, {} as {[s: string] : T});
+}
+
 const toCamel = str => str.replace(/_([a-z])/g, g => g[1].toUpperCase());
 const toUnderscore = str => str.replace(/([A-Z])/g, g => `_${g.toLowerCase()}`);
 const capitalizeFirstLetter = str => (str.charAt(0).toUpperCase() + str.slice(1));

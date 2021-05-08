@@ -12,6 +12,7 @@ import AmmOrm, { AmmSchemas } from 'library/core';
 import AzModelManager, { JsonSchemasX } from 'library/manager';
 import { Overwrite, ExtendedModel } from 'library';
 import getTestSchema from 'library/manager/getTestSchema';
+import getTestSchema2 from 'library/manager/getTestSchema2';
 import fs from 'fs';
 import path from 'path';
 import getLogFileNamefrom from '../test-utils/getLogFileName';
@@ -182,6 +183,15 @@ describe('AmmOrm test 05', () => {
       const testResult = jsonSchemaX.toCoreSchemas();
       const amMgr = new AzModelManager(getConnectString(postgresUser));
       await addColumnTest(ammMgr);
+      // const report = await amMgr.reportDb();
+      const pgStructureDb = await amMgr.getPgStructureDb();
+
+      console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
+      const jsonSchemaX2 = new JsonSchemasX('public', <any>getTestSchema2());
+      jsonSchemaX2.parseRawSchemas();
+      jsonSchemaX2.toCoreSchemas();
+      const compareResult = jsonSchemaX2.compareDb(pgStructureDb);
+      console.log('compareResult :', compareResult);
       // return amMgr.reportDb();
     });
   });

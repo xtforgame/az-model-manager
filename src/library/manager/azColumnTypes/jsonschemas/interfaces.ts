@@ -70,6 +70,7 @@ export type ParsedColumnInfo = JsonModelAttributeInOptionsForm & {
 };
 
 export type ParsedTableInfo = {
+  tableNameInDb?: string;
   isAssociationModel: boolean;
   primaryKey?: string;
   modelOptions: ModelOptions;

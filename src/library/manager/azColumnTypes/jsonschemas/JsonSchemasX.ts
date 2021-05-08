@@ -11,7 +11,7 @@ import pgStructure, {
   Index,
   Db,
 } from 'pg-structure';
-import { capitalizeFirstLetter } from '../../../core/utils';
+import { capitalizeFirstLetter, toMap } from '../../../core/utils';
 import {
   IJsonSchema,
   IJsonSchemas,
@@ -145,7 +145,7 @@ export class JsonSchemasX {
       };
     }
 
-    const err = afterNormalizeRawSchemas(
+    let err = afterNormalizeRawSchemas(
       this.schemasMetadata.models,
       'model',
       this.schemas.models,
@@ -153,13 +153,19 @@ export class JsonSchemasX {
       this.schemas,
     );
     if (err) return err;
-    return afterNormalizeRawSchemas(
+    err = afterNormalizeRawSchemas(
       this.schemasMetadata.associationModels,
       'associationModel',
       this.schemas.associationModels,
       this.schemasMetadata,
       this.schemas,
     );
+
+    if (err) return err;
+    this.schemasMetadata.allModels = {
+      ...this.schemasMetadata.models,
+      ...this.schemasMetadata.associationModels,
+    };
   }
 
   parseRawSchemas() : Error | void {
@@ -261,12 +267,43 @@ export class JsonSchemasX {
 
   // ========================
 
+  compareDb(db : Db) {
+    const dbSchema = db.schemas.get(this.dbSchemaName);
+    const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
+    const missedTables : string[] = [];
+    const missedColumn : string[] = [];
+    dbSchema.tables.forEach((table) => {
+      // console.log('table, columns :', table, columns);
+      const model = allModelMetadatas.find(m => m.modelOptions.tableName! === table.name);
+      if (!model) {
+        missedTables.push(table.name);
+        return ;
+      }
+      for (let index = 0; index < table.columns.length; index++) {
+        const column = table.columns[index];
+        const modelColumns = Object.values(model.columns);
+        const modelColumn = modelColumns.find(c => c.columnNameInDb! === column.name);
+        if (!modelColumn && column.name !== 'created_at' && column.name !== 'updated_at' && column.name !== 'deleted_at' ) {
+          missedColumn.push(`${table.name}.${column.name}`);
+        }
+      }
+      // console.log('allModelMetadatas :', allModelMetadatas);
+    });
+    return {
+      missedTables,
+      missedColumn,
+    };
+  }
+
+  // ========================
+
   parseSchemaFromDb(db : Db) {
     const dbSchema = db.schemas.get(this.dbSchemaName);
-    const table = db.get('tbl_account_link') as Table;
-    dbSchema.tables.forEach((table) => {
-      this.parseTableFromDb(table);
-    });
+    // const table = db.get('tbl_account_link') as Table;
+    return {
+      dbSchema,
+      tables: toMap(dbSchema.tables.map(table => this.parseTableFromDb(table)), ({ table }) => table.name),
+    };
     // return this.parseTableFromDb(table);
     // console.log('db.schemas.get("public") :', db.schemas.get('public').sequences);
     // const table = db.get('tbl_account_link') as Table;
@@ -279,7 +316,7 @@ export class JsonSchemasX {
       this.reportColumn(c);
       return c.name;
     });
-    console.log('columnNames :', columnNames);
+    // console.log('columnNames :', columnNames);
     // const constraintNames = table.constraints.map((c) => {
     //   console.log('c :', c);
     //   return c.name;
@@ -289,7 +326,7 @@ export class JsonSchemasX {
       this.reportIndex(i);
       return i.name;
     });
-    console.log('indexNames :', indexNames);
+    // console.log('indexNames :', indexNames);
     // const columnTypeName = table.columns.get('owner_id').type.name;
     // const indexColumnNames = table.indexes.get('ix_mail').columns;
     const relatedTables = table.hasManyTables;
@@ -303,7 +340,12 @@ export class JsonSchemasX {
     //   console.log('=================== r ===================');
     // });
     // console.log('table.m2mRelations, table.m2oRelations :', table.m2mRelations, table.m2oRelations);
-    console.log('relatedTables :', relatedTables);
+    // console.log('relatedTables :', relatedTables);
+    return {
+      table,
+      columns: toMap(table.columns, column => column.name),
+      indexes: toMap(table.indexes, index => index.name),
+    };
   }
 
   reportColumn(column : Column) {

@@ -15,12 +15,19 @@ export default class AzModelManager {
     this.connectString = connectString;
   }
 
+  async getPgStructureDb() {
+    const r = await az_pglib.create_connection(this.connectString);
+    const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
+    await r.client.end();
+    return db;
+  }
+
   async reportDb() {
     const r = await az_pglib.create_connection(this.connectString);
     const db = await pgStructure(r.client, { includeSchemas: ['public'], keepConnection: true });
     await r.client.end();
     const jsonSchemasX = new JsonSchemasX('public', <any>{});
-    jsonSchemasX.parseSchemaFromDb(db);
+    return jsonSchemasX.parseSchemaFromDb(db);
   }
 
   // =============
