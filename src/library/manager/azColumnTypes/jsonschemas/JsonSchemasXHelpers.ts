@@ -238,9 +238,14 @@ export function afterNormalizeRawSchemas(
     models,
     (tableName, tableType, table) => {
       const columns = parsedTables[tableName].columns!;
+      console.log('====== tableName :', tableName);
       Object.keys(columns).forEach((k) => {
+        
         const c = columns[k];
-        console.log('c.type[0] :', c.type[0]);
+        const fk = getForeignKey(c);
+        if (fk) {
+          console.log('fk :', fk);
+        }
       })
     },
     (tableName, tableType, table, columnName, column) => {
