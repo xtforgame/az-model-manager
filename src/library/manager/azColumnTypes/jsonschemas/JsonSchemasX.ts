@@ -27,78 +27,46 @@ import {
 } from './typeConfigs';
 
 import {
+  RawModelAttributeColumnOptions,
+  RawModelAttributes,
+  RawSchema,
+  RawSchemas,
+  RawSchemaType,
+  ParsedColumnInfo,
+  ParsedTableInfo,
+  SchemasMetadata,
+  NormalizeJsonFuncArgs,
+  ParseJsonFuncArgs,
+} from './interfaces';
+
+import {
   AmmSchema,
   AmmSchemas,
   Overwrite,
   ModelAttributeColumnOptions,
   getNormalizedModelOptions,
   BelongsToOptions,
+  ColumnExtraOptions,
 } from '../../../core';
 
 import {
   ModelOptions,
 } from '../../../core';
 
+import {
+  getForeignKey,
+  getTargetKey,
+
+  beforeNormalizeRawSchemas,
+  normalizeRawSchemas,
+  afterNormalizeRawSchemas,
+  parseRawSchemas,
+  toCoreModels,
+} from './JsonSchemasXHelpers';
+
 // =======================
 
 const appRoot = appRootPath.resolve('./');
-
-export interface RawModelAttributeColumnOptions<M extends Model = Model> {
-  type : [string, ...any[]];
-}
-
-export type RawModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-  [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, RawModelAttributeColumnOptions<M>>;
-};
-
-export type RawSchema = {
-  columns: RawModelAttributes;
-  options?: ModelOptions;
-};
-
-export type RawSchemas = {
-  models: { [s: string]: RawSchema; };
-  associationModels?: { [s: string]: RawSchema; };
-  options?: IJsonSchemasOptions;
-};
-
-export type RawSchemaType = 'model' | 'associationModel';
-
-export type ParsedColumnInfo = {
-};
-
-export type ParsedTableInfo = {
-  isAssociationModel: boolean;
-  primaryKey?: string;
-  modelOptions: ModelOptions;
-  columns: ParsedColumnInfo[];
-};
-
-export type SchemasMetadata = {
-  models: {
-    [s : string]: ParsedTableInfo;
-  };
-  associationModels: {
-    [s : string]: ParsedTableInfo;
-  };
-  allModels: {
-    [s : string]: ParsedTableInfo;
-  };
-};
-
-export type NormalizeJsonFuncArgs = {
-  table : RawSchema;
-  tableType : RawSchemaType;
-  tableName : string;
-  column : any;
-  columnName : string;
-};
-
-export type ParseJsonFuncArgs = NormalizeJsonFuncArgs & {
-  schemasMetadata: SchemasMetadata;
-
-  schemas : RawSchemas;
-};
 
 // =======================
 
@@ -126,220 +94,6 @@ export class JsonSchemasX {
     };
   }
 
-  static forEachSchema<ColumnType = JsonModelAllAttributeType>(
-    tableType : RawSchemaType,
-    models : { [s: string]: IJsonSchema; },
-    modelCb : ((tableName : string, tableType : RawSchemaType, jsonSchema : IJsonSchema) => Error | void) | null,
-    columnCb : ((
-      tableName : string, tableType : RawSchemaType, jsonSchema : IJsonSchema,
-      columnName : string, column : ColumnType,
-    ) => Error | void) | null,
-  ) {
-    const modelKeys = Object.keys(models);
-    for (let i = 0; i < modelKeys.length; i++) {
-      const tableName = modelKeys[i];
-      const table = models[tableName];
-      let err : void | Error;
-      if (modelCb) {
-        modelCb(tableName, tableType, table);
-      }
-      if (err) return err;
-      if (!columnCb) {
-        continue;
-      }
-      const rawColumns = table.columns;
-      const rawColumnKeys = Object.keys(rawColumns);
-      for (let j = 0; j < rawColumnKeys.length; j++) {
-        const columnName = rawColumnKeys[j];
-        const column = rawColumns[columnName];
-        err = columnCb(tableName, tableType, table, columnName, <any>column)
-        if (err) return err;
-      }
-    }
-  }
-
-  static beforeNormalizeRawSchemas(
-    metadata: SchemasMetadata,
-    schemas: IJsonSchemas,
-    rawSchemas: RawSchemas,
-  ) : Error | void {
-    if (!rawSchemas.options) {
-      rawSchemas.options = {};
-    }
-    if (!rawSchemas.options.model) {
-      rawSchemas.options.model = {};
-    }
-    if (!rawSchemas.options.model.tablePrefix) {
-      rawSchemas.options.model.tablePrefix = 'tbl_';
-    }
-
-    if (!rawSchemas.options.associationModel) {
-      rawSchemas.options.associationModel = {};
-    }
-    if (!rawSchemas.options.associationModel.tablePrefix) {
-      rawSchemas.options.associationModel.tablePrefix = 'mn_';
-    }
-
-    schemas.options = rawSchemas.options;
-  }
-
-  static normalizeRawSchemas(
-    parsedTables : {
-      [s : string]: ParsedTableInfo;
-    },
-    tableType : RawSchemaType,
-    models : { [s: string]: IJsonSchema; },
-    schemas: IJsonSchemas,
-    rawSchemas: RawSchemas,
-  ) : Error | void {
-    JsonSchemasX.forEachSchema(
-      tableType,
-      models,
-      (tableName, tableType, table) => {
-        table.options = getNormalizedModelOptions(tableName, tableType === 'associationModel' ? (schemas.options?.associationModel?.tablePrefix!) : (schemas.options?.model?.tablePrefix!), table.options || {});
-        parsedTables[tableName] = {
-          isAssociationModel: tableType === 'associationModel',
-          modelOptions: table.options!,
-          columns: [],
-        };
-      },
-      (tableName, tableType, table, columnName, column) => {
-        if (typeof column === 'string' || Array.isArray(column)) {
-          column = {
-            type: <any>column,
-          };
-        }
-        table.columns[columnName] = column;
-        if (!column.type) {
-          return Error(`no type name: table(${tableName}), column(${columnName})`);
-        }
-        if (typeof column.type === 'string') {
-          column.type = <any>[column.type];
-        }
-        column.extraOptions = column.extraOptions || {};
-        if (column.primaryKey) {
-          parsedTables[tableName].primaryKey = columnName;
-        }
-        if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
-          return Error(`bad type name: table(${tableName}), column(${columnName})`);
-        }
-        const typeName = column.type[0];
-        const typeConfig = typeConfigs[typeName];
-        if (!typeConfig) {
-          return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
-        }
-      },
-    );
-
-    JsonSchemasX.forEachSchema<JsonModelAttributeInOptionsForm>(
-      tableType,
-      models,
-      null,
-      (tableName, tableType, table, columnName, column) => {
-        const typeName = column.type[0];
-        const typeConfig = typeConfigs[typeName];
-        const err = typeConfig.normalize({
-          table: <any>table,
-          tableType,
-          tableName,
-          column,
-          columnName,
-        });
-        if (err) {
-          return err;
-        }
-      },
-    );
-  }
-
-  static afterNormalizeRawSchemas(
-    parsedTables : {
-      [s : string]: ParsedTableInfo;
-    },
-    tableType : RawSchemaType,
-    models : { [s: string]: IJsonSchema; },
-    metadata: SchemasMetadata,
-    schemas: IJsonSchemas,
-  ) : Error | void {
-    JsonSchemasX.forEachSchema(
-      tableType,
-      models,
-      (tableName, tableType, table) => {
-        console.log('tableName :', tableName);
-      },
-      (tableName, tableType, table, columnName, column) => {
-        
-      },
-    );
-  }
-
-  static parseRawSchemas(
-    schemasMetadata : SchemasMetadata,
-    rawSchemas : IJsonSchemas,
-    tableType : RawSchemaType,
-    models : { [s: string]: IJsonSchema; },
-  ) : Error | void {
-    JsonSchemasX.forEachSchema<JsonModelAttributeInOptionsForm>(
-      tableType,
-      models,
-      null,
-      (tableName, tableType, table, columnName, column) => {
-        const typeName = column.type[0];
-        const typeConfig = typeConfigs[typeName];
-        const result = typeConfig.parse({
-          schemasMetadata,
-          schemas: <any>rawSchemas,
-          table: <any>table,
-          tableType,
-          tableName,
-          column,
-          columnName,
-        });
-        if (result instanceof Error) {
-          return result;
-        }
-        table.columns[columnName] = result;
-      },
-    );
-  }
-
-  static toCoreModels(
-    schemasMetadata : SchemasMetadata,
-    rawSchemas : IJsonSchemas,
-    tableType : RawSchemaType,
-    models : { [s: string]: IJsonSchema; },
-    resultModels: { [s: string]: AmmSchema; },
-  ) : (Error | void) {
-
-    JsonSchemasX.forEachSchema<JsonModelAttributeInOptionsForm>(
-      tableType,
-      models,
-      (tableName, tableType, table) => {
-        resultModels[tableName] = {
-          columns: {},
-          options: table.options,
-        };
-      },
-      (tableName, tableType, table, columnName, column) => {
-        const typeName = column.type[0];
-        const typeConfig = typeConfigs[typeName];
-        const parseResult = typeConfig.toCoreColumn({
-          schemasMetadata,
-          schemas: <any>rawSchemas,
-          table: <any>table,
-          tableType: 'associationModel',
-          tableName,
-          column,
-          columnName,
-        });
-        if (parseResult instanceof Error) {
-          return Error(`parse type error: table(${tableName}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
-        }
-        resultModels[tableName].columns[columnName] = parseResult;
-      },
-    );
-  }
-
   normalizeRawSchemas() : Error | void {
     this.clear();
 
@@ -357,13 +111,13 @@ export class JsonSchemasX {
       };
     }
 
-    let err = JsonSchemasX.beforeNormalizeRawSchemas(
+    let err = beforeNormalizeRawSchemas(
       this.schemasMetadata,
       this.schemas,
       this.rawSchemas,
     );
     if (err) return err;
-    err = JsonSchemasX.normalizeRawSchemas(
+    err = normalizeRawSchemas(
       this.schemasMetadata.models,
       'model',
       this.schemas.models,
@@ -371,7 +125,7 @@ export class JsonSchemasX {
       this.rawSchemas,
     );
     if (err) return err;
-    return JsonSchemasX.normalizeRawSchemas(
+    return normalizeRawSchemas(
       this.schemasMetadata.associationModels,
       'associationModel',
       this.schemas.associationModels,
@@ -391,7 +145,7 @@ export class JsonSchemasX {
       };
     }
 
-    const err = JsonSchemasX.afterNormalizeRawSchemas(
+    const err = afterNormalizeRawSchemas(
       this.schemasMetadata.models,
       'model',
       this.schemas.models,
@@ -399,7 +153,7 @@ export class JsonSchemasX {
       this.schemas,
     );
     if (err) return err;
-    return JsonSchemasX.afterNormalizeRawSchemas(
+    return afterNormalizeRawSchemas(
       this.schemasMetadata.associationModels,
       'associationModel',
       this.schemas.associationModels,
@@ -415,9 +169,9 @@ export class JsonSchemasX {
     err = this.afterNormalizeRawSchemas();
     if (err) { return err; }
     const { schemasMetadata, schemas } = this;
-    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
+    err = parseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
     if (err) return err;
-    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
+    err = parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     this.parsed = false;
     return err;
   }
@@ -442,7 +196,7 @@ export class JsonSchemasX {
 
     result.options = this.schemas.options;
 
-    let err = JsonSchemasX.toCoreModels(
+    let err = toCoreModels(
       schemasMetadata,
       schemas,
       'model',
@@ -451,7 +205,7 @@ export class JsonSchemasX {
     );
     if (err) { return err; }
 
-    err = JsonSchemasX.toCoreModels(
+    err = toCoreModels(
       schemasMetadata,
       schemas,
       'associationModel',
@@ -474,43 +228,6 @@ export class JsonSchemasX {
     const engine = new Liquid({
       root: args.liquidRoot || path.join(appRoot, 'liquids'),
     });
-    const getForeignKey = (column : JsonModelAttributeInOptionsForm) => {
-      const {
-        associationType,
-      } = typeConfigs[column.type[0]];
-      if (!associationType) {
-        return null;
-      }
-      if (associationType === 'belongsTo') {
-        // console.log('column.type[1] :', column.type[1]);
-        const option = column.type[2] as BelongsToOptions;
-        // console.log('option :', option);
-        if (option.foreignKey) {
-          if (typeof option.foreignKey === 'string') {
-            return option.foreignKey;
-          }
-          return option.foreignKey.name!;
-        }
-      }
-      return null;
-    };
-    const getTargetKey = (column : JsonModelAttributeInOptionsForm) => {
-      const {
-        associationType,
-      } = typeConfigs[column.type[0]];
-      if (!associationType) {
-        return null;
-      }
-      if (associationType === 'belongsTo') {
-        // console.log('column.type[1] :', column.type[1]);
-        const option = column.type[2] as BelongsToOptions;
-        // console.log('option :', option);
-        if (option.targetKey) {
-          return option.targetKey;
-        }
-      }
-      return null;
-    };
     engine.plugin(function (Liquid) {
       this.registerFilter('capitalizeFirstLetter', capitalizeFirstLetter);
       this.registerFilter('toTsTypeExpression', (column : JsonModelAttributeInOptionsForm) => {
