@@ -65,6 +65,8 @@ export type RawSchemas = {
 export type RawSchemaType = 'model' | 'associationModel';
 
 export type ParsedColumnInfo = JsonModelAttributeInOptionsForm & {
+  columnNameInDb?: string;
+  isForeignKey?: boolean;
 };
 
 export type ParsedTableInfo = {

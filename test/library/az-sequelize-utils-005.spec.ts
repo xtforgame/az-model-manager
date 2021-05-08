@@ -33,6 +33,7 @@ import {
 
 import {
   getModelDefs04,
+  getModelDefs05,
 } from '../test-data/az-sequelize-utils-testdata/fromAzModelSchemas';
 
 import * as models from './models';
@@ -103,7 +104,7 @@ describe('AmmOrm test 05', () => {
     let ammMgr : AzRdbmsMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
       .then(() => {
-        const schemas = getModelDefs04();
+        const schemas = getModelDefs05();
         if (schemas instanceof Error) {
           return Promise.reject(schemas);
         }

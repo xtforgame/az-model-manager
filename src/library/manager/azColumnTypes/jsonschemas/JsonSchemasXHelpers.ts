@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import {
+import sequelize, {
   Model,
 } from 'sequelize';
 import { Liquid } from 'liquidjs';
@@ -53,6 +53,15 @@ import {
   ParseJsonFuncArgs,
 } from './interfaces';
 
+export const getRealColumnName = (columnName: string, column : JsonModelAttributeInOptionsForm) => {
+  const {
+    associationType,
+  } = typeConfigs[column.type[0]];
+  if (associationType) {
+    return null;
+  }
+  return (<any>sequelize.Utils).underscore(columnName);
+};
 
 export const getForeignKey = (column : JsonModelAttributeInOptionsForm) => {
   const {
@@ -238,13 +247,18 @@ export function afterNormalizeRawSchemas(
     models,
     (tableName, tableType, table) => {
       const columns = parsedTables[tableName].columns!;
-      console.log('====== tableName :', tableName);
       Object.keys(columns).forEach((k) => {
-        
         const c = columns[k];
-        const fk = getForeignKey(c);
-        if (fk) {
-          console.log('fk :', fk);
+        const columnNameInDb = getRealColumnName(k, c);
+        if (columnNameInDb) {
+          c.columnNameInDb = columnNameInDb;
+          c.isForeignKey = false;
+        } else {
+          const fk = getForeignKey(c);
+          if (fk) {
+            c.columnNameInDb = fk;
+            c.isForeignKey = true;
+          }
         }
       })
     },
