@@ -22,6 +22,10 @@ export declare class JsonSchemasX {
         missedTables: string[];
         missedColumn: string[];
     };
+    compareDb2(db: Db): {
+        missedTables: string[];
+        missedColumn: string[];
+    };
     parseSchemaFromDb(db: Db): {
         dbSchema: import("pg-structure").Schema;
         tables: {

@@ -196,6 +196,41 @@ class JsonSchemasX {
     const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
     const missedTables = [];
     const missedColumn = [];
+    allModelMetadatas.forEach(model => {
+      const table = dbSchema.tables.find(t => t.name === model.modelOptions.tableName);
+
+      if (!table) {
+        missedTables.push(model.modelOptions.tableName);
+        return;
+      }
+
+      Object.values(model.columns).forEach(c => {
+        if (!c.columnNameInDb) {
+          return;
+        }
+
+        if (table.name === 'tbl_organization') {
+          console.log('c.columnNameInDb! :', c.columnNameInDb);
+        }
+
+        const column = table.columns.find(col => col.name === c.columnNameInDb);
+
+        if (!column) {
+          missedColumn.push(`${table.name}.${c.columnNameInDb}`);
+        }
+      });
+    });
+    return {
+      missedTables,
+      missedColumn
+    };
+  }
+
+  compareDb2(db) {
+    const dbSchema = db.schemas.get(this.dbSchemaName);
+    const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
+    const missedTables = [];
+    const missedColumn = [];
     dbSchema.tables.forEach(table => {
       const model = allModelMetadatas.find(m => m.modelOptions.tableName === table.name);
 

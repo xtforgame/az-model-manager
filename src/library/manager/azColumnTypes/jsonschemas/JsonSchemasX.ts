@@ -272,6 +272,55 @@ export class JsonSchemasX {
     const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
     const missedTables : string[] = [];
     const missedColumn : string[] = [];
+    allModelMetadatas.forEach((model) => {
+      const table = dbSchema.tables.find(t => t.name === model.modelOptions.tableName!);
+      if (!table) {
+        missedTables.push(model.modelOptions.tableName!);
+        return ;
+      }
+      Object.values(model.columns).forEach((c) => {
+        if (!c.columnNameInDb!) {
+          return;
+        }
+        if (table.name === 'tbl_organization') {
+          console.log('c.columnNameInDb! :', c.columnNameInDb!);
+        }
+        const column = table.columns.find(col => col.name === c.columnNameInDb!);
+        if (!column) {
+          missedColumn.push(`${table.name}.${c.columnNameInDb!}`);
+        }
+      });
+    });
+    // dbSchema.tables.forEach((table) => {
+    //   // console.log('table, columns :', table, columns);
+    //   const model = allModelMetadatas.find(m => m.modelOptions.tableName! === table.name);
+    //   if (!model) {
+    //     missedTables.push(table.name);
+    //     return ;
+    //   }
+    //   for (let index = 0; index < table.columns.length; index++) {
+    //     const column = table.columns[index];
+    //     const modelColumns = Object.values(model.columns);
+    //     const modelColumn = modelColumns.find(c => c.columnNameInDb! === column.name);
+    //     if (!modelColumn && column.name !== 'created_at' && column.name !== 'updated_at' && column.name !== 'deleted_at' ) {
+    //       missedColumn.push(`${table.name}.${column.name}`);
+    //     }
+    //   }
+    //   // console.log('allModelMetadatas :', allModelMetadatas);
+    // });
+    return {
+      missedTables,
+      missedColumn,
+    };
+  }
+
+  // ========================
+
+  compareDb2(db : Db) {
+    const dbSchema = db.schemas.get(this.dbSchemaName);
+    const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
+    const missedTables : string[] = [];
+    const missedColumn : string[] = [];
     dbSchema.tables.forEach((table) => {
       // console.log('table, columns :', table, columns);
       const model = allModelMetadatas.find(m => m.modelOptions.tableName! === table.name);

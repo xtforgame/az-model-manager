@@ -105,7 +105,7 @@ describe('AmmOrm test 05', () => {
     let ammMgr : AzRdbmsMgr = null;
     beforeEach(() => resetTestDbAndTestRole()
       .then(() => {
-        const schemas = getModelDefs05();
+        const schemas = getModelDefs04();
         if (schemas instanceof Error) {
           return Promise.reject(schemas);
         }
@@ -187,7 +187,7 @@ describe('AmmOrm test 05', () => {
       const pgStructureDb = await amMgr.getPgStructureDb();
 
       console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
-      const jsonSchemaX2 = new JsonSchemasX('public', <any>getTestSchema());
+      const jsonSchemaX2 = new JsonSchemasX('public', <any>getTestSchema2());
       jsonSchemaX2.parseRawSchemas();
       jsonSchemaX2.toCoreSchemas();
       const compareResult = jsonSchemaX2.compareDb(pgStructureDb);
