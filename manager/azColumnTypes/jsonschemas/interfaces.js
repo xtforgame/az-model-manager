@@ -16,16 +16,3 @@ Object.keys(_IJsonSchemas).forEach(function (key) {
     }
   });
 });
-
-var _JsonSchemasX = require("./JsonSchemasX");
-
-Object.keys(_JsonSchemasX).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _JsonSchemasX[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _JsonSchemasX[key];
-    }
-  });
-});

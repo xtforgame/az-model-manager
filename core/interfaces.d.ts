@@ -20,6 +20,13 @@ export declare type AmmSchema = {
     columns: ModelAttributes;
     options?: ModelOptions;
 };
+export declare type AmmSchemasModelOptions = {
+    tablePrefix?: string;
+};
+export declare type AmmSchemasOptions = {
+    model?: AmmSchemasModelOptions;
+    associationModel?: AmmSchemasModelOptions;
+};
 export declare type AmmSchemas = {
     models: {
         [s: string]: AmmSchema;
@@ -27,4 +34,5 @@ export declare type AmmSchemas = {
     associationModels?: {
         [s: string]: AmmSchema;
     };
+    options?: AmmSchemasOptions;
 };

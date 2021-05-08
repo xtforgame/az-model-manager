@@ -24,6 +24,9 @@ declare const defaultCallbackPromise: ({ result, error }: {
     error: any;
 }) => Promise<any>;
 declare function isFunction(object: any): any;
+export declare function toMap<T>(inArray: T[], getId: (t: T) => any): {
+    [s: string]: T;
+};
 declare const toCamel: (str: any) => any;
 declare const toUnderscore: (str: any) => any;
 declare const capitalizeFirstLetter: (str: any) => any;

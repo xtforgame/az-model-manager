@@ -10,8 +10,8 @@ var _AmmModel = _interopRequireDefault(require("./AmmModel"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class AssociationModel extends _AmmModel.default {
-  constructor(ammOrm, modelName, tableDefine) {
-    super(ammOrm, modelName, tableDefine, 'mn_');
+  constructor(ammOrm, modelName, tableDefine, tablePrefix = 'mn_') {
+    super(ammOrm, modelName, tableDefine, tablePrefix);
   }
 
 }

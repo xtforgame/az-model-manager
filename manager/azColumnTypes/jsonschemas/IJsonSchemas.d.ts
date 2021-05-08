@@ -1,7 +1,7 @@
 import { Model } from 'sequelize';
 import { ModelOptions, ModelAttributeColumnOptions } from '../../../core/utils';
 import { AssociationTypeHasOne, AssociationTypeHasMany, AssociationTypeBelongsTo, AssociationTypeBelongsToMany, HasOneOptions, HasManyOptions, BelongsToOptions, BelongsToManyOptions, AssociationColumnExtraOption } from '../../../core/columnTypes';
-import { Overwrite } from '../../../core';
+import { AmmSchemasModelOptions, Overwrite } from '../../../core';
 export declare type JsonModelAttributeHasOne = [
     AssociationTypeHasOne,
     string,
@@ -111,6 +111,13 @@ export declare type IJsonSchema<ModelExtraOptions = any> = {
     options?: ModelOptions;
     extraOptions?: ModelExtraOptions;
 };
+export declare type IJsonSchemasModelOptions<ModelExtraOptions = any, ExtraOptions = any> = AmmSchemasModelOptions & {
+    tablePrefix?: string;
+};
+export declare type IJsonSchemasOptions<ModelExtraOptions = any, ExtraOptions = any> = {
+    model?: IJsonSchemasModelOptions<ModelExtraOptions, ExtraOptions>;
+    associationModel?: IJsonSchemasModelOptions<ModelExtraOptions, ExtraOptions>;
+};
 export declare type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any> = {
     models: {
         [s: string]: IJsonSchema<ModelExtraOptions>;
@@ -118,5 +125,6 @@ export declare type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any> = 
     associationModels: {
         [s: string]: IJsonSchema<ModelExtraOptions>;
     };
+    options?: IJsonSchemasOptions<ModelExtraOptions, ExtraOptions>;
     extraOptions?: ExtraOptions;
 };

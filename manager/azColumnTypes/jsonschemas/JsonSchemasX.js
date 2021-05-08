@@ -15,7 +15,7 @@ var _utils = require("../../../core/utils");
 
 var _typeConfigs = require("./typeConfigs");
 
-var _core = require("../../../core");
+var _JsonSchemasXHelpers = require("./JsonSchemasXHelpers");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -57,148 +57,6 @@ class JsonSchemasX {
     };
   }
 
-  static forEachSchema(tableType, models, modelCb, columnCb) {
-    const modelKeys = Object.keys(models);
-
-    for (let i = 0; i < modelKeys.length; i++) {
-      const tableName = modelKeys[i];
-      const table = models[tableName];
-      let err;
-
-      if (modelCb) {
-        modelCb(tableName, tableType, table);
-      }
-
-      if (err) return err;
-
-      if (!columnCb) {
-        continue;
-      }
-
-      const rawColumns = table.columns;
-      const rawColumnKeys = Object.keys(rawColumns);
-
-      for (let j = 0; j < rawColumnKeys.length; j++) {
-        const columnName = rawColumnKeys[j];
-        const column = rawColumns[columnName];
-        err = columnCb(tableName, tableType, table, columnName, column);
-        if (err) return err;
-      }
-    }
-  }
-
-  static normalizeRawSchemas(parsedTables, tableType, models) {
-    JsonSchemasX.forEachSchema(tableType, models, (tableName, tableType, table) => {
-      table.options = (0, _core.getNormalizedModelOptions)(tableName, tableType === 'associationModel' ? 'mn_' : 'tbl_', table.options || {});
-      parsedTables[tableName] = {
-        isAssociationModel: tableType === 'associationModel',
-        modelOptions: table.options,
-        columns: []
-      };
-    }, (tableName, tableType, table, columnName, column) => {
-      if (typeof column === 'string' || Array.isArray(column)) {
-        column = {
-          type: column
-        };
-      }
-
-      table.columns[columnName] = column;
-
-      if (!column.type) {
-        return Error(`no type name: table(${tableName}), column(${columnName})`);
-      }
-
-      if (typeof column.type === 'string') {
-        column.type = [column.type];
-      }
-
-      column.extraOptions = column.extraOptions || {};
-
-      if (column.primaryKey) {
-        parsedTables[tableName].primaryKey = columnName;
-      }
-
-      if (!Array.isArray(column.type) || !column.type.length || typeof column.type[0] !== 'string') {
-        return Error(`bad type name: table(${tableName}), column(${columnName})`);
-      }
-
-      const typeName = column.type[0];
-      const typeConfig = _typeConfigs.typeConfigs[typeName];
-
-      if (!typeConfig) {
-        return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
-      }
-    });
-    JsonSchemasX.forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
-      const typeName = column.type[0];
-      const typeConfig = _typeConfigs.typeConfigs[typeName];
-      const err = typeConfig.normalize({
-        table: table,
-        tableType,
-        tableName,
-        column,
-        columnName
-      });
-
-      if (err) {
-        return err;
-      }
-    });
-  }
-
-  static afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, schemas) {
-    JsonSchemasX.forEachSchema(tableType, models, (tableName, tableType, table) => {}, (tableName, tableType, table, columnName, column) => {});
-  }
-
-  static parseRawSchemas(schemasMetadata, rawSchemas, tableType, models) {
-    JsonSchemasX.forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
-      const typeName = column.type[0];
-      const typeConfig = _typeConfigs.typeConfigs[typeName];
-      const result = typeConfig.parse({
-        schemasMetadata,
-        schemas: rawSchemas,
-        table: table,
-        tableType,
-        tableName,
-        column,
-        columnName
-      });
-
-      if (result instanceof Error) {
-        return result;
-      }
-
-      table.columns[columnName] = result;
-    });
-  }
-
-  static toCoreModels(schemasMetadata, rawSchemas, tableType, models, resultModels) {
-    JsonSchemasX.forEachSchema(tableType, models, (tableName, tableType, table) => {
-      resultModels[tableName] = {
-        columns: {},
-        options: table.options
-      };
-    }, (tableName, tableType, table, columnName, column) => {
-      const typeName = column.type[0];
-      const typeConfig = _typeConfigs.typeConfigs[typeName];
-      const parseResult = typeConfig.toCoreColumn({
-        schemasMetadata,
-        schemas: rawSchemas,
-        table: table,
-        tableType: 'associationModel',
-        tableName,
-        column,
-        columnName
-      });
-
-      if (parseResult instanceof Error) {
-        return Error(`parse type error: table(${tableName}), column(${columnName}), type(${typeName}), error: ${parseResult.message}`);
-      }
-
-      resultModels[tableName].columns[columnName] = parseResult;
-    });
-  }
-
   normalizeRawSchemas() {
     this.clear();
 
@@ -212,9 +70,11 @@ class JsonSchemasX {
       this.schemas.associationModels = _objectSpread({}, this.rawSchemas.associationModels);
     }
 
-    const err = JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.models, 'model', this.schemas.models);
+    let err = (0, _JsonSchemasXHelpers.beforeNormalizeRawSchemas)(this.schemasMetadata, this.schemas, this.rawSchemas);
     if (err) return err;
-    return JsonSchemasX.normalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels);
+    err = (0, _JsonSchemasXHelpers.normalizeRawSchemas)(this.schemasMetadata.models, 'model', this.schemas.models, this.schemas, this.rawSchemas);
+    if (err) return err;
+    return (0, _JsonSchemasXHelpers.normalizeRawSchemas)(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels, this.schemas, this.rawSchemas);
   }
 
   afterNormalizeRawSchemas() {
@@ -224,9 +84,11 @@ class JsonSchemasX {
       this.schemas.associationModels = _objectSpread({}, this.rawSchemas.associationModels);
     }
 
-    const err = JsonSchemasX.afterNormalizeRawSchemas(this.schemasMetadata.models, 'model', this.schemas.models, this.schemasMetadata, this.schemas);
+    let err = (0, _JsonSchemasXHelpers.afterNormalizeRawSchemas)(this.schemasMetadata.models, 'model', this.schemas.models, this.schemasMetadata, this.schemas);
     if (err) return err;
-    return JsonSchemasX.afterNormalizeRawSchemas(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels, this.schemasMetadata, this.schemas);
+    err = (0, _JsonSchemasXHelpers.afterNormalizeRawSchemas)(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels, this.schemasMetadata, this.schemas);
+    if (err) return err;
+    this.schemasMetadata.allModels = _objectSpread(_objectSpread({}, this.schemasMetadata.models), this.schemasMetadata.associationModels);
   }
 
   parseRawSchemas() {
@@ -247,9 +109,9 @@ class JsonSchemasX {
       schemasMetadata,
       schemas
     } = this;
-    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
+    err = (0, _JsonSchemasXHelpers.parseRawSchemas)(schemasMetadata, schemas, 'model', this.schemas.models);
     if (err) return err;
-    err = JsonSchemasX.parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
+    err = (0, _JsonSchemasXHelpers.parseRawSchemas)(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     this.parsed = false;
     return err;
   }
@@ -269,13 +131,15 @@ class JsonSchemasX {
       schemasMetadata,
       schemas
     } = this;
-    let err = JsonSchemasX.toCoreModels(schemasMetadata, schemas, 'model', schemas.models, result.models);
+    this.rawSchemas.options;
+    result.options = this.schemas.options;
+    let err = (0, _JsonSchemasXHelpers.toCoreModels)(schemasMetadata, schemas, 'model', schemas.models, result.models);
 
     if (err) {
       return err;
     }
 
-    err = JsonSchemasX.toCoreModels(schemasMetadata, schemas, 'associationModel', schemas.associationModels, result.associationModels);
+    err = (0, _JsonSchemasXHelpers.toCoreModels)(schemasMetadata, schemas, 'associationModel', schemas.associationModels, result.associationModels);
 
     if (err) {
       return err;
@@ -292,51 +156,6 @@ class JsonSchemasX {
     const engine = new _liquidjs.Liquid({
       root: args.liquidRoot || _path.default.join(appRoot, 'liquids')
     });
-
-    const getForeignKey = column => {
-      const {
-        associationType
-      } = _typeConfigs.typeConfigs[column.type[0]];
-
-      if (!associationType) {
-        return null;
-      }
-
-      if (associationType === 'belongsTo') {
-        const option = column.type[2];
-
-        if (option.foreignKey) {
-          if (typeof option.foreignKey === 'string') {
-            return option.foreignKey;
-          }
-
-          return option.foreignKey.name;
-        }
-      }
-
-      return null;
-    };
-
-    const getTargetKey = column => {
-      const {
-        associationType
-      } = _typeConfigs.typeConfigs[column.type[0]];
-
-      if (!associationType) {
-        return null;
-      }
-
-      if (associationType === 'belongsTo') {
-        const option = column.type[2];
-
-        if (option.targetKey) {
-          return option.targetKey;
-        }
-      }
-
-      return null;
-    };
-
     engine.plugin(function (Liquid) {
       this.registerFilter('capitalizeFirstLetter', _utils.capitalizeFirstLetter);
       this.registerFilter('toTsTypeExpression', column => {
@@ -346,15 +165,15 @@ class JsonSchemasX {
         return _typeConfigs.typeConfigs[column.type[0]].getTsTypeExpressionForCreation(column);
       });
       this.registerFilter('getForeignKey', column => {
-        return getForeignKey(column);
+        return (0, _JsonSchemasXHelpers.getForeignKey)(column);
       });
       this.registerFilter('getForeignKeyTsTypeExpression', column => {
-        const targetKey = getTargetKey(column);
+        const targetKey = (0, _JsonSchemasXHelpers.getTargetKey)(column);
         const c = schemas.models[column.type[1]].columns[targetKey];
         return _typeConfigs.typeConfigs[c.type[0]].getTsTypeExpressionForCreation(column);
       });
       this.registerFilter('hasForeignKey', column => {
-        const foreignKey = getForeignKey(column);
+        const foreignKey = (0, _JsonSchemasXHelpers.getForeignKey)(column);
         return !!foreignKey;
       });
       this.registerFilter('getOptionalMark', (column, optionalMark = '?') => {
@@ -372,12 +191,43 @@ class JsonSchemasX {
     });
   }
 
+  compareDb(db) {
+    const dbSchema = db.schemas.get(this.dbSchemaName);
+    const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
+    const missedTables = [];
+    const missedColumn = [];
+    dbSchema.tables.forEach(table => {
+      const model = allModelMetadatas.find(m => m.modelOptions.tableName === table.name);
+
+      if (!model) {
+        missedTables.push(table.name);
+        return;
+      }
+
+      for (let index = 0; index < table.columns.length; index++) {
+        const column = table.columns[index];
+        const modelColumns = Object.values(model.columns);
+        const modelColumn = modelColumns.find(c => c.columnNameInDb === column.name);
+
+        if (!modelColumn && column.name !== 'created_at' && column.name !== 'updated_at' && column.name !== 'deleted_at') {
+          missedColumn.push(`${table.name}.${column.name}`);
+        }
+      }
+    });
+    return {
+      missedTables,
+      missedColumn
+    };
+  }
+
   parseSchemaFromDb(db) {
     const dbSchema = db.schemas.get(this.dbSchemaName);
-    const table = db.get('tbl_account_link');
-    dbSchema.tables.forEach(table => {
-      this.parseTableFromDb(table);
-    });
+    return {
+      dbSchema,
+      tables: (0, _utils.toMap)(dbSchema.tables.map(table => this.parseTableFromDb(table)), ({
+        table
+      }) => table.name)
+    };
   }
 
   parseTableFromDb(table) {
@@ -385,14 +235,16 @@ class JsonSchemasX {
       this.reportColumn(c);
       return c.name;
     });
-    console.log('columnNames :', columnNames);
     const indexNames = table.indexes.map(i => {
       this.reportIndex(i);
       return i.name;
     });
-    console.log('indexNames :', indexNames);
     const relatedTables = table.hasManyTables;
-    console.log('relatedTables :', relatedTables);
+    return {
+      table,
+      columns: (0, _utils.toMap)(table.columns, column => column.name),
+      indexes: (0, _utils.toMap)(table.indexes, index => index.name)
+    };
   }
 
   reportColumn(column) {}

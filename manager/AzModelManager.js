@@ -24,6 +24,16 @@ class AzModelManager {
     this.connectString = connectString;
   }
 
+  async getPgStructureDb() {
+    const r = await _az_pglib.default.create_connection(this.connectString);
+    const db = await (0, _pgStructure.default)(r.client, {
+      includeSchemas: ['public'],
+      keepConnection: true
+    });
+    await r.client.end();
+    return db;
+  }
+
   async reportDb() {
     const r = await _az_pglib.default.create_connection(this.connectString);
     const db = await (0, _pgStructure.default)(r.client, {
@@ -32,7 +42,7 @@ class AzModelManager {
     });
     await r.client.end();
     const jsonSchemasX = new _azColumnTypes.JsonSchemasX('public', {});
-    jsonSchemasX.parseSchemaFromDb(db);
+    return jsonSchemasX.parseSchemaFromDb(db);
   }
 
   testParseSchema() {

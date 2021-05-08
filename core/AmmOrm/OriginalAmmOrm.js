@@ -29,10 +29,11 @@ class OriginalAmmOrm {
     this.associationModelInfo = {};
     const {
       models = {},
-      associationModels = {}
+      associationModels = {},
+      options = {}
     } = this.ammSchemas;
-    Object.keys(associationModels).forEach(name => this.associationModelInfo[name] = new _AssociationModel.default(this, name, associationModels[name]));
-    Object.keys(models).forEach(name => this.tableInfo[name] = new _AmmModel.default(this, name, models[name]));
+    Object.keys(associationModels).forEach(name => this.associationModelInfo[name] = new _AssociationModel.default(this, name, associationModels[name], options.associationModel?.tablePrefix));
+    Object.keys(models).forEach(name => this.tableInfo[name] = new _AmmModel.default(this, name, models[name], options.model?.tablePrefix));
     Object.keys(this.tableInfo).forEach(name => this.tableInfo[name].setupAssociations());
   }
 

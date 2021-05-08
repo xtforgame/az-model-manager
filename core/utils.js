@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.defaultToPromiseFunc = defaultToPromiseFunc;
 exports.toSeqPromise = toSeqPromise;
 exports.promiseWait = promiseWait;
+exports.toMap = toMap;
 exports.isFunction = isFunction;
 exports.handleValueArrayForMethod = handleValueArrayForMethod;
 exports.handlePromiseCallback = handlePromiseCallback;
@@ -47,6 +48,13 @@ const getClass = {}.toString;
 
 function isFunction(object) {
   return object && getClass.call(object) === '[object Function]';
+}
+
+function toMap(inArray, getId) {
+  return inArray.reduce((prev, curr, index, array) => {
+    prev[getId(curr)] = curr;
+    return prev;
+  }, {});
 }
 
 const toCamel = str => str.replace(/_([a-z])/g, g => g[1].toUpperCase());

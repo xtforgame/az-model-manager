@@ -174,7 +174,7 @@ describe('AmmOrm test 05', () => {
       //   console.log('condition.exprs :', condition.exprs);
       //   console.log('condition.exprs[0].right.exprs[0] :', condition.exprs[0].right.exprs[0]);
       // }
-      const jsonSchemaX = new JsonSchemasX('public', <any>getTestSchema());
+      const jsonSchemaX = new JsonSchemasX('public', <any>getTestSchema2());
       jsonSchemaX.parseRawSchemas();
       const schemaFromJson = jsonSchemaX.schemas;
       write(path.resolve(__dirname, 'schema_from_json.json'), JSON.stringify(schemaFromJson, null, 2));
@@ -187,7 +187,7 @@ describe('AmmOrm test 05', () => {
       const pgStructureDb = await amMgr.getPgStructureDb();
 
       console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
-      const jsonSchemaX2 = new JsonSchemasX('public', <any>getTestSchema2());
+      const jsonSchemaX2 = new JsonSchemasX('public', <any>getTestSchema());
       jsonSchemaX2.parseRawSchemas();
       jsonSchemaX2.toCoreSchemas();
       const compareResult = jsonSchemaX2.compareDb(pgStructureDb);

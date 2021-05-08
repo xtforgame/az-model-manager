@@ -1,56 +1,7 @@
-import { Model } from 'sequelize';
 import { Table, Column, Index, Db } from 'pg-structure';
-import { IJsonSchema, IJsonSchemas, JsonModelAllAttributeType } from './IJsonSchemas';
-import { AmmSchema, AmmSchemas, Overwrite, ModelAttributeColumnOptions } from '../../../core';
-import { ModelOptions } from '../../../core';
-export interface RawModelAttributeColumnOptions<M extends Model = Model> {
-    type: [string, ...any[]];
-}
-export declare type RawModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-    [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, RawModelAttributeColumnOptions<M>>;
-};
-export declare type RawSchema = {
-    columns: RawModelAttributes;
-    options?: ModelOptions;
-};
-export declare type RawSchemas = {
-    models: {
-        [s: string]: RawSchema;
-    };
-    associationModels?: {
-        [s: string]: RawSchema;
-    };
-};
-export declare type RawSchemaType = 'model' | 'associationModel';
-export declare type ParsedColumnInfo = {};
-export declare type ParsedTableInfo = {
-    isAssociationModel: boolean;
-    primaryKey?: string;
-    modelOptions: ModelOptions;
-    columns: ParsedColumnInfo[];
-};
-export declare type SchemasMetadata = {
-    models: {
-        [s: string]: ParsedTableInfo;
-    };
-    associationModels: {
-        [s: string]: ParsedTableInfo;
-    };
-    allModels: {
-        [s: string]: ParsedTableInfo;
-    };
-};
-export declare type NormalizeJsonFuncArgs = {
-    table: RawSchema;
-    tableType: RawSchemaType;
-    tableName: string;
-    column: any;
-    columnName: string;
-};
-export declare type ParseJsonFuncArgs = NormalizeJsonFuncArgs & {
-    schemasMetadata: SchemasMetadata;
-    schemas: RawSchemas;
-};
+import { IJsonSchemas } from './IJsonSchemas';
+import { RawSchemas, SchemasMetadata } from './interfaces';
+import { AmmSchemas } from '../../../core';
 export declare class JsonSchemasX {
     rawSchemas: RawSchemas;
     dbSchemaName: string;
@@ -59,27 +10,6 @@ export declare class JsonSchemasX {
     schemas: IJsonSchemas;
     constructor(dbSchemaName: string, rawSchemas: RawSchemas);
     clear(): void;
-    static forEachSchema<ColumnType = JsonModelAllAttributeType>(tableType: RawSchemaType, models: {
-        [s: string]: IJsonSchema;
-    }, modelCb: ((tableName: string, tableType: RawSchemaType, jsonSchema: IJsonSchema) => Error | void) | null, columnCb: ((tableName: string, tableType: RawSchemaType, jsonSchema: IJsonSchema, columnName: string, column: ColumnType) => Error | void) | null): Error | undefined;
-    static normalizeRawSchemas(parsedTables: {
-        [s: string]: ParsedTableInfo;
-    }, tableType: RawSchemaType, models: {
-        [s: string]: IJsonSchema;
-    }): Error | void;
-    static afterNormalizeRawSchemas(parsedTables: {
-        [s: string]: ParsedTableInfo;
-    }, tableType: RawSchemaType, models: {
-        [s: string]: IJsonSchema;
-    }, metadata: SchemasMetadata, schemas: IJsonSchemas): Error | void;
-    static parseRawSchemas(schemasMetadata: SchemasMetadata, rawSchemas: IJsonSchemas, tableType: RawSchemaType, models: {
-        [s: string]: IJsonSchema;
-    }): Error | void;
-    static toCoreModels(schemasMetadata: SchemasMetadata, rawSchemas: IJsonSchemas, tableType: RawSchemaType, models: {
-        [s: string]: IJsonSchema;
-    }, resultModels: {
-        [s: string]: AmmSchema;
-    }): (Error | void);
     normalizeRawSchemas(): Error | void;
     afterNormalizeRawSchemas(): Error | void;
     parseRawSchemas(): Error | void;
@@ -88,8 +18,33 @@ export declare class JsonSchemasX {
         orders?: string[];
         liquidRoot?: string;
     }): Promise<string>;
-    parseSchemaFromDb(db: Db): void;
-    parseTableFromDb(table: Table): void;
+    compareDb(db: Db): {
+        missedTables: string[];
+        missedColumn: string[];
+    };
+    parseSchemaFromDb(db: Db): {
+        dbSchema: import("pg-structure").Schema;
+        tables: {
+            [s: string]: {
+                table: Table;
+                columns: {
+                    [s: string]: Column;
+                };
+                indexes: {
+                    [s: string]: Index;
+                };
+            };
+        };
+    };
+    parseTableFromDb(table: Table): {
+        table: Table;
+        columns: {
+            [s: string]: Column;
+        };
+        indexes: {
+            [s: string]: Index;
+        };
+    };
     reportColumn(column: Column): void;
     reportIndex(index: Index): void;
 }
