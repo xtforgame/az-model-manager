@@ -229,6 +229,22 @@ const getSchemas : () => IJsonSchemas = () => ({
           type: 'jsonb',
           defaultValue: {},
         },
+        user_id2: {
+          type: 'bigint',
+          ammReferences: {
+            model: 'user',
+            key: 'id',
+            deferrable: 'initially_immediate',
+          },
+        },
+        user_id3: {
+          type: 'bigint',
+          ammReferences: {
+            model: 'user',
+            key: 'id',
+            deferrable: 'initially_immediate',
+          },
+        },
         user: ['belongsTo', 'user', {
           foreignKey: 'user_id',
         }],

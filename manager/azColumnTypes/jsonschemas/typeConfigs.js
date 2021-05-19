@@ -25,7 +25,7 @@ function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) r
 
 let xid = 0;
 
-const basicParse = (extraNumber = 0) => args => {
+const basicParse = (extraNumber = 0, normalize) => args => {
   const _args$column = args.column,
         {
     type
@@ -37,9 +37,15 @@ const basicParse = (extraNumber = 0) => args => {
   }
 
   if (type.length === 1 || type.length === 1 + extraNumber) {
-    return _objectSpread(_objectSpread({}, rest), {}, {
+    let reseult = _objectSpread(_objectSpread({}, rest), {}, {
       type
     });
+
+    if (normalize) {
+      reseult = normalize(reseult) || reseult;
+    }
+
+    return reseult;
   }
 
   return new Error(`wrong type length(${type.length})`);
@@ -374,17 +380,21 @@ exports.typeConfigs = typeConfigs = {
       const {
         ammThroughTableColumnAs
       } = associationOptions.through;
-      associationModel.columns[ammThroughTableColumnAs] = {
-        type: ['belongsTo', args.tableName, {
-          foreignKey: associationOptions.foreignKey,
-          onDelete: 'CASCADE',
-          onUpdate: 'CASCADE',
-          targetKey: 'id',
-          ammAs: ammThroughTableColumnAs,
-          as: ammThroughTableColumnAs
-        }],
-        extraOptions: {}
-      };
+
+      if (!associationModel.columns[ammThroughTableColumnAs]) {
+        associationModel.columns[ammThroughTableColumnAs] = {
+          type: ['belongsTo', args.tableName, {
+            foreignKey: associationOptions.foreignKey,
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
+            targetKey: 'id',
+            ammAs: ammThroughTableColumnAs,
+            as: ammThroughTableColumnAs
+          }],
+          extraOptions: {}
+        };
+      }
+
       return _objectSpread(_objectSpread({}, args.column), {}, {
         type: [args.column.type[0], args.column.type[1], associationOptions]
       });
@@ -460,7 +470,13 @@ exports.typeConfigs = typeConfigs = {
   string: {
     sequleizeDataType: _sequelize.default.STRING,
     normalize: args => undefined,
-    parse: basicParse(1),
+    parse: basicParse(1, r => {
+      if (r.type.length === 1) {
+        r.type = ['string', 255];
+      }
+
+      return r;
+    }),
     toCoreColumn: basicToCoreColumn(_sequelize.default.STRING, 1),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')

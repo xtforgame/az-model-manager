@@ -60,6 +60,7 @@ import {
   beforeNormalizeRawSchemas,
   normalizeRawSchemas,
   afterNormalizeRawSchemas,
+  afterParseRawSchemas,
   parseRawSchemas,
   toCoreModels,
 } from './JsonSchemasXHelpers';
@@ -145,6 +146,11 @@ export class JsonSchemasX {
       };
     }
 
+    this.schemasMetadata.allModels = {
+      ...this.schemasMetadata.models,
+      ...this.schemasMetadata.associationModels,
+    };
+
     let err = afterNormalizeRawSchemas(
       this.schemasMetadata.models,
       'model',
@@ -162,10 +168,26 @@ export class JsonSchemasX {
     );
 
     if (err) return err;
-    this.schemasMetadata.allModels = {
-      ...this.schemasMetadata.models,
-      ...this.schemasMetadata.associationModels,
-    };
+  }
+
+  afterParseRawSchemas() : Error | void {
+    let err = afterParseRawSchemas(
+      this.schemasMetadata.models,
+      'model',
+      this.schemas.models,
+      this.schemasMetadata,
+      this.schemas,
+    );
+    if (err) return err;
+    err = afterParseRawSchemas(
+      this.schemasMetadata.associationModels,
+      'associationModel',
+      this.schemas.associationModels,
+      this.schemasMetadata,
+      this.schemas,
+    );
+
+    if (err) return err;
   }
 
   parseRawSchemas() : Error | void {
@@ -179,6 +201,8 @@ export class JsonSchemasX {
     if (err) return err;
     err = parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     this.parsed = false;
+
+    err = this.afterParseRawSchemas();
     return err;
   }
 
@@ -250,8 +274,11 @@ export class JsonSchemasX {
         const c = schemas.models[column.type[1]!].columns[targetKey] as JsonModelAttributeInOptionsForm;
         return typeConfigs[c.type[0]].getTsTypeExpressionForCreation(column);
       });
-      this.registerFilter('hasForeignKey', (column : JsonModelAttributeInOptionsForm) => {
+      this.registerFilter('hasForeignKey', (column : JsonModelAttributeInOptionsForm, model : IJsonSchema) => {
         const foreignKey = getForeignKey(column);
+        if (foreignKey && model.columns[foreignKey]) {
+          return false;
+        }
         return !!foreignKey;
       });
       this.registerFilter('getOptionalMark', (column : JsonModelAttributeInOptionsForm, optionalMark = '?') => {

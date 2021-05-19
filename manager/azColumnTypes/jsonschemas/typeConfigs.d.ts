@@ -15,7 +15,7 @@ export declare type TypeConfig = {
 export declare type TypeConfigs = {
     [s: string]: TypeConfig;
 };
-export declare const basicParse: (extraNumber?: number) => (args: ParseJsonFuncArgs) => Error | JsonModelAttributeInOptionsForm;
+export declare const basicParse: (extraNumber?: number, normalize?: (r: JsonModelAttributeInOptionsForm | void) => JsonModelAttributeInOptionsForm) => (args: ParseJsonFuncArgs) => Error | JsonModelAttributeInOptionsForm;
 export declare const basicToCoreColumn: (dataType: DataType, extraNumber?: number) => (args: ParseJsonFuncArgs) => Error | ModelAttributeColumnOptions<Model>;
 export declare const parseAssociationOptions: (a: ParseJsonFuncArgs) => AssociationOptions | Error;
 export declare const basicGetTsTypeExpression: (tsType: string) => (column: JsonModelAttributeInOptionsForm) => string;

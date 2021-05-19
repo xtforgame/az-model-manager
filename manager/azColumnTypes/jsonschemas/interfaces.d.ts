@@ -1,10 +1,11 @@
 export * from './IJsonSchemas';
 import { Model } from 'sequelize';
-import { JsonModelAttributeInOptionsForm, IJsonSchemasOptions } from './IJsonSchemas';
+import { JsonModelAttributeInOptionsForm, IJsonSchemasOptions, AmmModelAttributeColumnReferencesOptions } from './IJsonSchemas';
 import { Overwrite, ModelAttributeColumnOptions } from '../../../core';
 import { ModelOptions } from '../../../core';
 export interface RawModelAttributeColumnOptions<M extends Model = Model> {
     type: [string, ...any[]];
+    ammReferences?: AmmModelAttributeColumnReferencesOptions;
 }
 export declare type RawModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
     [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, RawModelAttributeColumnOptions<M>>;

@@ -21,6 +21,11 @@ export declare function afterNormalizeRawSchemas(parsedTables: {
 export declare function parseRawSchemas(schemasMetadata: SchemasMetadata, rawSchemas: IJsonSchemas, tableType: RawSchemaType, models: {
     [s: string]: IJsonSchema;
 }): Error | void;
+export declare function afterParseRawSchemas(parsedTables: {
+    [s: string]: ParsedTableInfo;
+}, tableType: RawSchemaType, models: {
+    [s: string]: IJsonSchema;
+}, metadata: SchemasMetadata, schemas: IJsonSchemas): Error | void;
 export declare function toCoreModels(schemasMetadata: SchemasMetadata, rawSchemas: IJsonSchemas, tableType: RawSchemaType, models: {
     [s: string]: IJsonSchema;
 }, resultModels: {

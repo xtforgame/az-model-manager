@@ -20,6 +20,7 @@ import {
   NormalizedJsonModelAttributes,
   JsonModelAttributeColumn,
   IJsonSchemasOptions,
+  AmmModelAttributeColumnReferencesOptions,
 } from './IJsonSchemas';
 
 import {
@@ -45,6 +46,7 @@ import {
 
 export interface RawModelAttributeColumnOptions<M extends Model = Model> {
   type : [string, ...any[]];
+  ammReferences?: AmmModelAttributeColumnReferencesOptions;
 }
 
 export type RawModelAttributes<M extends Model = Model, TCreationAttributes = any> = {

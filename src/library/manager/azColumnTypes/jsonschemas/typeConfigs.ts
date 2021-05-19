@@ -48,16 +48,20 @@ export type TypeConfigs = {
   [s: string]: TypeConfig;
 };
 
-export const basicParse : (extraNumber? : number) => (args : ParseJsonFuncArgs) => Error | JsonModelAttributeInOptionsForm = (extraNumber : number = 0) => (args : ParseJsonFuncArgs) => {
+export const basicParse : (extraNumber? : number, normalize?: (r : JsonModelAttributeInOptionsForm | void) => JsonModelAttributeInOptionsForm) => (args : ParseJsonFuncArgs) => Error | JsonModelAttributeInOptionsForm = (extraNumber : number = 0, normalize) => (args : ParseJsonFuncArgs) => {
   const { type, ...rest } = args.column;
   if (!type.length) {
     return new Error('no type attribute');
   }
   if (type.length === 1 || type.length === 1 + extraNumber) {
-    return {
+    let reseult : JsonModelAttributeInOptionsForm = {
       ...rest,
       type,
     };
+    if (normalize) {
+      reseult = normalize(reseult) || reseult;
+    }
+    return reseult;
   }
   return new Error(`wrong type length(${type.length})`);
 };
@@ -348,21 +352,23 @@ typeConfigs = {
       };
       const associationModel = args.schemas.associationModels[throughTableName];
       const { ammThroughTableColumnAs } = associationOptions.through;
-      associationModel.columns[ammThroughTableColumnAs] = {
-        type: [
-          'belongsTo',
-          args.tableName,
-          {
-            foreignKey: associationOptions.foreignKey as string,
-            onDelete: 'CASCADE',
-            onUpdate: 'CASCADE',
-            targetKey: 'id',
-            ammAs: ammThroughTableColumnAs,
-            as: ammThroughTableColumnAs,
-          },
-        ],
-        extraOptions: {},
-      };
+      if (!associationModel.columns[ammThroughTableColumnAs]) {
+        associationModel.columns[ammThroughTableColumnAs] = {
+          type: [
+            'belongsTo',
+            args.tableName,
+            {
+              foreignKey: associationOptions.foreignKey as string,
+              onDelete: 'CASCADE',
+              onUpdate: 'CASCADE',
+              targetKey: 'id',
+              ammAs: ammThroughTableColumnAs,
+              as: ammThroughTableColumnAs,
+            },
+          ],
+          extraOptions: {},
+        };
+      }
       // console.log('associationModel :', associationModel.columns.id.type);
       // console.log('otherKey :', associationOptions.otherKey);
       // associationOptions.foreignKey = `ssss:${xid++}`;
@@ -444,7 +450,12 @@ typeConfigs = {
   string: { // JsonModelTypeString
     sequleizeDataType: sequelize.STRING,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
-    parse: basicParse(1),
+    parse: basicParse(1, (r : any) => {
+      if (r.type.length === 1) {
+        r.type = ['string', 255];
+      }
+      return r;
+    }),
     toCoreColumn: basicToCoreColumn(sequelize.STRING, 1),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),

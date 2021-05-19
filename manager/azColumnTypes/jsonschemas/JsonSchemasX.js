@@ -84,11 +84,18 @@ class JsonSchemasX {
       this.schemas.associationModels = _objectSpread({}, this.rawSchemas.associationModels);
     }
 
+    this.schemasMetadata.allModels = _objectSpread(_objectSpread({}, this.schemasMetadata.models), this.schemasMetadata.associationModels);
     let err = (0, _JsonSchemasXHelpers.afterNormalizeRawSchemas)(this.schemasMetadata.models, 'model', this.schemas.models, this.schemasMetadata, this.schemas);
     if (err) return err;
     err = (0, _JsonSchemasXHelpers.afterNormalizeRawSchemas)(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels, this.schemasMetadata, this.schemas);
     if (err) return err;
-    this.schemasMetadata.allModels = _objectSpread(_objectSpread({}, this.schemasMetadata.models), this.schemasMetadata.associationModels);
+  }
+
+  afterParseRawSchemas() {
+    let err = (0, _JsonSchemasXHelpers.afterParseRawSchemas)(this.schemasMetadata.models, 'model', this.schemas.models, this.schemasMetadata, this.schemas);
+    if (err) return err;
+    err = (0, _JsonSchemasXHelpers.afterParseRawSchemas)(this.schemasMetadata.associationModels, 'associationModel', this.schemas.associationModels, this.schemasMetadata, this.schemas);
+    if (err) return err;
   }
 
   parseRawSchemas() {
@@ -113,6 +120,7 @@ class JsonSchemasX {
     if (err) return err;
     err = (0, _JsonSchemasXHelpers.parseRawSchemas)(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     this.parsed = false;
+    err = this.afterParseRawSchemas();
     return err;
   }
 
@@ -172,8 +180,13 @@ class JsonSchemasX {
         const c = schemas.models[column.type[1]].columns[targetKey];
         return _typeConfigs.typeConfigs[c.type[0]].getTsTypeExpressionForCreation(column);
       });
-      this.registerFilter('hasForeignKey', column => {
+      this.registerFilter('hasForeignKey', (column, model) => {
         const foreignKey = (0, _JsonSchemasXHelpers.getForeignKey)(column);
+
+        if (foreignKey && model.columns[foreignKey]) {
+          return false;
+        }
+
         return !!foreignKey;
       });
       this.registerFilter('getOptionalMark', (column, optionalMark = '?') => {

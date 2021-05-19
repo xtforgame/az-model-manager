@@ -12,6 +12,7 @@ export declare class JsonSchemasX {
     clear(): void;
     normalizeRawSchemas(): Error | void;
     afterNormalizeRawSchemas(): Error | void;
+    afterParseRawSchemas(): Error | void;
     parseRawSchemas(): Error | void;
     toCoreSchemas(): AmmSchemas | Error;
     buildModelTsFile(args?: {
