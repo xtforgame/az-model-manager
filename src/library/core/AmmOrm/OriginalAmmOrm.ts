@@ -30,6 +30,7 @@ export default class OriginalAmmOrm {
     Object.keys(models).forEach(name => (this.tableInfo[name] = new AmmModel(this, name, models[name], options.model?.tablePrefix)));
 
     Object.keys(this.tableInfo).forEach(name => this.tableInfo[name].setupAssociations());
+    Object.keys(this.associationModelInfo).forEach(name => (<any>this.associationModelInfo[name]).setupAssociations());
   }
 
   sync(force = true) {

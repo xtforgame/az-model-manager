@@ -180,7 +180,7 @@ export default class AmmModel {
 
     const This = this;
     const originalSave = this.sqlzModel.prototype.save;
-    this.sqlzModel.prototype.save = function (options) {
+    this.sqlzModel.prototype.save = function (options : any = {}) {
       const {
         originalInclude,
         nxNAssociations,
