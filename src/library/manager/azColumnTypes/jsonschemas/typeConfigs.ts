@@ -42,6 +42,7 @@ export type TypeConfig = {
   toCoreColumn(args : ParseJsonFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
   getTsTypeExpression(column : JsonModelAttributeInOptionsForm) : string;
   getTsTypeExpressionForCreation(column : JsonModelAttributeInOptionsForm) : string;
+  getAddColumnExpression(column : JsonModelAttributeInOptionsForm) : string;
 };
 
 export type TypeConfigs = {
@@ -248,6 +249,7 @@ typeConfigs = {
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return toTypeForCreation(column.type[1]);
     },
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   hasMany: {
     associationType: 'hasMany',
@@ -282,6 +284,7 @@ typeConfigs = {
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return `${toTypeForCreation(column.type[1])}[]`;
     },
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   belongsTo: {
     associationType: 'belongsTo',
@@ -313,6 +316,7 @@ typeConfigs = {
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return toTypeForCreation(column.type[1]);
     },
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   belongsToMany: {
     associationType: 'belongsToMany',
@@ -389,6 +393,7 @@ typeConfigs = {
     getTsTypeExpressionForCreation: (column : JsonModelAttributeInOptionsForm) => {
       return `${toTypeForCreation(column.type[1])}[]`;
     },
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
 
   integer: { // JsonModelTypeInteger
@@ -398,6 +403,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.INTEGER),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   bigint: { // JsonModelTypeBigint
     sequleizeDataType: sequelize.BIGINT,
@@ -406,6 +412,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.BIGINT),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   decimal: { // JsonModelTypeDecimal
     sequleizeDataType: sequelize.DECIMAL,
@@ -414,6 +421,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.DECIMAL, 2),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   real: { // JsonModelTypeReal
     sequleizeDataType: sequelize.REAL,
@@ -422,6 +430,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.REAL),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   float: { // JsonModelTypeFloat
     sequleizeDataType: sequelize.FLOAT,
@@ -430,6 +439,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.FLOAT),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   double: { // JsonModelTypeDouble
     sequleizeDataType: sequelize.DOUBLE,
@@ -438,6 +448,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.DOUBLE),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   boolean: { // JsonModelTypeBoolean
     sequleizeDataType: sequelize.BOOLEAN,
@@ -446,6 +457,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.BOOLEAN),
     getTsTypeExpression: basicGetTsTypeExpression('boolean'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('boolean'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   string: { // JsonModelTypeString
     sequleizeDataType: sequelize.STRING,
@@ -459,6 +471,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.STRING, 1),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   binary: { // JsonModelTypeBinary
     sequleizeDataType: sequelize.BLOB,
@@ -467,6 +480,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.BLOB),
     getTsTypeExpression: basicGetTsTypeExpression('Buffer'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('Buffer'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   text: { // JsonModelTypeText
     sequleizeDataType: sequelize.TEXT,
@@ -475,6 +489,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.TEXT),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   date: { // JsonModelTypeDate
     sequleizeDataType: sequelize.DATE,
@@ -483,6 +498,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.DATE),
     getTsTypeExpression: basicGetTsTypeExpression('Date'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   dateonly: { // JsonModelTypeDateOnly
     sequleizeDataType: sequelize.DATEONLY,
@@ -491,6 +507,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.DATEONLY),
     getTsTypeExpression: basicGetTsTypeExpression('Date'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   uuid: { // JsonModelTypeUuid
     sequleizeDataType: sequelize.UUID,
@@ -499,6 +516,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.UUID),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   range: { // JsonModelTypeRange
     sequleizeDataType: sequelize.RANGE,
@@ -554,6 +572,7 @@ typeConfigs = {
       };
       return rangeTypes[<any>column.type[1]];
     },
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   json: { // JsonModelTypeJson
     sequleizeDataType: sequelize.JSON,
@@ -562,6 +581,7 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.JSON),
     getTsTypeExpression: basicGetTsTypeExpression('any'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('any'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
   jsonb: { // JsonModelTypeJsonb
     sequleizeDataType: sequelize.JSONB,
@@ -570,5 +590,6 @@ typeConfigs = {
     toCoreColumn: basicToCoreColumn(sequelize.JSONB),
     getTsTypeExpression: basicGetTsTypeExpression('any'),
     getTsTypeExpressionForCreation: basicGetTsTypeExpression('any'),
+    getAddColumnExpression: (column : JsonModelAttributeInOptionsForm) => '',
   },
 };

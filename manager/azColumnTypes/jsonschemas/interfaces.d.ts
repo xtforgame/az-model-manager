@@ -1,5 +1,5 @@
 export * from './IJsonSchemas';
-import { Model } from 'sequelize';
+import { Model, IndexesOptions } from 'sequelize';
 import { JsonModelAttributeInOptionsForm, IJsonSchemasOptions, AmmModelAttributeColumnReferencesOptions } from './IJsonSchemas';
 import { Overwrite, ModelAttributeColumnOptions } from '../../../core';
 import { ModelOptions } from '../../../core';
@@ -27,6 +27,10 @@ export declare type RawSchemaType = 'model' | 'associationModel';
 export declare type ParsedColumnInfo = JsonModelAttributeInOptionsForm & {
     columnNameInDb?: string;
     isForeignKey?: boolean;
+    isAssociationColumn?: boolean;
+};
+export declare type ParsedIndexInfo = IndexesOptions & {
+    columns: string[];
 };
 export declare type ParsedTableInfo = {
     tableNameInDb?: string;
@@ -35,6 +39,9 @@ export declare type ParsedTableInfo = {
     modelOptions: ModelOptions;
     columns: {
         [s: string]: ParsedColumnInfo;
+    };
+    indexes: {
+        [s: string]: ParsedIndexInfo;
     };
 };
 export declare type SchemasMetadata = {

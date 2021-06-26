@@ -2,7 +2,10 @@ import path from 'path';
 import fs from 'fs';
 import {
   Model,
+  Sequelize,
+  DataTypes,
 } from 'sequelize';
+import PostgresQueryGenerator from 'sequelize/lib/dialects/postgres/query-generator';
 import { Liquid } from 'liquidjs';
 import appRootPath from 'app-root-path';
 import pgStructure, {
@@ -294,27 +297,126 @@ export class JsonSchemasX {
 
   // ========================
 
+  getAddColumnQuery (
+    ammSchema : AmmSchema,
+    modelMetadata: ParsedTableInfo,
+    columnName: string,
+  ) {
+    const sequelizeDb = new Sequelize('postgres://fakeurl/fakedb', {
+      dialect: 'postgres',
+      minifyAliases: true,
+    });
+    const tableNameInDb = modelMetadata.tableNameInDb;
+    const columnNameInDb = modelMetadata.columns[columnName].columnNameInDb;
+    const queryInterface = sequelizeDb.getQueryInterface();
+    const queryGenerator : PostgresQueryGenerator = (<any>queryInterface).queryGenerator;
+    const attr = ammSchema.columns[columnName];
+    const a = (<any>queryInterface.sequelize).normalizeAttribute(attr);
+    const aSql = queryGenerator.attributeToSQL(a, { key: columnNameInDb, table: tableNameInDb, context: 'addColumn' });
+    // console.log('aSql :', aSql);
+    const q = queryGenerator.addColumnQuery(tableNameInDb, columnNameInDb, aSql);
+    // console.log('q :', q);
+    return q;
+  }
+
+  getAddIndexQuery (
+    ammSchema : AmmSchema,
+    modelMetadata: ParsedTableInfo,
+    indexName: string,
+  ) {
+    const sequelizeDb = new Sequelize('postgres://fakeurl/fakedb', {
+      dialect: 'postgres',
+      minifyAliases: true,
+    });
+    const tableNameInDb = modelMetadata.tableNameInDb;
+    const indexNameInDb = modelMetadata.indexes[indexName].name!;
+    const queryInterface = sequelizeDb.getQueryInterface();
+    const queryGenerator : PostgresQueryGenerator = (<any>queryInterface).queryGenerator;
+    const q = queryGenerator.addIndexQuery(tableNameInDb, modelMetadata.indexes[indexName].fields!, {
+      name: indexNameInDb,
+    } , tableNameInDb);
+    // console.log('q :', q);
+    return q;
+  }
+
   compareDb(db : Db) {
     const dbSchema = db.schemas.get(this.dbSchemaName);
     const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
     const missedTables : string[] = [];
-    const missedColumn : string[] = [];
-    allModelMetadatas.forEach((model) => {
-      const table = dbSchema.tables.find(t => t.name === model.modelOptions.tableName!);
+    const missedColumns : string[] = [];
+    let missedColumnsQuery : string = '';
+    const missedIndexes : string[] = [];
+    let missedIndexesQuery : string = '';
+    
+    const schemas = this.toCoreSchemas();
+    if (schemas instanceof Error) {
+      return;
+    }
+    Object.keys(this.schemasMetadata.allModels).forEach((modelMetadataName) => {
+      const modelMetadata = this.schemasMetadata.allModels[modelMetadataName];
+      const table = dbSchema.tables.find(t => t.name === modelMetadata.modelOptions.tableName!);
       if (!table) {
-        missedTables.push(model.modelOptions.tableName!);
+        missedTables.push(modelMetadata.modelOptions.tableName!);
         return ;
       }
-      Object.values(model.columns).forEach((c) => {
+      Object.keys(modelMetadata.columns).forEach((columnName) => {
+        const c = modelMetadata.columns[columnName];
         if (!c.columnNameInDb!) {
           return;
         }
-        if (table.name === 'tbl_organization') {
-          console.log('c.columnNameInDb! :', c.columnNameInDb!);
-        }
+        // if (table.name === 'tbl_organization') {
+        //   console.log('c.columnNameInDb! :', c.columnNameInDb!);
+        // }
         const column = table.columns.find(col => col.name === c.columnNameInDb!);
-        if (!column) {
-          missedColumn.push(`${table.name}.${c.columnNameInDb!}`);
+        if (!column && !c.isAssociationColumn) {
+          const model = modelMetadata.isAssociationModel ?
+            schemas.associationModels![modelMetadataName]
+            : schemas.models[modelMetadataName];
+          const query = this.getAddColumnQuery(
+            model,
+            modelMetadata,
+            columnName,
+          );
+          missedColumnsQuery += `
+-- ${modelMetadataName} => ${columnName}
+${query};
+`;
+          missedColumns.push(`${table.name}.${c.columnNameInDb!}`);
+        }
+      });
+
+      Object.keys(modelMetadata.indexes).forEach((indexName) => {
+        const indexFromSchema = modelMetadata.indexes[indexName];
+        const index = table.indexes.find((ind) => {
+          if (ind.isUnique !== !!indexFromSchema.unique) {
+            return false;
+          }
+          const columns = ind.columns.map(c => c.name);
+          if (columns.length !== indexFromSchema.fields?.length) {
+            return false;
+          }
+          for (let i = 0; i < columns.length; i++) {
+            if (indexFromSchema.fields![i] !== columns[i]) {
+              return false;
+            }
+          }
+          return true;
+        });
+        if (!index) {
+          const model = modelMetadata.isAssociationModel ?
+            schemas.associationModels![modelMetadataName]
+            : schemas.models[modelMetadataName];
+          console.log('indexName :', indexName);
+          const query = this.getAddIndexQuery(
+            model,
+            modelMetadata,
+            indexName,
+          );
+          missedIndexesQuery += `
+-- ${modelMetadataName} => ${indexName}
+${query};
+`;
+          missedIndexes.push(`${table.name}.${indexName}`);
         }
       });
     });
@@ -330,14 +432,17 @@ export class JsonSchemasX {
     //     const modelColumns = Object.values(model.columns);
     //     const modelColumn = modelColumns.find(c => c.columnNameInDb! === column.name);
     //     if (!modelColumn && column.name !== 'created_at' && column.name !== 'updated_at' && column.name !== 'deleted_at' ) {
-    //       missedColumn.push(`${table.name}.${column.name}`);
+    //       missedColumns.push(`${table.name}.${column.name}`);
     //     }
     //   }
     //   // console.log('allModelMetadatas :', allModelMetadatas);
     // });
     return {
       missedTables,
-      missedColumn,
+      missedColumns,
+      missedColumnsQuery,
+      missedIndexes,
+      missedIndexesQuery,
     };
   }
 
@@ -347,7 +452,7 @@ export class JsonSchemasX {
     const dbSchema = db.schemas.get(this.dbSchemaName);
     const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
     const missedTables : string[] = [];
-    const missedColumn : string[] = [];
+    const missedColumns : string[] = [];
     dbSchema.tables.forEach((table) => {
       // console.log('table, columns :', table, columns);
       const model = allModelMetadatas.find(m => m.modelOptions.tableName! === table.name);
@@ -360,14 +465,14 @@ export class JsonSchemasX {
         const modelColumns = Object.values(model.columns);
         const modelColumn = modelColumns.find(c => c.columnNameInDb! === column.name);
         if (!modelColumn && column.name !== 'created_at' && column.name !== 'updated_at' && column.name !== 'deleted_at' ) {
-          missedColumn.push(`${table.name}.${column.name}`);
+          missedColumns.push(`${table.name}.${column.name}`);
         }
       }
       // console.log('allModelMetadatas :', allModelMetadatas);
     });
     return {
       missedTables,
-      missedColumn,
+      missedColumns,
     };
   }
 

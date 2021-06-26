@@ -381,6 +381,12 @@ const getSchemas = () => ({
           type: 'jsonb',
           defaultValue: {}
         },
+        testDataForDiff: {
+          type: 'jsonb',
+          defaultValue: {
+            d: `{"'--drfrfr\`srb}`
+          }
+        },
         users: ['belongsToMany', 'user', {
           through: {
             unique: false,
@@ -390,6 +396,9 @@ const getSchemas = () => ({
           },
           foreignKey: 'organization_id',
           otherKey: 'user_id'
+        }],
+        testAssociation: ['belongsTo', 'project', {
+          foreignKey: 'test_asc_id'
         }],
         ownedUser: ['hasMany', 'user', {
           foreignKey: 'org_mgr_id'
@@ -416,6 +425,13 @@ const getSchemas = () => ({
           },
           foreignKey: 'organization_id',
           otherKey: 'invitee_id'
+        }]
+      },
+      options: {
+        indexes: [{
+          name: 'organization_name_idx',
+          unique: false,
+          fields: ['name']
         }]
       }
     },

@@ -7,6 +7,7 @@ import sequelize, {
   HasManyCreateAssociationMixin,
   DataTypes,
 } from 'sequelize';
+import PostgresQueryGenerator from 'sequelize/lib/dialects/postgres/query-generator';
 import parser from 'js-sql-parse';
 import AmmOrm, { AmmSchemas } from 'library/core';
 import AzModelManager, { JsonSchemasX } from 'library/manager';
@@ -63,6 +64,24 @@ function databaseLogger(...args) { // eslint-disable-line no-unused-vars
 
 const addColumnTest = async (ammMgr : AzRdbmsMgr) => {
   const queryInterface = ammMgr.sequelizeDb.getQueryInterface();
+  const queryGenerator : PostgresQueryGenerator = (<any>queryInterface).queryGenerator;
+  const attr = {
+    type: DataTypes.JSONB,
+    defaultValue: {
+      d: `{"'--drfrfr\`srb}`
+    },
+  };
+  const a = queryInterface.sequelize.normalizeAttribute(attr);
+  const aSql = queryGenerator.attributeToSQL(a, { key: 'data', table: 'tbl_account_link', context: 'addColumn' });
+  console.log('aSql :', aSql);
+  const q = queryGenerator.addColumnQuery('tbl_account_link', 'data', aSql);
+  console.log('q :', q);
+
+  const q2 = queryGenerator.addIndexQuery('tbl_account_link', ['id', 'id2'], {
+    name: 'xxx',
+  } , 'tbl_account_link')
+  console.log('q2 :', q2);
+
   await queryInterface.addColumn(
     {
       schema: 'public',
@@ -76,7 +95,7 @@ const addColumnTest = async (ammMgr : AzRdbmsMgr) => {
   await queryInterface.addConstraint('tbl_account_link', {
     type: 'foreign key',
     fields: ['extra_user_id'],
-    name: 'my_constraint_name',
+    name: 'tbl_account_link_extra_user_id_fkey',
     references: {
       table: 'tbl_user',
       field: 'id'
@@ -189,9 +208,10 @@ describe('AmmOrm test 05', () => {
       console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n');
       const jsonSchemaX2 = new JsonSchemasX('public', <any>getTestSchema2());
       jsonSchemaX2.parseRawSchemas();
-      jsonSchemaX2.toCoreSchemas();
       const compareResult = jsonSchemaX2.compareDb(pgStructureDb);
       console.log('compareResult :', compareResult);
+      console.log('%s', compareResult.missedColumnsQuery);
+      console.log('%s', compareResult.missedIndexesQuery);
       // return amMgr.reportDb();
     });
   });

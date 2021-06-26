@@ -1,7 +1,7 @@
 import { Table, Column, Index, Db } from 'pg-structure';
 import { IJsonSchemas } from './IJsonSchemas';
-import { RawSchemas, SchemasMetadata } from './interfaces';
-import { AmmSchemas } from '../../../core';
+import { RawSchemas, ParsedTableInfo, SchemasMetadata } from './interfaces';
+import { AmmSchema, AmmSchemas } from '../../../core';
 export declare class JsonSchemasX {
     rawSchemas: RawSchemas;
     dbSchemaName: string;
@@ -19,13 +19,18 @@ export declare class JsonSchemasX {
         orders?: string[];
         liquidRoot?: string;
     }): Promise<string>;
+    getAddColumnQuery(ammSchema: AmmSchema, modelMetadata: ParsedTableInfo, columnName: string): any;
+    getAddIndexQuery(ammSchema: AmmSchema, modelMetadata: ParsedTableInfo, indexName: string): any;
     compareDb(db: Db): {
         missedTables: string[];
-        missedColumn: string[];
-    };
+        missedColumns: string[];
+        missedColumnsQuery: string;
+        missedIndexes: string[];
+        missedIndexesQuery: string;
+    } | undefined;
     compareDb2(db: Db): {
         missedTables: string[];
-        missedColumn: string[];
+        missedColumns: string[];
     };
     parseSchemaFromDb(db: Db): {
         dbSchema: import("pg-structure").Schema;

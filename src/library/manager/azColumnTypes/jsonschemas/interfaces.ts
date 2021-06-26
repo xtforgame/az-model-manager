@@ -2,6 +2,7 @@ export * from './IJsonSchemas';
 
 import {
   Model,
+  IndexesOptions,
 } from 'sequelize';
 import { Liquid } from 'liquidjs';
 import appRootPath from 'app-root-path';
@@ -69,6 +70,13 @@ export type RawSchemaType = 'model' | 'associationModel';
 export type ParsedColumnInfo = JsonModelAttributeInOptionsForm & {
   columnNameInDb?: string;
   isForeignKey?: boolean;
+  isAssociationColumn?: boolean;
+};
+
+export type ParsedIndexInfo = IndexesOptions & {
+  // name: string;
+  // unique: boolean;
+  columns: string[];
 };
 
 export type ParsedTableInfo = {
@@ -77,6 +85,7 @@ export type ParsedTableInfo = {
   primaryKey?: string;
   modelOptions: ModelOptions;
   columns: { [s: string]: ParsedColumnInfo };
+  indexes: { [s: string]: ParsedIndexInfo };
 };
 
 export type SchemasMetadata = {

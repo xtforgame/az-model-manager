@@ -7,6 +7,8 @@ exports.JsonSchemasX = void 0;
 
 var _path = _interopRequireDefault(require("path"));
 
+var _sequelize = require("sequelize");
+
 var _liquidjs = require("liquidjs");
 
 var _appRootPath = _interopRequireDefault(require("app-root-path"));
@@ -204,38 +206,123 @@ class JsonSchemasX {
     });
   }
 
+  getAddColumnQuery(ammSchema, modelMetadata, columnName) {
+    const sequelizeDb = new _sequelize.Sequelize('postgres://fakeurl/fakedb', {
+      dialect: 'postgres',
+      minifyAliases: true
+    });
+    const tableNameInDb = modelMetadata.tableNameInDb;
+    const columnNameInDb = modelMetadata.columns[columnName].columnNameInDb;
+    const queryInterface = sequelizeDb.getQueryInterface();
+    const queryGenerator = queryInterface.queryGenerator;
+    const attr = ammSchema.columns[columnName];
+    const a = queryInterface.sequelize.normalizeAttribute(attr);
+    const aSql = queryGenerator.attributeToSQL(a, {
+      key: columnNameInDb,
+      table: tableNameInDb,
+      context: 'addColumn'
+    });
+    const q = queryGenerator.addColumnQuery(tableNameInDb, columnNameInDb, aSql);
+    return q;
+  }
+
+  getAddIndexQuery(ammSchema, modelMetadata, indexName) {
+    const sequelizeDb = new _sequelize.Sequelize('postgres://fakeurl/fakedb', {
+      dialect: 'postgres',
+      minifyAliases: true
+    });
+    const tableNameInDb = modelMetadata.tableNameInDb;
+    const indexNameInDb = modelMetadata.indexes[indexName].name;
+    const queryInterface = sequelizeDb.getQueryInterface();
+    const queryGenerator = queryInterface.queryGenerator;
+    const q = queryGenerator.addIndexQuery(tableNameInDb, modelMetadata.indexes[indexName].fields, {
+      name: indexNameInDb
+    }, tableNameInDb);
+    return q;
+  }
+
   compareDb(db) {
     const dbSchema = db.schemas.get(this.dbSchemaName);
     const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
     const missedTables = [];
-    const missedColumn = [];
-    allModelMetadatas.forEach(model => {
-      const table = dbSchema.tables.find(t => t.name === model.modelOptions.tableName);
+    const missedColumns = [];
+    let missedColumnsQuery = '';
+    const missedIndexes = [];
+    let missedIndexesQuery = '';
+    const schemas = this.toCoreSchemas();
+
+    if (schemas instanceof Error) {
+      return;
+    }
+
+    Object.keys(this.schemasMetadata.allModels).forEach(modelMetadataName => {
+      const modelMetadata = this.schemasMetadata.allModels[modelMetadataName];
+      const table = dbSchema.tables.find(t => t.name === modelMetadata.modelOptions.tableName);
 
       if (!table) {
-        missedTables.push(model.modelOptions.tableName);
+        missedTables.push(modelMetadata.modelOptions.tableName);
         return;
       }
 
-      Object.values(model.columns).forEach(c => {
+      Object.keys(modelMetadata.columns).forEach(columnName => {
+        const c = modelMetadata.columns[columnName];
+
         if (!c.columnNameInDb) {
           return;
         }
 
-        if (table.name === 'tbl_organization') {
-          console.log('c.columnNameInDb! :', c.columnNameInDb);
-        }
-
         const column = table.columns.find(col => col.name === c.columnNameInDb);
 
-        if (!column) {
-          missedColumn.push(`${table.name}.${c.columnNameInDb}`);
+        if (!column && !c.isAssociationColumn) {
+          const model = modelMetadata.isAssociationModel ? schemas.associationModels[modelMetadataName] : schemas.models[modelMetadataName];
+          const query = this.getAddColumnQuery(model, modelMetadata, columnName);
+          missedColumnsQuery += `
+-- ${modelMetadataName} => ${columnName}
+${query};
+`;
+          missedColumns.push(`${table.name}.${c.columnNameInDb}`);
+        }
+      });
+      Object.keys(modelMetadata.indexes).forEach(indexName => {
+        const indexFromSchema = modelMetadata.indexes[indexName];
+        const index = table.indexes.find(ind => {
+          if (ind.isUnique !== !!indexFromSchema.unique) {
+            return false;
+          }
+
+          const columns = ind.columns.map(c => c.name);
+
+          if (columns.length !== indexFromSchema.fields?.length) {
+            return false;
+          }
+
+          for (let i = 0; i < columns.length; i++) {
+            if (indexFromSchema.fields[i] !== columns[i]) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+
+        if (!index) {
+          const model = modelMetadata.isAssociationModel ? schemas.associationModels[modelMetadataName] : schemas.models[modelMetadataName];
+          console.log('indexName :', indexName);
+          const query = this.getAddIndexQuery(model, modelMetadata, indexName);
+          missedIndexesQuery += `
+-- ${modelMetadataName} => ${indexName}
+${query};
+`;
+          missedIndexes.push(`${table.name}.${indexName}`);
         }
       });
     });
     return {
       missedTables,
-      missedColumn
+      missedColumns,
+      missedColumnsQuery,
+      missedIndexes,
+      missedIndexesQuery
     };
   }
 
@@ -243,7 +330,7 @@ class JsonSchemasX {
     const dbSchema = db.schemas.get(this.dbSchemaName);
     const allModelMetadatas = Object.values(this.schemasMetadata.allModels);
     const missedTables = [];
-    const missedColumn = [];
+    const missedColumns = [];
     dbSchema.tables.forEach(table => {
       const model = allModelMetadatas.find(m => m.modelOptions.tableName === table.name);
 
@@ -258,13 +345,13 @@ class JsonSchemasX {
         const modelColumn = modelColumns.find(c => c.columnNameInDb === column.name);
 
         if (!modelColumn && column.name !== 'created_at' && column.name !== 'updated_at' && column.name !== 'deleted_at') {
-          missedColumn.push(`${table.name}.${column.name}`);
+          missedColumns.push(`${table.name}.${column.name}`);
         }
       }
     });
     return {
       missedTables,
-      missedColumn
+      missedColumns
     };
   }
 

@@ -150,7 +150,8 @@ function normalizeRawSchemas(parsedTables, tableType, models, schemas, rawSchema
     parsedTables[tableName] = {
       isAssociationModel: tableType === 'associationModel',
       modelOptions: table.options,
-      columns: {}
+      columns: {},
+      indexes: {}
     };
   }, (tableName, tableType, table, columnName, column) => {
     if (typeof column === 'string' || Array.isArray(column)) {
@@ -281,12 +282,14 @@ function afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, sch
       if (columnNameInDb) {
         c.columnNameInDb = columnNameInDb;
         c.isForeignKey = false;
+        c.isAssociationColumn = false;
       } else {
         const fk = getForeignKey(c);
 
         if (fk) {
           c.columnNameInDb = fk;
           c.isForeignKey = true;
+          c.isAssociationColumn = true;
         }
       }
     });
@@ -331,6 +334,11 @@ function afterParseRawSchemas(parsedTables, tableType, models, metadata, schemas
         });
       }
     });
+    modelMetadata.indexes = table.options.indexes.map(i => _objectSpread(_objectSpread({}, i), {}, {
+      columns: i.fields?.map(f => typeof f === 'string' ? f : f.name)
+    })).reduce((m, i) => _objectSpread(_objectSpread({}, m), {}, {
+      [i.name]: i
+    }), {});
   }, (tableName, tableType, table, columnName, column) => {
     const modelMetadata = metadata.allModels[tableName];
 

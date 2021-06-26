@@ -261,7 +261,8 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpressionForCreation: column => {
       return toTypeForCreation(column.type[1]);
-    }
+    },
+    getAddColumnExpression: column => ''
   },
   hasMany: {
     associationType: 'hasMany',
@@ -295,7 +296,8 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpressionForCreation: column => {
       return `${toTypeForCreation(column.type[1])}[]`;
-    }
+    },
+    getAddColumnExpression: column => ''
   },
   belongsTo: {
     associationType: 'belongsTo',
@@ -326,7 +328,8 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpressionForCreation: column => {
       return toTypeForCreation(column.type[1]);
-    }
+    },
+    getAddColumnExpression: column => ''
   },
   belongsToMany: {
     associationType: 'belongsToMany',
@@ -409,7 +412,8 @@ exports.typeConfigs = typeConfigs = {
     },
     getTsTypeExpressionForCreation: column => {
       return `${toTypeForCreation(column.type[1])}[]`;
-    }
+    },
+    getAddColumnExpression: column => ''
   },
   integer: {
     sequleizeDataType: _sequelize.default.INTEGER,
@@ -417,7 +421,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.INTEGER),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: column => ''
   },
   bigint: {
     sequleizeDataType: _sequelize.default.BIGINT,
@@ -425,7 +430,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.BIGINT),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: column => ''
   },
   decimal: {
     sequleizeDataType: _sequelize.default.DECIMAL,
@@ -433,7 +439,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(2),
     toCoreColumn: basicToCoreColumn(_sequelize.default.DECIMAL, 2),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: column => ''
   },
   real: {
     sequleizeDataType: _sequelize.default.REAL,
@@ -441,7 +448,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.REAL),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: column => ''
   },
   float: {
     sequleizeDataType: _sequelize.default.FLOAT,
@@ -449,7 +457,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.FLOAT),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: column => ''
   },
   double: {
     sequleizeDataType: _sequelize.default.DOUBLE,
@@ -457,7 +466,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.DOUBLE),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('number'),
+    getAddColumnExpression: column => ''
   },
   boolean: {
     sequleizeDataType: _sequelize.default.BOOLEAN,
@@ -465,7 +475,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.BOOLEAN),
     getTsTypeExpression: basicGetTsTypeExpression('boolean'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('boolean')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('boolean'),
+    getAddColumnExpression: column => ''
   },
   string: {
     sequleizeDataType: _sequelize.default.STRING,
@@ -479,7 +490,8 @@ exports.typeConfigs = typeConfigs = {
     }),
     toCoreColumn: basicToCoreColumn(_sequelize.default.STRING, 1),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: column => ''
   },
   binary: {
     sequleizeDataType: _sequelize.default.BLOB,
@@ -487,7 +499,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.BLOB),
     getTsTypeExpression: basicGetTsTypeExpression('Buffer'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Buffer')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Buffer'),
+    getAddColumnExpression: column => ''
   },
   text: {
     sequleizeDataType: _sequelize.default.TEXT,
@@ -495,7 +508,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.TEXT),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: column => ''
   },
   date: {
     sequleizeDataType: _sequelize.default.DATE,
@@ -503,7 +517,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.DATE),
     getTsTypeExpression: basicGetTsTypeExpression('Date'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date'),
+    getAddColumnExpression: column => ''
   },
   dateonly: {
     sequleizeDataType: _sequelize.default.DATEONLY,
@@ -511,7 +526,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.DATEONLY),
     getTsTypeExpression: basicGetTsTypeExpression('Date'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('Date'),
+    getAddColumnExpression: column => ''
   },
   uuid: {
     sequleizeDataType: _sequelize.default.UUID,
@@ -519,7 +535,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.UUID),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('string'),
+    getAddColumnExpression: column => ''
   },
   range: {
     sequleizeDataType: _sequelize.default.RANGE,
@@ -581,7 +598,8 @@ exports.typeConfigs = typeConfigs = {
         dateonly: '[Date, Date]'
       };
       return rangeTypes[column.type[1]];
-    }
+    },
+    getAddColumnExpression: column => ''
   },
   json: {
     sequleizeDataType: _sequelize.default.JSON,
@@ -589,7 +607,8 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.JSON),
     getTsTypeExpression: basicGetTsTypeExpression('any'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('any')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('any'),
+    getAddColumnExpression: column => ''
   },
   jsonb: {
     sequleizeDataType: _sequelize.default.JSONB,
@@ -597,6 +616,7 @@ exports.typeConfigs = typeConfigs = {
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(_sequelize.default.JSONB),
     getTsTypeExpression: basicGetTsTypeExpression('any'),
-    getTsTypeExpressionForCreation: basicGetTsTypeExpression('any')
+    getTsTypeExpressionForCreation: basicGetTsTypeExpression('any'),
+    getAddColumnExpression: column => ''
   }
 };

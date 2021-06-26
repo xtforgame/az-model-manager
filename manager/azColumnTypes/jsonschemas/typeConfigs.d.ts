@@ -11,6 +11,7 @@ export declare type TypeConfig = {
     toCoreColumn(args: ParseJsonFuncArgs): Error | ModelAttributeColumnOptions<Model>;
     getTsTypeExpression(column: JsonModelAttributeInOptionsForm): string;
     getTsTypeExpressionForCreation(column: JsonModelAttributeInOptionsForm): string;
+    getAddColumnExpression(column: JsonModelAttributeInOptionsForm): string;
 };
 export declare type TypeConfigs = {
     [s: string]: TypeConfig;

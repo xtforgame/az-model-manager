@@ -184,6 +184,7 @@ export function normalizeRawSchemas(
         isAssociationModel: tableType === 'associationModel',
         modelOptions: table.options!,
         columns: {},
+        indexes: {},
       };
     },
     (tableName, tableType, table, columnName, column) => {
@@ -324,11 +325,13 @@ export function afterNormalizeRawSchemas(
         if (columnNameInDb) {
           c.columnNameInDb = columnNameInDb;
           c.isForeignKey = false;
+          c.isAssociationColumn = false;
         } else {
           const fk = getForeignKey(c);
           if (fk) {
             c.columnNameInDb = fk;
             c.isForeignKey = true;
+            c.isAssociationColumn = true;
           }
         }
       })
@@ -403,6 +406,10 @@ export function afterParseRawSchemas(
           });
         }
       });
+      modelMetadata.indexes = table.options!.indexes!.map((i) => ({
+        ...i,
+        columns: i.fields?.map(f => (typeof f === 'string' ? f : (<any>f).name) as string),
+      })).reduce((m, i) => ({ ...m, [i.name!]: i }), <any>{});
     },
     (tableName, tableType, table, columnName, column) => {
       const modelMetadata = metadata.allModels[tableName];
