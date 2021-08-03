@@ -34,7 +34,7 @@ export const ThroughValues = Symbol('through-values');
 // }
 
 const autoInclude = (ammOrm : AmmOrmI, modelName : string, values, inputInclude : any[] | undefined = undefined) => {
-  const ammModel = ammOrm.getAmmModel(modelName);
+  const ammModel = ammOrm.getAmmModel(modelName) || ammOrm.getAmmAssociationModel(modelName);
 
   const includeMap = {};
   let include = inputInclude;
@@ -268,7 +268,7 @@ export default class AmmModel {
       const association = this.associations[associationName];
       let TargetModel = association.targetModel;
       if (typeof TargetModel === 'string') {
-        TargetModel = association.targetModel = this.ammOrm.getSqlzModel(TargetModel)!;
+        TargetModel = association.targetModel = this.ammOrm.getSqlzModel(TargetModel)! || this.ammOrm.getSqlzAssociationModel(TargetModel)!;
       }
 
       let throughModel;

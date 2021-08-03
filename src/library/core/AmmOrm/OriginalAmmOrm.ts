@@ -15,7 +15,7 @@ export default class OriginalAmmOrm {
   db : Sequelize;
   ammSchemas : AmmSchemas;
   tableInfo : { [name : string] : AmmModel };
-  associationModelInfo : { [name : string] : AmmModelI };
+  associationModelInfo : { [name : string] : AssociationModel };
 
   constructor(sequelizeDb : Sequelize, ammSchemas : AmmSchemas) {
     this.db = sequelizeDb;

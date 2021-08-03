@@ -138,6 +138,8 @@ describe('AmmOrm test 05', () => {
       this.timeout(900000);
       const User = ammMgr.ammOrm.getSqlzModel<models.UserI/* can simply use 'any' */, models.UserAttributes, models.UserCreationAttributes>('user');
       const UserGroup = ammMgr.ammOrm.getSqlzModel<models.UserGroupI>('userGroup');
+      const UserMemo = ammMgr.ammOrm.getSqlzAssociationModel<models.UserMemoI>('userMemo');
+      const UserSetting = ammMgr.ammOrm.getSqlzModel<models.UserSettingI>('userSetting');
 
       await ammMgr.sync();
       let user = await User.create({
@@ -184,6 +186,52 @@ describe('AmmOrm test 05', () => {
         // }],
       });
       // console.log('userGroup :', userGroup && userGroup.dataValues);
+
+
+      let userMemo = await UserMemo.create({
+        exData: [{
+          data: {
+            name: 'xxxxx 3',
+          },
+        }],
+      }, {
+        // include: [{
+        //   model: UserMemoEx,
+        //   as: 'exData',
+        // }],
+      });
+      // console.log('userMemo :', userMemo && userMemo.dataValues);
+
+      userMemo = await UserMemo.findOne({
+        where: {
+          id: 2,
+        },
+        include: UserMemo.ammIncloud(['exData']),
+      });
+      console.log('userMemo :', userMemo && userMemo.dataValues);
+
+
+      let userSetting = await UserSetting.create({
+        exData: [{
+          data: {
+            name: 'xxxxx 3',
+          },
+        }],
+      }, {
+        // include: [{
+        //   model: UserSettingEx,
+        //   as: 'exData',
+        // }],
+      });
+      console.log('userSetting :', userSetting && userSetting.dataValues);
+
+      userSetting = await UserSetting.findOne({
+        where: {
+          id: 1,
+        },
+        include: UserSetting.ammIncloud(['exData']),
+      });
+      console.log('userSetting :', userSetting && userSetting.dataValues);
 
       // https://www.pg-structure.com/nav.01.guide/guide--nc/examples.html#connection
       // const result = parser.parse('SELECT * FROM dummy WHERE ((deleted_at IS NULL) AND (owner_id = 1) AND (xxx != 8) AND (kkk IS NOT NULL))');

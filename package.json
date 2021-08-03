@@ -1,6 +1,6 @@
 {
   "name": "az-model-manager",
-  "version": "0.2.11",
+  "version": "0.3.0",
   "description": "Az Model Manager",
   "main": "index.js",
   "repository": {

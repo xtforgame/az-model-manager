@@ -87,7 +87,7 @@ export const basicToCoreColumn : (dataType : DataType, extraNumber? : number) =>
 };
 
 export const parseAssociationOptions : (a : ParseJsonFuncArgs) => AssociationOptions | Error = (args : ParseJsonFuncArgs) => {
-  const targetTableMetadata = args.schemasMetadata.models[args.column.type[1]];
+  const targetTableMetadata = args.schemasMetadata.allModels[args.column.type[1]];
   if (!targetTableMetadata) {
     return new Error(`target table(${args.column.type[1]}) not found`);
   }
@@ -150,8 +150,8 @@ export const toTypeForCreation = str => `${capitalize(str)}CreationAttributes`;
 export let typeConfigs : TypeConfigs;
 
 const getPrimaryKeyFromModel = (args : ParseJsonFuncArgs, tableName : string) : string => {
-  const table = args.schemas.models[tableName];
-  const tableMetadata = args.schemasMetadata.models[tableName];
+  const table = args.schemas.models[tableName] || args.schemas.associationModels![tableName];
+  const tableMetadata = args.schemasMetadata.models[tableName] || args.schemasMetadata.associationModels[tableName];
   const primaryKey = tableMetadata && tableMetadata.primaryKey;
   if (!primaryKey || !table.columns[primaryKey]) {
     return '';

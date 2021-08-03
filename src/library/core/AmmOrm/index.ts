@@ -63,16 +63,17 @@ export default class AmmOrm extends OriginalAmmOrm {
   }
 
   getAssociationIncludeData = (baseModelName : string, associationModelNameAs : string) => {
-    if (!this.ammSchemas.models[baseModelName]) {
+    const model = this.ammSchemas.models[baseModelName] || this.ammSchemas.associationModels![baseModelName];
+    if (!model) {
       console.log('baseModelName, this.ammSchemas.models :', baseModelName, this.ammSchemas.models);
       throw new Error(`Base Model not found: ${baseModelName}`);
       return null;
     }
-    if (!this.ammSchemas.models[baseModelName].columns[associationModelNameAs]) {
+    if (!model.columns[associationModelNameAs]) {
       throw new Error(`Association Model not found: ${associationModelNameAs}`);
       return null;
     }
-    const coType = (<any>this.ammSchemas.models[baseModelName].columns[associationModelNameAs]).type as AssociationColumn;
+    const coType = (<any>model.columns[associationModelNameAs]).type as AssociationColumn;
     if (!isAssociationColumn(coType)) {
       return null;
     }
@@ -83,7 +84,7 @@ export default class AmmOrm extends OriginalAmmOrm {
     } else {
       targetModelName = targetModel;
     }
-    const AssociationModel = this.getSqlzModel(targetModelName);
+    const AssociationModel = this.getSqlzModel(targetModelName) || this.getSqlzAssociationModel(targetModelName);
     return {
       targetModelName: targetModel,
       model: AssociationModel,

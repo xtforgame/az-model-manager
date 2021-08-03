@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize';
 import { AmmModelI, AmmSchemas } from '../interfaces';
 import AmmModel from '../AmmModel';
+import AssociationModel from '../AssociationModel';
 import { ExtendedModelDefined as EMD } from '../utils';
 declare type ExtendedModelDefined<X, S = any, T = any> = EMD<X, S, T> & {
     orm: OriginalAmmOrm;
@@ -14,7 +15,7 @@ export default class OriginalAmmOrm {
         [name: string]: AmmModel;
     };
     associationModelInfo: {
-        [name: string]: AmmModelI;
+        [name: string]: AssociationModel;
     };
     constructor(sequelizeDb: Sequelize, ammSchemas: AmmSchemas);
     sync(force?: boolean): Promise<Sequelize>;

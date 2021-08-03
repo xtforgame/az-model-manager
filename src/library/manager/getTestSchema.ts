@@ -221,6 +221,9 @@ const getSchemas : () => IJsonSchemas = () => ({
           primaryKey: true,
           autoIncrement: true,
         },
+        exData: ['hasOne', 'userMemoEx', {
+          foreignKey: 'user_setting_id',
+        }],
         type: {
           type: ['string', 200],
           defaultValue: 'general',
@@ -640,6 +643,9 @@ const getSchemas : () => IJsonSchemas = () => ({
           autoIncrement: true,
         },
         role: 'string',
+        exData: ['hasOne', 'userMemoEx', {
+          foreignKey: 'user_memo_id',
+        }],
       },
       options: {
         indexes: [
@@ -652,6 +658,25 @@ const getSchemas : () => IJsonSchemas = () => ({
             },
           },
         ],
+      },
+    },
+    userMemoEx: {
+      columns: {
+        id: {
+          type: 'bigint',
+          primaryKey: true,
+          autoIncrement: true,
+        },
+        data: {
+          type: 'jsonb',
+          defaultValue: {},
+        },
+        userMemo: ['belongsTo', 'userMemo', {
+          foreignKey: 'user_memo_id',
+        }],
+        userSetting: ['hasOne', 'userSetting', {
+          foreignKey: 'user_setting_id',
+        }],
       },
     },
   },
