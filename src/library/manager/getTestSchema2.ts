@@ -941,6 +941,9 @@ const getSchemas : () => IJsonSchemas = () => ({
           type: 'jsonb',
           defaultValue: {},
         },
+        userSetting: ['belongsTo', 'userSetting', {
+          foreignKey: 'user_setting_id',
+        }],
         userMemo: ['belongsTo', 'userMemo', {
           foreignKey: 'user_memo_id',
         }],
