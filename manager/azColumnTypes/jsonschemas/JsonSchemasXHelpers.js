@@ -7,6 +7,7 @@ exports.forEachSchema = forEachSchema;
 exports.beforeNormalizeRawSchemas = beforeNormalizeRawSchemas;
 exports.normalizeRawSchemas = normalizeRawSchemas;
 exports.afterNormalizeRawSchemas = afterNormalizeRawSchemas;
+exports.preParseRawSchemas = preParseRawSchemas;
 exports.parseRawSchemas = parseRawSchemas;
 exports.afterParseRawSchemas = afterParseRawSchemas;
 exports.toCoreModels = toCoreModels;
@@ -145,7 +146,7 @@ function beforeNormalizeRawSchemas(metadata, schemas, rawSchemas) {
 }
 
 function normalizeRawSchemas(parsedTables, tableType, models, schemas, rawSchemas) {
-  forEachSchema(tableType, models, (tableName, tableType, table) => {
+  let error = forEachSchema(tableType, models, (tableName, tableType, table) => {
     table.options = (0, _core.getNormalizedModelOptions)(tableName, tableType === 'associationModel' ? schemas.options?.associationModel?.tablePrefix : schemas.options?.model?.tablePrefix, table.options || {});
     parsedTables[tableName] = {
       isAssociationModel: tableType === 'associationModel',
@@ -189,7 +190,8 @@ function normalizeRawSchemas(parsedTables, tableType, models, schemas, rawSchema
 
     parsedTables[tableName].columns[columnName] = _objectSpread({}, column);
   });
-  forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
+  if (error) return error;
+  return forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
     const typeName = column.type[0];
     const typeConfig = _typeConfigs.typeConfigs[typeName];
     const err = typeConfig.normalize({
@@ -251,6 +253,44 @@ function afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, sch
         }
       }
     } else if (column.type[0] === 'belongsToMany') {
+      let targetModelType = 'model';
+      let targetModel = schemas.models[column.type[1]];
+
+      if (!targetModel) {
+        targetModelType = 'associationModel';
+        targetModel = schemas.associationModels[column.type[1]];
+      }
+
+      const options = column.type[2];
+
+      if (options.ammTargetOptions && options.ammTargetAs && !targetModel.columns[options.ammTargetAs]) {
+        const targetColumn = targetModel.columns[options.ammTargetAs] = {
+          type: [column.type[0], tableName, options.ammTargetOptions],
+          extraOptions: {}
+        };
+
+        const c = _typeConfigs.typeConfigs.belongsToMany.parse({
+          table: targetModel,
+          tableType: targetModelType,
+          tableName: column.type[1],
+          column: targetColumn,
+          columnName: options.ammTargetAs,
+          schemasMetadata: metadata,
+          schemas: schemas
+        });
+
+        const associationOptions = c.type[2];
+        const {
+          foreignKey,
+          through: {
+            ammModelName,
+            ammThroughTableColumnAs
+          }
+        } = associationOptions;
+        const associationModel = schemas.associationModels[ammModelName];
+        metadata.associationModels[ammModelName].columns[foreignKey] = _objectSpread({}, associationModel.columns[ammThroughTableColumnAs]);
+      }
+
       const c = _typeConfigs.typeConfigs.belongsToMany.parse({
         table: table,
         tableType,
@@ -296,8 +336,28 @@ function afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, sch
   }, (tableName, tableType, table, columnName, column) => {});
 }
 
+function preParseRawSchemas(schemasMetadata, rawSchemas, tableType, models) {
+  return forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
+    const typeName = column.type[0];
+    const typeConfig = _typeConfigs.typeConfigs[typeName];
+    const result = typeConfig.preParse({
+      schemasMetadata,
+      schemas: rawSchemas,
+      table: table,
+      tableType,
+      tableName,
+      column,
+      columnName
+    });
+
+    if (result instanceof Error) {
+      return result;
+    }
+  });
+}
+
 function parseRawSchemas(schemasMetadata, rawSchemas, tableType, models) {
-  forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
+  return forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
     const typeName = column.type[0];
     const typeConfig = _typeConfigs.typeConfigs[typeName];
     const result = typeConfig.parse({
@@ -319,8 +379,9 @@ function parseRawSchemas(schemasMetadata, rawSchemas, tableType, models) {
 }
 
 function afterParseRawSchemas(parsedTables, tableType, models, metadata, schemas) {
-  forEachSchema(tableType, models, (tableName, tableType, table) => {}, (tableName, tableType, table, columnName, column) => {});
-  forEachSchema(tableType, models, (tableName, tableType, table) => {
+  let error = forEachSchema(tableType, models, (tableName, tableType, table) => {}, (tableName, tableType, table, columnName, column) => {});
+  if (error) return error;
+  return forEachSchema(tableType, models, (tableName, tableType, table) => {
     const modelMetadata = metadata.allModels[tableName];
     table.options.indexes = table.options.indexes || [];
     ['created_at', 'updated_at', 'deleted_at'].map(k => {
@@ -358,7 +419,7 @@ function afterParseRawSchemas(parsedTables, tableType, models, metadata, schemas
 }
 
 function toCoreModels(schemasMetadata, rawSchemas, tableType, models, resultModels) {
-  forEachSchema(tableType, models, (tableName, tableType, table) => {
+  return forEachSchema(tableType, models, (tableName, tableType, table) => {
     resultModels[tableName] = {
       columns: {},
       options: table.options

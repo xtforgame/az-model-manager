@@ -41,6 +41,8 @@ const getSchemas : () => IJsonSchemas = () => ({
         },
         user: ['belongsTo', 'user', {
           foreignKey: 'user_id',
+          ammTargetAs: 'accountLinks',
+          ammTargetHasMany: true,
         }],
         recoveryToken: ['hasOne', 'recoveryToken', {
           foreignKey: 'account_link_id',
@@ -88,9 +90,6 @@ const getSchemas : () => IJsonSchemas = () => ({
           type: 'jsonb',
           defaultValue: {},
         },
-        accountLinks: ['hasMany', 'accountLink', {
-          foreignKey: 'user_id',
-        }],
         // email: ['string', 900],
         picture: 'text',
         data: {
@@ -190,43 +189,6 @@ const getSchemas : () => IJsonSchemas = () => ({
           foreignKey: 'inviter_id',
           otherKey: 'project_id',
         }],
-        leftMessages: ['hasMany', 'contactUsMessage', {
-          foreignKey: 'author_id',
-        }],
-        assignedMessage: ['hasMany', 'contactUsMessage', {
-          foreignKey: 'assignee_id',
-        }],
-        userSettings: ['hasMany', 'userSetting', {
-          foreignKey: 'user_id',
-        }],
-        memos: ['belongsToMany', 'memo', {
-          through: {
-            unique: false,
-            ammModelName: 'userMemo',
-            ammThroughTableColumnAs: 'user',
-            ammThroughAs: 'relation',
-          },
-          foreignKey: 'user_id',
-          otherKey: 'memo_id',
-        }],
-        defaultOrdererInfo: ['hasOne', 'ordererInfo', {
-          foreignKey: 'as_default_to',
-        }],
-        defaultRecipientInfo: ['hasOne', 'recipientInfo', {
-          foreignKey: 'as_default_to',
-        }],
-        ordererInfos: ['hasMany', 'ordererInfo', {
-          foreignKey: 'user_id',
-        }],
-        recipientInfos: ['hasMany', 'recipientInfo', {
-          foreignKey: 'user_id',
-        }],
-        orders: ['hasMany', 'order', {
-          foreignKey: 'user_id',
-        }],
-        subscriptionOrders: ['hasMany', 'subscriptionOrder', {
-          foreignKey: 'user_id',
-        }],
       },
       options: {
         name: {
@@ -264,9 +226,9 @@ const getSchemas : () => IJsonSchemas = () => ({
           primaryKey: true,
           autoIncrement: true,
         },
-        exData: ['hasOne', 'userMemoEx', {
-          foreignKey: 'user_setting_id',
-        }],
+        // exData: ['hasOne', 'userMemoEx', {
+        //   foreignKey: 'user_setting_id',
+        // }],
         type: {
           type: ['string', 200],
           defaultValue: 'general',
@@ -277,6 +239,8 @@ const getSchemas : () => IJsonSchemas = () => ({
         },
         user: ['belongsTo', 'user', {
           foreignKey: 'user_id',
+          ammTargetAs: 'userSettings',
+          ammTargetHasMany: true,
         }],
       },
       options: {
@@ -510,6 +474,17 @@ const getSchemas : () => IJsonSchemas = () => ({
           },
           foreignKey: 'memo_id',
           otherKey: 'user_id',
+          ammTargetOptions: {
+            through: {
+              unique: false,
+              ammModelName: 'userMemo',
+              ammThroughTableColumnAs: 'user',
+              ammThroughAs: 'relation',
+            },
+            foreignKey: 'user_id',
+            otherKey: 'memo_id',
+          },
+          ammTargetAs: 'memos',
         }],
       },
     },
@@ -527,9 +502,13 @@ const getSchemas : () => IJsonSchemas = () => ({
         },
         author: ['belongsTo', 'user', {
           foreignKey: 'author_id',
+          ammTargetAs: 'leftMessages',
+          ammTargetHasMany: true,
         }],
         assignee: ['belongsTo', 'user', {
           foreignKey: 'assignee_id',
+          ammTargetAs: 'assignedMessage',
+          ammTargetHasMany: true,
         }],
         state: {
           type: ['string', 900],
@@ -660,9 +639,12 @@ const getSchemas : () => IJsonSchemas = () => ({
         email2: 'string',
         user: ['belongsTo', 'user', {
           foreignKey: 'user_id',
+          ammTargetAs: 'ordererInfos',
+          ammTargetHasMany: true,
         }],
         asDefaultTo: ['belongsTo', 'user', {
           foreignKey: 'as_default_to',
+          ammTargetAs: 'defaultOrdererInfo',
         }],
       },
     },
@@ -684,9 +666,12 @@ const getSchemas : () => IJsonSchemas = () => ({
         email2: 'string',
         user: ['belongsTo', 'user', {
           foreignKey: 'user_id',
+          ammTargetAs: 'recipientInfos',
+          ammTargetHasMany: true,
         }],
         asDefaultTo: ['belongsTo', 'user', {
           foreignKey: 'as_default_to',
+          ammTargetAs: 'defaultRecipientInfo',
         }],
       },
     },
@@ -713,6 +698,8 @@ const getSchemas : () => IJsonSchemas = () => ({
         },
         user: ['belongsTo', 'user', {
           foreignKey: 'user_id',
+          ammTargetAs: 'orders',
+          ammTargetHasMany: true,
         }],
         products: ['belongsToMany', 'product', {
           through: {
@@ -749,6 +736,8 @@ const getSchemas : () => IJsonSchemas = () => ({
         },
         user: ['belongsTo', 'user', {
           foreignKey: 'user_id',
+          ammTargetAs: 'subscriptionOrders',
+          ammTargetHasMany: true,
         }],
       },
     },
@@ -910,9 +899,9 @@ const getSchemas : () => IJsonSchemas = () => ({
           autoIncrement: true,
         },
         role: 'string',
-        exData: ['hasOne', 'userMemoEx', {
-          foreignKey: 'user_memo_id',
-        }],
+        // exData: ['hasOne', 'userMemoEx', {
+        //   foreignKey: 'user_memo_id',
+        // }],
         userSetting: ['hasOne', 'userSetting', {
           foreignKey: 'user_setting_id',
         }],
@@ -943,9 +932,13 @@ const getSchemas : () => IJsonSchemas = () => ({
         },
         userSetting: ['belongsTo', 'userSetting', {
           foreignKey: 'user_setting_id',
+          ammTargetAs: 'exData',
+          ammTargetHasMany: false,
         }],
         userMemo: ['belongsTo', 'userMemo', {
           foreignKey: 'user_memo_id',
+          ammTargetAs: 'exData',
+          ammTargetHasMany: false,
         }],
       },
     },

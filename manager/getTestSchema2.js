@@ -53,7 +53,9 @@ const getSchemas = () => ({
           defaultValue: {}
         },
         user: ['belongsTo', 'user', {
-          foreignKey: 'user_id'
+          foreignKey: 'user_id',
+          ammTargetAs: 'accountLinks',
+          ammTargetHasMany: true
         }],
         recoveryToken: ['hasOne', 'recoveryToken', {
           foreignKey: 'account_link_id'
@@ -97,9 +99,6 @@ const getSchemas = () => ({
           type: 'jsonb',
           defaultValue: {}
         },
-        accountLinks: ['hasMany', 'accountLink', {
-          foreignKey: 'user_id'
-        }],
         picture: 'text',
         data: {
           type: 'jsonb',
@@ -197,43 +196,6 @@ const getSchemas = () => ({
           },
           foreignKey: 'inviter_id',
           otherKey: 'project_id'
-        }],
-        leftMessages: ['hasMany', 'contactUsMessage', {
-          foreignKey: 'author_id'
-        }],
-        assignedMessage: ['hasMany', 'contactUsMessage', {
-          foreignKey: 'assignee_id'
-        }],
-        userSettings: ['hasMany', 'userSetting', {
-          foreignKey: 'user_id'
-        }],
-        memos: ['belongsToMany', 'memo', {
-          through: {
-            unique: false,
-            ammModelName: 'userMemo',
-            ammThroughTableColumnAs: 'user',
-            ammThroughAs: 'relation'
-          },
-          foreignKey: 'user_id',
-          otherKey: 'memo_id'
-        }],
-        defaultOrdererInfo: ['hasOne', 'ordererInfo', {
-          foreignKey: 'as_default_to'
-        }],
-        defaultRecipientInfo: ['hasOne', 'recipientInfo', {
-          foreignKey: 'as_default_to'
-        }],
-        ordererInfos: ['hasMany', 'ordererInfo', {
-          foreignKey: 'user_id'
-        }],
-        recipientInfos: ['hasMany', 'recipientInfo', {
-          foreignKey: 'user_id'
-        }],
-        orders: ['hasMany', 'order', {
-          foreignKey: 'user_id'
-        }],
-        subscriptionOrders: ['hasMany', 'subscriptionOrder', {
-          foreignKey: 'user_id'
         }]
       },
       options: {
@@ -268,9 +230,6 @@ const getSchemas = () => ({
           primaryKey: true,
           autoIncrement: true
         },
-        exData: ['hasOne', 'userMemoEx', {
-          foreignKey: 'user_setting_id'
-        }],
         type: {
           type: ['string', 200],
           defaultValue: 'general'
@@ -280,7 +239,9 @@ const getSchemas = () => ({
           defaultValue: {}
         },
         user: ['belongsTo', 'user', {
-          foreignKey: 'user_id'
+          foreignKey: 'user_id',
+          ammTargetAs: 'userSettings',
+          ammTargetHasMany: true
         }]
       },
       options: {
@@ -505,7 +466,18 @@ const getSchemas = () => ({
             ammThroughAs: 'relation'
           },
           foreignKey: 'memo_id',
-          otherKey: 'user_id'
+          otherKey: 'user_id',
+          ammTargetOptions: {
+            through: {
+              unique: false,
+              ammModelName: 'userMemo',
+              ammThroughTableColumnAs: 'user',
+              ammThroughAs: 'relation'
+            },
+            foreignKey: 'user_id',
+            otherKey: 'memo_id'
+          },
+          ammTargetAs: 'memos'
         }]
       }
     },
@@ -522,10 +494,14 @@ const getSchemas = () => ({
           defaultValue: {}
         },
         author: ['belongsTo', 'user', {
-          foreignKey: 'author_id'
+          foreignKey: 'author_id',
+          ammTargetAs: 'leftMessages',
+          ammTargetHasMany: true
         }],
         assignee: ['belongsTo', 'user', {
-          foreignKey: 'assignee_id'
+          foreignKey: 'assignee_id',
+          ammTargetAs: 'assignedMessage',
+          ammTargetHasMany: true
         }],
         state: {
           type: ['string', 900],
@@ -655,10 +631,13 @@ const getSchemas = () => ({
         email1: 'string',
         email2: 'string',
         user: ['belongsTo', 'user', {
-          foreignKey: 'user_id'
+          foreignKey: 'user_id',
+          ammTargetAs: 'ordererInfos',
+          ammTargetHasMany: true
         }],
         asDefaultTo: ['belongsTo', 'user', {
-          foreignKey: 'as_default_to'
+          foreignKey: 'as_default_to',
+          ammTargetAs: 'defaultOrdererInfo'
         }]
       }
     },
@@ -679,10 +658,13 @@ const getSchemas = () => ({
         email1: 'string',
         email2: 'string',
         user: ['belongsTo', 'user', {
-          foreignKey: 'user_id'
+          foreignKey: 'user_id',
+          ammTargetAs: 'recipientInfos',
+          ammTargetHasMany: true
         }],
         asDefaultTo: ['belongsTo', 'user', {
-          foreignKey: 'as_default_to'
+          foreignKey: 'as_default_to',
+          ammTargetAs: 'defaultRecipientInfo'
         }]
       }
     },
@@ -708,7 +690,9 @@ const getSchemas = () => ({
           defaultValue: {}
         },
         user: ['belongsTo', 'user', {
-          foreignKey: 'user_id'
+          foreignKey: 'user_id',
+          ammTargetAs: 'orders',
+          ammTargetHasMany: true
         }],
         products: ['belongsToMany', 'product', {
           through: {
@@ -744,7 +728,9 @@ const getSchemas = () => ({
           defaultValue: {}
         },
         user: ['belongsTo', 'user', {
-          foreignKey: 'user_id'
+          foreignKey: 'user_id',
+          ammTargetAs: 'subscriptionOrders',
+          ammTargetHasMany: true
         }]
       }
     }
@@ -894,9 +880,6 @@ const getSchemas = () => ({
           autoIncrement: true
         },
         role: 'string',
-        exData: ['hasOne', 'userMemoEx', {
-          foreignKey: 'user_memo_id'
-        }],
         userSetting: ['hasOne', 'userSetting', {
           foreignKey: 'user_setting_id'
         }]
@@ -923,8 +906,15 @@ const getSchemas = () => ({
           type: 'jsonb',
           defaultValue: {}
         },
+        userSetting: ['belongsTo', 'userSetting', {
+          foreignKey: 'user_setting_id',
+          ammTargetAs: 'exData',
+          ammTargetHasMany: false
+        }],
         userMemo: ['belongsTo', 'userMemo', {
-          foreignKey: 'user_memo_id'
+          foreignKey: 'user_memo_id',
+          ammTargetAs: 'exData',
+          ammTargetHasMany: false
         }]
       }
     },

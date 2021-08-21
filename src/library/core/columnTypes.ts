@@ -41,11 +41,19 @@ export type ExtraAssociationOptions = {
   ammAs?: string;
 };
 
-export type BelongsToManyOptions = Overwrite<BTMO, {
+export type BelongsToManyOptionsBase = Overwrite<BTMO, {
   through: ThroughOptions; // string | ThroughOptions;
 }> & ExtraAssociationOptions;
+
+export type BelongsToManyOptions = BelongsToManyOptionsBase & {
+  ammTargetOptions?: BelongsToManyOptionsBase;
+  ammTargetAs?: string;
+};
 export type HasOneOptions = HOO & ExtraAssociationOptions;
-export type BelongsToOptions = BTO & ExtraAssociationOptions;
+export type BelongsToOptions = BTO & ExtraAssociationOptions & {
+  ammTargetAs?: string;
+  ammTargetHasMany?: boolean;
+};
 export type HasManyOptions = HMO & ExtraAssociationOptions;
 
 export type AssociationColumnOption = BelongsToManyOptions | HasOneOptions | BelongsToOptions | HasManyOptions;

@@ -18,6 +18,9 @@ export declare function afterNormalizeRawSchemas(parsedTables: {
 }, tableType: RawSchemaType, models: {
     [s: string]: IJsonSchema;
 }, metadata: SchemasMetadata, schemas: IJsonSchemas): Error | void;
+export declare function preParseRawSchemas(schemasMetadata: SchemasMetadata, rawSchemas: IJsonSchemas, tableType: RawSchemaType, models: {
+    [s: string]: IJsonSchema;
+}): Error | void;
 export declare function parseRawSchemas(schemasMetadata: SchemasMetadata, rawSchemas: IJsonSchemas, tableType: RawSchemaType, models: {
     [s: string]: IJsonSchema;
 }): Error | void;

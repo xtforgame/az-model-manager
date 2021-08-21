@@ -17,11 +17,18 @@ export declare type ThroughOptions = Overwrite<TO, {
 export declare type ExtraAssociationOptions = {
     ammAs?: string;
 };
-export declare type BelongsToManyOptions = Overwrite<BTMO, {
+export declare type BelongsToManyOptionsBase = Overwrite<BTMO, {
     through: ThroughOptions;
 }> & ExtraAssociationOptions;
+export declare type BelongsToManyOptions = BelongsToManyOptionsBase & {
+    ammTargetOptions?: BelongsToManyOptionsBase;
+    ammTargetAs?: string;
+};
 export declare type HasOneOptions = HOO & ExtraAssociationOptions;
-export declare type BelongsToOptions = BTO & ExtraAssociationOptions;
+export declare type BelongsToOptions = BTO & ExtraAssociationOptions & {
+    ammTargetAs?: string;
+    ammTargetHasMany?: boolean;
+};
 export declare type HasManyOptions = HMO & ExtraAssociationOptions;
 export declare type AssociationColumnOption = BelongsToManyOptions | HasOneOptions | BelongsToOptions | HasManyOptions;
 export interface AssociationColumnExtraOption {

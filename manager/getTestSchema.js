@@ -652,7 +652,7 @@ const getSchemas = () => ({
         userMemo: ['belongsTo', 'userMemo', {
           foreignKey: 'user_memo_id'
         }],
-        userSetting: ['hasOne', 'userSetting', {
+        userSetting: ['belongsTo', 'userSetting', {
           foreignKey: 'user_setting_id'
         }]
       }

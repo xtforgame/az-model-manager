@@ -7,6 +7,7 @@ export declare type TypeConfig = {
     sequleizeDataType?: AbstractDataTypeConstructor;
     associationType?: AssociationType;
     normalize(args: NormalizeJsonFuncArgs): Error | void;
+    preParse(args: ParseJsonFuncArgs): Error | void;
     parse(args: ParseJsonFuncArgs): Error | JsonModelAttributeInOptionsForm;
     toCoreColumn(args: ParseJsonFuncArgs): Error | ModelAttributeColumnOptions<Model>;
     getTsTypeExpression(column: JsonModelAttributeInOptionsForm): string;

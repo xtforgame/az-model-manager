@@ -38,6 +38,7 @@ export type TypeConfig = {
   sequleizeDataType?: AbstractDataTypeConstructor,
   associationType?: AssociationType,
   normalize(args : NormalizeJsonFuncArgs) : Error | void;
+  preParse(args : ParseJsonFuncArgs) : Error | void;
   parse(args : ParseJsonFuncArgs) : Error | JsonModelAttributeInOptionsForm;
   toCoreColumn(args : ParseJsonFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
   getTsTypeExpression(column : JsonModelAttributeInOptionsForm) : string;
@@ -222,6 +223,7 @@ typeConfigs = {
   hasOne: {
     associationType: 'hasOne',
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: (args : ParseJsonFuncArgs) => {
       const associationOptions : HasOneOptions | Error = parseAssociationOptions(args);
       if (associationOptions instanceof Error) {
@@ -254,6 +256,7 @@ typeConfigs = {
   hasMany: {
     associationType: 'hasMany',
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: (args : ParseJsonFuncArgs) => {
       const associationOptions : HasManyOptions | Error = parseAssociationOptions(args);
       if (associationOptions instanceof Error) {
@@ -289,6 +292,33 @@ typeConfigs = {
   belongsTo: {
     associationType: 'belongsTo',
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => {
+      const associationOptions : BelongsToOptions | Error = parseAssociationOptions(args);
+      if (associationOptions instanceof Error) {
+        return associationOptions;
+      }
+      const options = args.column.type[2];
+      normalizeForeignKey(args, args.column.type[1], associationOptions);
+      normalizeTargetKey(args, associationOptions);
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = args.columnName;
+
+      const { ammTargetAs, ammTargetHasMany } = options;
+      const targetModel = args.schemas.models[args.column.type[1]] || args.schemas.associationModels![args.column.type[1]];
+      if (ammTargetAs && !targetModel.columns[ammTargetAs]) {
+        targetModel.columns[ammTargetAs] = {
+          type: [
+            ammTargetHasMany ? 'hasMany' : 'hasOne',
+            args.tableName,
+            {
+              foreignKey: associationOptions.foreignKey as string,
+            },
+          ],
+          extraOptions: {},
+        };
+      }
+      return;
+    },
     parse: (args : ParseJsonFuncArgs) => {
       const associationOptions : BelongsToOptions | Error = parseAssociationOptions(args);
       if (associationOptions instanceof Error) {
@@ -321,7 +351,7 @@ typeConfigs = {
   belongsToMany: {
     associationType: 'belongsToMany',
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
-    parse: (args : ParseJsonFuncArgs) => {
+    preParse: (args : ParseJsonFuncArgs) => {
       const associationOptions : BelongsToManyOptions | Error = <any>parseAssociationOptions(args);
       if (associationOptions instanceof Error) {
         return associationOptions;
@@ -376,6 +406,60 @@ typeConfigs = {
       // console.log('associationModel :', associationModel.columns.id.type);
       // console.log('otherKey :', associationOptions.otherKey);
       // associationOptions.foreignKey = `ssss:${xid++}`;
+      return ;
+    },
+    parse: (args : ParseJsonFuncArgs) => {
+      const associationOptions : BelongsToManyOptions | Error = <any>parseAssociationOptions(args);
+      if (associationOptions instanceof Error) {
+        return associationOptions;
+      }
+      const options = args.column.type[2];
+      normalizeSourceKey(args, associationOptions);
+      normalizeForeignKey(args, args.tableName, associationOptions);
+      normalizeOtherKey(args, associationOptions);
+      associationOptions.onDelete = 'SET NULL';
+      if (!options.through) {
+        return new Error('no through provided');
+      }
+      associationOptions.through = options.through;
+      let throughTableName = '';
+      if (typeof associationOptions.through !== 'string') {
+        throughTableName = associationOptions.through.ammModelName;
+      } else {
+        associationOptions.through = { ammModelName: associationOptions.through, ammThroughTableColumnAs: args.tableName };
+        throughTableName = associationOptions.through.ammModelName;
+      }
+      if (!args.schemas.associationModels || !args.schemas.associationModels[throughTableName]) {
+        return new Error(`associationModels not found(${throughTableName})`);
+      }
+      const ammThroughAs = associationOptions.through.ammThroughAs;
+      if (ammThroughAs && args.table.columns[ammThroughAs]) {
+        return new Error(`ammThroughAs name already taken(${ammThroughAs})`);
+      }
+      associationOptions.ammAs = args.columnName;
+      associationOptions.as = {
+        plural: sequelize.Utils.pluralize(associationOptions.ammAs),
+        singular: sequelize.Utils.singularize(associationOptions.ammAs),
+      };
+      const associationModel = args.schemas.associationModels[throughTableName];
+      const { ammThroughTableColumnAs } = associationOptions.through;
+      if (!associationModel.columns[ammThroughTableColumnAs]) {
+        associationModel.columns[ammThroughTableColumnAs] = {
+          type: [
+            'belongsTo',
+            args.tableName,
+            {
+              foreignKey: associationOptions.foreignKey as string,
+              onDelete: 'CASCADE',
+              onUpdate: 'CASCADE',
+              targetKey: 'id',
+              ammAs: ammThroughTableColumnAs,
+              as: ammThroughTableColumnAs,
+            },
+          ],
+          extraOptions: {},
+        };
+      }
       return {
         ...args.column,
         type: [args.column.type[0], args.column.type[1], associationOptions],
@@ -399,6 +483,7 @@ typeConfigs = {
   integer: { // JsonModelTypeInteger
     sequleizeDataType: sequelize.INTEGER,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.INTEGER),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
@@ -408,6 +493,7 @@ typeConfigs = {
   bigint: { // JsonModelTypeBigint
     sequleizeDataType: sequelize.BIGINT,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.BIGINT),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
@@ -417,6 +503,7 @@ typeConfigs = {
   decimal: { // JsonModelTypeDecimal
     sequleizeDataType: sequelize.DECIMAL,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(2),
     toCoreColumn: basicToCoreColumn(sequelize.DECIMAL, 2),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
@@ -426,6 +513,7 @@ typeConfigs = {
   real: { // JsonModelTypeReal
     sequleizeDataType: sequelize.REAL,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.REAL),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
@@ -435,6 +523,7 @@ typeConfigs = {
   float: { // JsonModelTypeFloat
     sequleizeDataType: sequelize.FLOAT,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.FLOAT),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
@@ -444,6 +533,7 @@ typeConfigs = {
   double: { // JsonModelTypeDouble
     sequleizeDataType: sequelize.DOUBLE,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.DOUBLE),
     getTsTypeExpression: basicGetTsTypeExpression('number'),
@@ -453,6 +543,7 @@ typeConfigs = {
   boolean: { // JsonModelTypeBoolean
     sequleizeDataType: sequelize.BOOLEAN,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.BOOLEAN),
     getTsTypeExpression: basicGetTsTypeExpression('boolean'),
@@ -462,6 +553,7 @@ typeConfigs = {
   string: { // JsonModelTypeString
     sequleizeDataType: sequelize.STRING,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(1, (r : any) => {
       if (r.type.length === 1) {
         r.type = ['string', 255];
@@ -476,6 +568,7 @@ typeConfigs = {
   binary: { // JsonModelTypeBinary
     sequleizeDataType: sequelize.BLOB,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.BLOB),
     getTsTypeExpression: basicGetTsTypeExpression('Buffer'),
@@ -485,6 +578,7 @@ typeConfigs = {
   text: { // JsonModelTypeText
     sequleizeDataType: sequelize.TEXT,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.TEXT),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
@@ -494,6 +588,7 @@ typeConfigs = {
   date: { // JsonModelTypeDate
     sequleizeDataType: sequelize.DATE,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.DATE),
     getTsTypeExpression: basicGetTsTypeExpression('Date'),
@@ -503,6 +598,7 @@ typeConfigs = {
   dateonly: { // JsonModelTypeDateOnly
     sequleizeDataType: sequelize.DATEONLY,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.DATEONLY),
     getTsTypeExpression: basicGetTsTypeExpression('Date'),
@@ -512,6 +608,7 @@ typeConfigs = {
   uuid: { // JsonModelTypeUuid
     sequleizeDataType: sequelize.UUID,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.UUID),
     getTsTypeExpression: basicGetTsTypeExpression('string'),
@@ -521,6 +618,7 @@ typeConfigs = {
   range: { // JsonModelTypeRange
     sequleizeDataType: sequelize.RANGE,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(1),
     toCoreColumn: (args : ParseJsonFuncArgs) => {
       const { type, ...rest } = args.column;
@@ -577,6 +675,7 @@ typeConfigs = {
   json: { // JsonModelTypeJson
     sequleizeDataType: sequelize.JSON,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.JSON),
     getTsTypeExpression: basicGetTsTypeExpression('any'),
@@ -586,6 +685,7 @@ typeConfigs = {
   jsonb: { // JsonModelTypeJsonb
     sequleizeDataType: sequelize.JSONB,
     normalize: (args : NormalizeJsonFuncArgs) => undefined,
+    preParse: (args : ParseJsonFuncArgs) => undefined,
     parse: basicParse(),
     toCoreColumn: basicToCoreColumn(sequelize.JSONB),
     getTsTypeExpression: basicGetTsTypeExpression('any'),

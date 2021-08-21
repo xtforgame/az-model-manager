@@ -64,6 +64,7 @@ import {
   normalizeRawSchemas,
   afterNormalizeRawSchemas,
   afterParseRawSchemas,
+  preParseRawSchemas,
   parseRawSchemas,
   toCoreModels,
 } from './JsonSchemasXHelpers';
@@ -200,9 +201,14 @@ export class JsonSchemasX {
     err = this.afterNormalizeRawSchemas();
     if (err) { return err; }
     const { schemasMetadata, schemas } = this;
+    err = preParseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
+    if (err) return err;
+    err = preParseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
+    if (err) return err;
     err = parseRawSchemas(schemasMetadata, schemas, 'model', this.schemas.models);
     if (err) return err;
     err = parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
+    if (err) return err;
     this.parsed = false;
 
     err = this.afterParseRawSchemas();

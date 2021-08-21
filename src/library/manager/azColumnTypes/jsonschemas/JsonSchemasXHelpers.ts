@@ -175,7 +175,7 @@ export function normalizeRawSchemas(
   schemas: IJsonSchemas,
   rawSchemas: RawSchemas,
 ) : Error | void {
-  forEachSchema(
+  let error = forEachSchema(
     tableType,
     models,
     (tableName, tableType, table) => {
@@ -215,8 +215,8 @@ export function normalizeRawSchemas(
       parsedTables[tableName].columns[columnName] = { ...column };
     },
   );
-
-  forEachSchema<JsonModelAttributeInOptionsForm>(
+  if (error) return error;
+  return forEachSchema<JsonModelAttributeInOptionsForm>(
     tableType,
     models,
     null,
@@ -297,6 +297,36 @@ export function afterNormalizeRawSchemas(
           }
         }
       } else if (column.type[0] === 'belongsToMany') {
+        let targetModelType : RawSchemaType = 'model';
+        let targetModel = schemas.models[column.type[1]];
+        if (!targetModel) {
+          targetModelType = 'associationModel';
+          targetModel = schemas.associationModels[column.type[1]];
+        }
+        const options : BelongsToManyOptions = column.type[2] as BelongsToManyOptions;
+        if (options.ammTargetOptions && options.ammTargetAs && !targetModel.columns[options.ammTargetAs]) {
+          const targetColumn = targetModel.columns[options.ammTargetAs] = {
+            type: [
+              column.type[0],
+              tableName,
+              options.ammTargetOptions,
+            ],
+            extraOptions: {},
+          };
+          const c = typeConfigs.belongsToMany.parse({
+            table: <any>targetModel,
+            tableType: targetModelType,
+            tableName: column.type[1],
+            column: targetColumn,
+            columnName: options.ammTargetAs,
+            schemasMetadata: metadata,
+            schemas: <any>schemas,
+          });
+          const associationOptions : BelongsToManyOptions = (<any>c).type[2];
+          const { foreignKey,  through: { ammModelName, ammThroughTableColumnAs } } = associationOptions;
+          const associationModel = schemas.associationModels[ammModelName];
+          metadata.associationModels[ammModelName].columns[<any>foreignKey] = { ...<any>associationModel.columns[ammThroughTableColumnAs] };
+        }
         const c = typeConfigs.belongsToMany.parse({
           table: <any>table,
           tableType,
@@ -341,13 +371,43 @@ export function afterNormalizeRawSchemas(
   );
 }
 
+export function preParseRawSchemas(
+  schemasMetadata : SchemasMetadata,
+  rawSchemas : IJsonSchemas,
+  tableType : RawSchemaType,
+  models : { [s: string]: IJsonSchema; },
+) : Error | void {
+  return forEachSchema<JsonModelAttributeInOptionsForm>(
+    tableType,
+    models,
+    null,
+    (tableName, tableType, table, columnName, column) => {
+      const typeName = column.type[0];
+      const typeConfig = typeConfigs[typeName];
+      const result = typeConfig.preParse({
+        schemasMetadata,
+        schemas: <any>rawSchemas,
+        table: <any>table,
+        tableType,
+        tableName,
+        column,
+        columnName,
+      });
+      if (result instanceof Error) {
+        return result;
+      }
+    },
+  );
+}
+
+
 export function parseRawSchemas(
   schemasMetadata : SchemasMetadata,
   rawSchemas : IJsonSchemas,
   tableType : RawSchemaType,
   models : { [s: string]: IJsonSchema; },
 ) : Error | void {
-  forEachSchema<JsonModelAttributeInOptionsForm>(
+  return forEachSchema<JsonModelAttributeInOptionsForm>(
     tableType,
     models,
     null,
@@ -380,7 +440,7 @@ export function afterParseRawSchemas(
   metadata: SchemasMetadata,
   schemas: IJsonSchemas,
 ) : Error | void {
-  forEachSchema(
+  let error = forEachSchema(
     tableType,
     models,
     (tableName, tableType, table) => {
@@ -388,8 +448,8 @@ export function afterParseRawSchemas(
     (tableName, tableType, table, columnName, column) => {
     },
   );
-
-  forEachSchema<JsonModelAttributeInOptionsForm>(
+  if (error) return error;
+  return forEachSchema<JsonModelAttributeInOptionsForm>(
     tableType,
     models,
     (tableName, tableType, table) => {
@@ -436,7 +496,7 @@ export function toCoreModels(
   models : { [s: string]: IJsonSchema; },
   resultModels: { [s: string]: AmmSchema; },
 ) : (Error | void) {
-  forEachSchema<JsonModelAttributeInOptionsForm>(
+  return forEachSchema<JsonModelAttributeInOptionsForm>(
     tableType,
     models,
     (tableName, tableType, table) => {
