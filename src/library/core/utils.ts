@@ -34,20 +34,19 @@ import {
 
 export type ColumnExtraOptions = {
   requiredOnCreation?: boolean;
-  [s : string]: any;
 };
 
 export type ModelExtraOptions = {
   [s : string]: any;
 };
 
-export type ModelAttributeColumnOptions<M extends Model = Model> = MACO<M> & { extraOptions?: ColumnExtraOptions };
+export type ModelAttributeColumnOptions<M extends Model = Model, CEO = any> = MACO<M> & { extraOptions?: CEO & ColumnExtraOptions };
 
-export type ModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
+export type ModelAttributes<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
   /**
    * The description of a database column
    */
-  [name in keyof TCreationAttributes]: DataType | ModelAttributeColumnOptions<M>;
+  [name in keyof TCreationAttributes]: DataType | ModelAttributeColumnOptions<M, CEO>;
 }
 export type ModelOptions<M extends Model = Model> = MO<M> & { extraOptions?: ModelExtraOptions };
 

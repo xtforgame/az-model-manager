@@ -215,20 +215,20 @@ export interface JsonModelAttributeColumnOptions<M extends Model = Model> {
   ammReferences?: AmmModelAttributeColumnReferencesOptions;
 }
 
-export type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
-export type NormalizedJsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-  [name in keyof TCreationAttributes]: JsonModelAttributeInOptionsForm<M, TCreationAttributes>;
+export type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any, CEO = any> = Overwrite<ModelAttributeColumnOptions<M, CEO>, JsonModelAttributeColumnOptions<M>>;
+export type NormalizedJsonModelAttributes<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
+  [name in keyof TCreationAttributes]: JsonModelAttributeInOptionsForm<M, TCreationAttributes, CEO>;
 };
 
 
-export type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes> | JsonModelAttributeColumn;
+export type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any, CEO = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes, CEO> | JsonModelAttributeColumn;
 
-export type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-  [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes>;
+export type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
+  [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes, CEO>;
 };
 
-export type IJsonSchema<ModelExtraOptions = any> = {
-  columns: JsonModelAttributes;
+export type IJsonSchema<ModelExtraOptions = any, CEO = any> = {
+  columns: JsonModelAttributes<any, any, CEO>;
   options?: ModelOptions;
   extraOptions?: ModelExtraOptions;
 };
@@ -242,9 +242,9 @@ export type IJsonSchemasOptions<ModelExtraOptions = any, ExtraOptions = any> = {
   associationModel?: IJsonSchemasModelOptions<ModelExtraOptions, ExtraOptions>;
 };
 
-export type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any> = {
-  models: { [s: string]: IJsonSchema<ModelExtraOptions>; };
-  associationModels: { [s: string]: IJsonSchema<ModelExtraOptions>; };
+export type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any, CEO = any> = {
+  models: { [s: string]: IJsonSchema<ModelExtraOptions, CEO>; };
+  associationModels: { [s: string]: IJsonSchema<ModelExtraOptions, CEO>; };
   options?: IJsonSchemasOptions<ModelExtraOptions, ExtraOptions>;
   extraOptions?: ExtraOptions;
 };

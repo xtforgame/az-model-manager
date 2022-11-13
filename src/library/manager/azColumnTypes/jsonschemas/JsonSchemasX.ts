@@ -30,7 +30,6 @@ import {
 } from './typeConfigs';
 
 import {
-  RawModelAttributeColumnOptions,
   RawModelAttributes,
   RawSchema,
   RawSchemas,
@@ -46,10 +45,8 @@ import {
   AmmSchema,
   AmmSchemas,
   Overwrite,
-  ModelAttributeColumnOptions,
   getNormalizedModelOptions,
   BelongsToOptions,
-  ColumnExtraOptions,
 } from '../../../core';
 
 import {

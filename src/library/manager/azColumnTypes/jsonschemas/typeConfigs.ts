@@ -40,7 +40,7 @@ export type TypeConfig = {
   normalize(args : NormalizeJsonFuncArgs) : Error | void;
   preParse(args : ParseJsonFuncArgs) : Error | void;
   parse(args : ParseJsonFuncArgs) : Error | JsonModelAttributeInOptionsForm;
-  toCoreColumn(args : ParseJsonFuncArgs) : Error | ModelAttributeColumnOptions<Model>;
+  toCoreColumn(args : ParseJsonFuncArgs) : Error | ModelAttributeColumnOptions<Model, any>;
   getTsTypeExpression(column : JsonModelAttributeInOptionsForm) : string;
   getTsTypeExpressionForCreation(column : JsonModelAttributeInOptionsForm) : string;
   getAddColumnExpression(column : JsonModelAttributeInOptionsForm) : string;
@@ -68,7 +68,7 @@ export const basicParse : (extraNumber? : number, normalize?: (r : JsonModelAttr
   return new Error(`wrong type length(${type.length})`);
 };
 
-export const basicToCoreColumn : (dataType : DataType, extraNumber? : number) => (args : ParseJsonFuncArgs) => Error | ModelAttributeColumnOptions<Model> = (dataType : DataType, extraNumber : number = 0) => (args : ParseJsonFuncArgs) => {
+export const basicToCoreColumn : (dataType : DataType, extraNumber? : number) => (args : ParseJsonFuncArgs) => Error | ModelAttributeColumnOptions<Model, any> = (dataType : DataType, extraNumber : number = 0) => (args : ParseJsonFuncArgs) => {
   const { type, ...rest } = args.column;
   if (!type.length) {
     return new Error('no type attribute');

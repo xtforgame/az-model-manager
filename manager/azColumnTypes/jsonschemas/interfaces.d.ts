@@ -7,19 +7,19 @@ export interface RawModelAttributeColumnOptions<M extends Model = Model> {
     type: [string, ...any[]];
     ammReferences?: AmmModelAttributeColumnReferencesOptions;
 }
-export declare type RawModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-    [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M>, RawModelAttributeColumnOptions<M>>;
+export declare type RawModelAttributes<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
+    [name in keyof TCreationAttributes]: Overwrite<ModelAttributeColumnOptions<M, CEO>, RawModelAttributeColumnOptions<M>>;
 };
-export declare type RawSchema = {
-    columns: RawModelAttributes;
+export declare type RawSchema<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
+    columns: RawModelAttributes<M, TCreationAttributes, CEO>;
     options?: ModelOptions;
 };
-export declare type RawSchemas = {
+export declare type RawSchemas<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
     models: {
-        [s: string]: RawSchema;
+        [s: string]: RawSchema<M, TCreationAttributes, CEO>;
     };
     associationModels?: {
-        [s: string]: RawSchema;
+        [s: string]: RawSchema<M, TCreationAttributes, CEO>;
     };
     options?: IJsonSchemasOptions;
 };
@@ -55,14 +55,14 @@ export declare type SchemasMetadata = {
         [s: string]: ParsedTableInfo;
     };
 };
-export declare type NormalizeJsonFuncArgs = {
-    table: RawSchema;
+export declare type NormalizeJsonFuncArgs<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
+    table: RawSchema<M, TCreationAttributes, CEO>;
     tableType: RawSchemaType;
     tableName: string;
     column: any;
     columnName: string;
 };
-export declare type ParseJsonFuncArgs = NormalizeJsonFuncArgs & {
+export declare type ParseJsonFuncArgs<M extends Model = Model, TCreationAttributes = any, CEO = any> = NormalizeJsonFuncArgs<M, TCreationAttributes, CEO> & {
     schemasMetadata: SchemasMetadata;
-    schemas: RawSchemas;
+    schemas: RawSchemas<M, TCreationAttributes, CEO>;
 };

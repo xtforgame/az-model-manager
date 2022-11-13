@@ -109,16 +109,16 @@ export interface JsonModelAttributeColumnOptions<M extends Model = Model> {
     type: JsonModelAttributeColumn;
     ammReferences?: AmmModelAttributeColumnReferencesOptions;
 }
-export declare type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any> = Overwrite<ModelAttributeColumnOptions<M>, JsonModelAttributeColumnOptions<M>>;
-export declare type NormalizedJsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-    [name in keyof TCreationAttributes]: JsonModelAttributeInOptionsForm<M, TCreationAttributes>;
+export declare type JsonModelAttributeInOptionsForm<M extends Model = Model, TCreationAttributes = any, CEO = any> = Overwrite<ModelAttributeColumnOptions<M, CEO>, JsonModelAttributeColumnOptions<M>>;
+export declare type NormalizedJsonModelAttributes<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
+    [name in keyof TCreationAttributes]: JsonModelAttributeInOptionsForm<M, TCreationAttributes, CEO>;
 };
-export declare type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes> | JsonModelAttributeColumn;
-export declare type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any> = {
-    [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes>;
+export declare type JsonModelAllAttributeType<M extends Model = Model, TCreationAttributes = any, CEO = any> = JsonModelAttributeInOptionsForm<M, TCreationAttributes, CEO> | JsonModelAttributeColumn;
+export declare type JsonModelAttributes<M extends Model = Model, TCreationAttributes = any, CEO = any> = {
+    [name in keyof TCreationAttributes]: JsonModelAllAttributeType<M, TCreationAttributes, CEO>;
 };
-export declare type IJsonSchema<ModelExtraOptions = any> = {
-    columns: JsonModelAttributes;
+export declare type IJsonSchema<ModelExtraOptions = any, CEO = any> = {
+    columns: JsonModelAttributes<any, any, CEO>;
     options?: ModelOptions;
     extraOptions?: ModelExtraOptions;
 };
@@ -129,12 +129,12 @@ export declare type IJsonSchemasOptions<ModelExtraOptions = any, ExtraOptions = 
     model?: IJsonSchemasModelOptions<ModelExtraOptions, ExtraOptions>;
     associationModel?: IJsonSchemasModelOptions<ModelExtraOptions, ExtraOptions>;
 };
-export declare type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any> = {
+export declare type IJsonSchemas<ModelExtraOptions = any, ExtraOptions = any, CEO = any> = {
     models: {
-        [s: string]: IJsonSchema<ModelExtraOptions>;
+        [s: string]: IJsonSchema<ModelExtraOptions, CEO>;
     };
     associationModels: {
-        [s: string]: IJsonSchema<ModelExtraOptions>;
+        [s: string]: IJsonSchema<ModelExtraOptions, CEO>;
     };
     options?: IJsonSchemasOptions<ModelExtraOptions, ExtraOptions>;
     extraOptions?: ExtraOptions;
