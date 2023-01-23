@@ -16,7 +16,7 @@ export type AssociationModelNameAsToInclude = AssociationModelNameAsStringToIncl
 
 type ExtendedModelDefined<X, S = any, T = any> = EMD<X, S, T> & {
   orm: OriginalAmmOrm;
-  ammIncloud: (associationModelNameAsArray : AssociationModelNameAsToInclude[]) => IncludeOptions[];
+  ammInclude: (associationModelNameAsArray : AssociationModelNameAsToInclude[]) => IncludeOptions[];
 };
 
 export default class AmmOrm extends OriginalAmmOrm {
@@ -26,7 +26,7 @@ export default class AmmOrm extends OriginalAmmOrm {
 
   addSqlzModelMethod(sqlzModel : EMD<any, any>) {
     (<any>sqlzModel).amm = this;
-    (<any>sqlzModel).ammIncloud = (associationModelNameAsArray : AssociationModelNameAsToInclude[] = []) => this.getAssociationIncludes(sqlzModel.name, associationModelNameAsArray);
+    (<any>sqlzModel).ammInclude = (associationModelNameAsArray : AssociationModelNameAsToInclude[] = []) => this.getAssociationIncludes(sqlzModel.name, associationModelNameAsArray);
   }
 
   getAmmModel<Extended = {}, S = any, T = any>(name) : AmmModelI<Extended & { _orm: AmmOrm }, S, T> | undefined {

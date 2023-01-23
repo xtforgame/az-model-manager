@@ -185,7 +185,7 @@ describe('AmmOrm test 04', () => {
         where: {
           id: 2,
         },
-        include: UserMemo.ammIncloud(['exData']),
+        include: UserMemo.ammInclude(['exData']),
       });
       console.log('userMemo :', userMemo && userMemo.dataValues);
 
@@ -208,7 +208,7 @@ describe('AmmOrm test 04', () => {
         where: {
           id: 1,
         },
-        include: UserSetting.ammIncloud(['exData']),
+        include: UserSetting.ammInclude(['exData']),
       });
       console.log('userSetting :', userSetting && userSetting.dataValues);
 
@@ -234,7 +234,7 @@ describe('AmmOrm test 04', () => {
     });
 
 
-    it('should able to do CRUD by ammIncloud ', async function () {
+    it('should able to do CRUD by ammInclude ', async function () {
       this.timeout(900000);
       const User = ammMgr.ammOrm.getSqlzModel<models.UserI/* can simply use 'any' */, models.UserAttributes, models.UserCreationAttributes>('user');
       const UserGroup = ammMgr.ammOrm.getSqlzModel('userGroup');
@@ -259,7 +259,7 @@ describe('AmmOrm test 04', () => {
         where: {
           name: 'xxxx',
         },
-        include: User.ammIncloud(['userGroups.users.accountLinks', 'accountLinks.user']),
+        include: User.ammInclude(['userGroups.users.accountLinks', 'accountLinks.user']),
         // include: [{
         //   model: UserGroup,
         //   as: 'userGroups',

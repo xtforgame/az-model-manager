@@ -9,7 +9,7 @@ export declare type AssociationModelNameAsDataToInclude = Overwrite<IncludeOptio
 export declare type AssociationModelNameAsToInclude = AssociationModelNameAsStringToInclude | AssociationModelNameAsDataToInclude;
 declare type ExtendedModelDefined<X, S = any, T = any> = EMD<X, S, T> & {
     orm: OriginalAmmOrm;
-    ammIncloud: (associationModelNameAsArray: AssociationModelNameAsToInclude[]) => IncludeOptions[];
+    ammInclude: (associationModelNameAsArray: AssociationModelNameAsToInclude[]) => IncludeOptions[];
 };
 export default class AmmOrm extends OriginalAmmOrm {
     constructor(sequelizeDb: Sequelize, ammSchemas: AmmSchemas);

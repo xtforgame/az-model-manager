@@ -147,7 +147,7 @@ class AmmOrm extends _OriginalAmmOrm.default {
   addSqlzModelMethod(sqlzModel) {
     sqlzModel.amm = this;
 
-    sqlzModel.ammIncloud = (associationModelNameAsArray = []) => this.getAssociationIncludes(sqlzModel.name, associationModelNameAsArray);
+    sqlzModel.ammInclude = (associationModelNameAsArray = []) => this.getAssociationIncludes(sqlzModel.name, associationModelNameAsArray);
   }
 
   getAmmModel(name) {

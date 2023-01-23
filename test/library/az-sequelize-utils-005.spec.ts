@@ -206,7 +206,7 @@ describe('AmmOrm test 05', () => {
         where: {
           id: 2,
         },
-        include: UserMemo.ammIncloud(['exData']),
+        include: UserMemo.ammInclude(['exData']),
       });
       console.log('userMemo :', userMemo && userMemo.dataValues);
 
@@ -229,7 +229,7 @@ describe('AmmOrm test 05', () => {
         where: {
           id: 1,
         },
-        include: UserSetting.ammIncloud(['exData']),
+        include: UserSetting.ammInclude(['exData']),
       });
       console.log('userSetting :', userSetting && userSetting.dataValues);
 
