@@ -1,3 +1,4 @@
+
 // ============== start model: {{ name | capitalizeFirstLetter }} ==============
 export type {{ name | capitalizeFirstLetter }}CreationAttributes = {
 {% for column in model.columns -%}
@@ -33,4 +34,3 @@ export type {{ name | capitalizeFirstLetter }}I = {{ name | capitalizeFirstLette
 {% endif -%}
 {%- endfor -%} };
 // ============== end model: {{ name | capitalizeFirstLetter }} ==============
-

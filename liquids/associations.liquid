@@ -4,7 +4,7 @@
 {%- when "hasOne" %}
   get{{ column.type[2].as | capitalizeFirstLetter }}: HasOneGetAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I>;
   set{{ column.type[2].as | capitalizeFirstLetter }}: HasOneSetAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
-  create{{ column.type[2].as | capitalizeFirstLetter }}: HasOneCreateAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I>;
+  create{{ column.type[2].as | capitalizeFirstLetter }}: HasOneCreateAssociationMixin<Model<{{ column.type[1] | capitalizeFirstLetter }}I>>;
 {%- when "hasMany" %}
   count{{ column.type[2].as.plural | capitalizeFirstLetter }}: HasManyCountAssociationsMixin;
   has{{ column.type[2].as.singular | capitalizeFirstLetter }}: HasManyHasAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
@@ -15,11 +15,11 @@
   add{{ column.type[2].as.plural | capitalizeFirstLetter }}: HasManyAddAssociationsMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
   remove{{ column.type[2].as.singular | capitalizeFirstLetter }}: HasManyRemoveAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
   remove{{ column.type[2].as.plural | capitalizeFirstLetter }}: HasManyRemoveAssociationsMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
-  create{{ column.type[2].as.singular | capitalizeFirstLetter }}: HasManyCreateAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I>;
+  create{{ column.type[2].as.singular | capitalizeFirstLetter }}: HasManyCreateAssociationMixin<Model<{{ column.type[1] | capitalizeFirstLetter }}I>>;
 {%- when "belongsTo" %}
   get{{ column.type[2].as | capitalizeFirstLetter }}: BelongsToGetAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I>;
   set{{ column.type[2].as | capitalizeFirstLetter }}: BelongsToSetAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
-  create{{ column.type[2].as | capitalizeFirstLetter }}: BelongsToCreateAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I>;
+  create{{ column.type[2].as | capitalizeFirstLetter }}: BelongsToCreateAssociationMixin<Model<{{ column.type[1] | capitalizeFirstLetter }}I>>;
 {%- when "belongsToMany" %}
   count{{ column.type[2].as.plural | capitalizeFirstLetter }}: BelongsToManyCountAssociationsMixin;
   has{{ column.type[2].as.singular | capitalizeFirstLetter }}: BelongsToManyHasAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
@@ -30,6 +30,6 @@
   add{{ column.type[2].as.plural | capitalizeFirstLetter }}: BelongsToManyAddAssociationsMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
   remove{{ column.type[2].as.singular | capitalizeFirstLetter }}: BelongsToManyRemoveAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
   remove{{ column.type[2].as.plural | capitalizeFirstLetter }}: BelongsToManyRemoveAssociationsMixin<{{ column.type[1] | capitalizeFirstLetter }}I, string>;
-  create{{ column.type[2].as.singular | capitalizeFirstLetter }}: BelongsToManyCreateAssociationMixin<{{ column.type[1] | capitalizeFirstLetter }}I>;
+  create{{ column.type[2].as.singular | capitalizeFirstLetter }}: BelongsToManyCreateAssociationMixin<Model<{{ column.type[1] | capitalizeFirstLetter }}I>>;
 {% endcase -%}
 {% endif -%}

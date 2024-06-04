@@ -1,5 +1,6 @@
 import sequelize, {
   Sequelize,
+  Model,
 
   HasOneGetAssociationMixin,
   HasOneSetAssociationMixin,
@@ -32,7 +33,6 @@ import sequelize, {
   BelongsToManyCreateAssociationMixin,
 } from 'sequelize';
 import { Overwrite, ExtendedModel } from 'az-model-manager';
-
 {% for name in orders -%}
   {%- if schemas.models[name] -%}
     {% render 'model.liquid', name: name, model: schemas.models[name] %}
