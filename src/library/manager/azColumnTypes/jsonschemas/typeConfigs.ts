@@ -138,6 +138,14 @@ export const parseAssociationOptions : (a : ParseJsonFuncArgs) => AssociationOpt
     result.onUpdate = 'CASCADE';
   }
 
+  if (options.targetKey) {
+    if (typeof options.targetKey !== 'string') {
+      return new Error(`wrong association options: targetKey(${options.targetKey})`);
+    }
+
+    (<any>result).targetKey = options.targetKey;
+  }
+
   // if (result.scope != null) { currently not supported
   // }
   return result;
