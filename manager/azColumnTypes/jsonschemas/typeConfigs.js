@@ -337,6 +337,10 @@ exports.typeConfigs = typeConfigs = {
           }],
           extraOptions: {}
         };
+
+        if (associationOptions.targetKey) {
+          targetModel.columns[ammTargetAs].type[2].targetKey = associationOptions.targetKey;
+        }
       }
 
       return;
