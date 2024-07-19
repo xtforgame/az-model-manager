@@ -125,6 +125,14 @@ const parseAssociationOptions = args => {
     result.onUpdate = 'CASCADE';
   }
 
+  if (options.targetKey) {
+    if (typeof options.targetKey !== 'string') {
+      return new Error(`wrong association options: targetKey(${options.targetKey})`);
+    }
+
+    result.targetKey = options.targetKey;
+  }
+
   return result;
 };
 
