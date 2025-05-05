@@ -20,12 +20,12 @@
     "lint-fix": "eslint --fix --ext .js ./src && tslint --fix -c ./tslint.json './src/**/*.ts'",
     "lint-all": "eslint --ext .js ./src ./test ./internals && tslint -c ./tslint.json './src/**/*.ts'",
     "lint-all-fix": "eslint --fix --ext .js ./src ./test ./internals&& tslint --fix -c ./tslint.json './src/**/*.ts'",
-    "build": "cross-env NODE_ENV=production gulp library:build",
-    "start": "cross-env NODE_ENV=development gulp library:watch:dev",
-    "test": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
-    "test-watch": "eslint --ext .js ./test/library && cross-env NODE_ENV=test mocha --watch ./test --watch-extensions js,ts --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
-    "start-db": "docker-compose -f dev.yml up -d",
-    "stop-db": "docker-compose -f dev.yml down"
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=\"--no-experimental-fetch\" gulp library:build",
+    "start": "cross-env NODE_ENV=development NODE_OPTIONS=\"--no-experimental-fetch\" gulp library:watch:dev",
+    "test": "eslint --ext .js ./test/library && cross-env NODE_ENV=test NODE_OPTIONS=\"--no-experimental-fetch\" mocha --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
+    "test-watch": "eslint --ext .js ./test/library && cross-env NODE_ENV=test NODE_OPTIONS=\"--no-experimental-fetch\" mocha --watch ./test --watch-extensions js,ts --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
+    "start-db": "docker compose -f dev.yml up -d",
+    "stop-db": "docker compose -f dev.yml down"
   },
   "license": "MIT",
   "peerDependencies": {
