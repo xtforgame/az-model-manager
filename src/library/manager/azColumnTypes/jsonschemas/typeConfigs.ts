@@ -192,7 +192,7 @@ const normalizeSourceKey = (args : ParseJsonFuncArgs, associationOptions : HasOn
     if (!primaryKey) {
       return new Error('no primaryKey or sourceKey provided');
     }
-    associationOptions.sourceKey = toUnderscore(primaryKey);
+    associationOptions.sourceKey = primaryKey;
     options.sourceKey = associationOptions.sourceKey;
   }
 }
