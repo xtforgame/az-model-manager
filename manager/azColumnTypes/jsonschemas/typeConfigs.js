@@ -198,7 +198,7 @@ const normalizeSourceKey = (args, associationOptions) => {
       return new Error('no primaryKey or sourceKey provided');
     }
 
-    associationOptions.sourceKey = (0, _utils.toUnderscore)(primaryKey);
+    associationOptions.sourceKey = primaryKey;
     options.sourceKey = associationOptions.sourceKey;
   }
 };
