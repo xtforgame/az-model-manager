@@ -621,6 +621,67 @@ const getSchemas : () => IJsonSchemas = () => ({
         }],
       },
     },
+    pgCollection: {
+      columns: {
+        id: {
+          type: 'bigint',
+          primaryKey: true,
+          autoIncrement: true,
+        },
+        name: ['string', 900],
+        nameEn: ['string', 900],
+        description: 'text',
+        priority: {
+          type: 'integer',
+          defaultValue: 0,
+        },
+        prTitle: 'text',
+        prDescription: 'text',
+        thumbnail: {
+          type: 'jsonb',
+          defaultValue: {},
+        },
+        pictures: {
+          type: 'jsonb',
+          defaultValue: [],
+        },
+        type: ['string', 191],
+        start: 'date',
+        end: 'date',
+        state: 'string',
+        parent: ['belongsTo', 'pgCollection', {
+          foreignKey: 'parent_id',
+          ammTargetAs: 'children',
+          ammTargetHasMany: true,
+        }],
+        data: {
+          type: 'jsonb',
+          defaultValue: {},
+        },
+        // campaigns: ['belongsToMany', 'campaign', {
+        //   through: {
+        //     unique: false,
+        //     ammModelName: 'relProductGroupCampaign',
+        //     ammThroughTableColumnAs: 'campaign',
+        //     ammThroughAs: 'relation',
+        //   },
+        //   foreignKey: 'campaign_id',
+        //   otherKey: 'product_group_id',
+        // }],
+        // campaign: ['belongsToMany', 'productGroup', {
+        //   through: {
+        //     unique: false,
+        //     ammModelName: 'productGroupCampaign',
+        //     ammThroughTableColumnAs: 'campaign',
+        //     ammThroughAs: 'relation',
+        //   },
+        //   foreignKey: 'campaign_id',
+        //   otherKey: 'product_group_id',
+        // }],
+      },
+      extraOptions: {
+      },
+    },
     ordererInfo: {
       columns: {
         id: {
@@ -837,6 +898,565 @@ const getSchemas : () => IJsonSchemas = () => ({
             },
           },
         ],
+      },
+    },
+    groupPgCollection: {
+      columns: {
+        id: {
+          type: 'bigint',
+          primaryKey: true,
+          autoIncrement: true,
+        },
+        data: {
+          type: 'jsonb',
+          defaultValue: {},
+        },
+        group: ['belongsTo', 'productGroup', {
+          foreignKey: 'group_id',
+          ammTargetAs: 'pgCollections',
+          ammTargetHasMany: true,
+        }],
+        pgCollection: ['belongsTo', 'pgCollection', {
+          foreignKey: 'pgc_id',
+          ammTargetAs: 'groups',
+          ammTargetHasMany: true,
+        }],
+      },
+      options: {
+        indexes: [
+          {
+            name: 'group_pgc_uniqueness',
+            unique: true,
+            fields: ['group_id', 'pgc_id'],
+            where: {
+              deleted_at: null,
+            },
+          },
+        ],
+      },
+      extraOptions: {
+      },
+    },
+    pgCollectionCampaign: {
+      columns: {
+        id: {
+          type: 'bigint',
+          primaryKey: true,
+          autoIncrement: true,
+        },
+        data: {
+          type: 'jsonb',
+          defaultValue: {},
+        },
+        campaign: ['belongsTo', 'campaign', {
+          foreignKey: 'campaign_id',
+          ammTargetAs: 'pgCollections',
+          ammTargetHasMany: true,
+        }],
+        include: ['belongsTo', 'pgCollection', {
+          foreignKey: 'include_pgc_id',
+          ammTargetAs: 'includedBy',
+          ammTargetHasMany: true,
+        }],
+        require: ['belongsTo', 'pgCollection', {
+          foreignKey: 'require_pgc_id',
+          ammTargetAs: 'requiredBy',
+          ammTargetHasMany: true,
+        }],
+        exclude: ['belongsTo', 'pgCollection', {
+          foreignKey: 'exclude_pgc_id',
+          ammTargetAs: 'excludedBy',
+          ammTargetHasMany: true,
+        }],
+      },
+      options: {
+        indexes: [
+          {
+            name: 'pgc_c_include_uniqueness',
+            unique: true,
+            fields: ['campaign_id', 'include_pgc_id'],
+            where: {
+              deleted_at: null,
+            },
+          },
+          {
+            name: 'pgc_c_require_uniqueness',
+            unique: true,
+            fields: ['campaign_id', 'require_pgc_id'],
+            where: {
+              deleted_at: null,
+            },
+          },
+          {
+            name: 'pgc_c_exclude_uniqueness',
+            unique: true,
+            fields: ['campaign_id', 'exclude_pgc_id'],
+            where: {
+              deleted_at: null,
+            },
+          },
+        ],
+      },
+      extraOptions: {
+        hasura: {
+          publicColumns: 'all',
+          views: {
+            // orgSharedVd: {
+            //   columns: 'all',
+            //   permissions: getViewPermissions({ _or: [userIdF('inviter_id'), userIdF('invitee_id')] }),
+            // },
+          },
+          restrictedColumns: [],
+          customViewsInfo: {
+            views: {
+              productGroupCampaignByPgc: {
+                customColumnNames: {
+                  group_id: 'group_id',
+                  campaign_id: 'campaign_id',
+                },
+                relationships: [
+                  {
+                    type: 'pg_create_array_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'campaignsByPgc',
+                      table: {
+                        name: 'tbl_product_group',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'view_product_group_campaign_by_pgc',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            id: 'group_id',
+                          },
+                          insertion_order: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_object_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'group',
+                      table: {
+                        name: 'view_product_group_campaign_by_pgc',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'tbl_product_group',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            group_id: 'id',
+                          },
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_array_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'groupsByPgc',
+                      table: {
+                        name: 'tbl_campaign',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'view_product_group_campaign_by_pgc',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            id: 'campaign_id',
+                          },
+                          insertion_order: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_object_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'campaign',
+                      table: {
+                        name: 'view_product_group_campaign_by_pgc',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'tbl_campaign',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            campaign_id: 'id',
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+                dropScript: 'DROP VIEW IF EXISTS view_product_group_campaign_by_pgc;',
+                createScript: `
+                  CREATE VIEW view_product_group_campaign_by_pgc AS (
+                    SELECT
+                      id as "group_id", "view_g_campaign"."campaign_id" as "campaign_id"
+                    FROM
+                      "public"."tbl_product_group" as "view_group"
+                    LEFT JOIN (
+                      SELECT
+                        id as "gpId",
+                        "view_g_pgc"."group_id" as "group_id",
+                        "view_g_pgc"."pgc_id" as "pgc_id",
+                        "view_pgc_c"."include_pgc_id" as "include_pgc_id",
+                        "view_pgc_c"."campaign_id" as "campaign_id"
+                      FROM
+                        "public"."mn_group_pg_collection"  AS "view_g_pgc"
+                      LEFT JOIN (
+                        SELECT
+                          include_pgc_id, exclude_pgc_id, campaign_id
+                        FROM
+                          "public"."mn_pg_collection_campaign"
+                      ) AS "view_pgc_c"
+                      ON (("view_g_pgc"."pgc_id") = ("view_pgc_c"."include_pgc_id"))
+                      WHERE "view_pgc_c"."campaign_id" IS NOT NULL
+                    ) AS "view_g_campaign"
+                    ON (("view_group"."id") = ("view_g_campaign"."group_id"))
+                  )
+                  EXCEPT (
+                    SELECT
+                      id as "group_id", "view_g_campaign"."campaign_id" as "campaign_id"
+                    FROM
+                      "public"."tbl_product_group" as "view_group"
+                    LEFT JOIN (
+                      SELECT
+                        id as "gpId",
+                        "view_g_pgc"."group_id" as "group_id",
+                        "view_g_pgc"."pgc_id" as "pgc_id",
+                        "view_pgc_c"."include_pgc_id" as "include_pgc_id",
+                        "view_pgc_c"."campaign_id" as "campaign_id"
+                      FROM
+                        "public"."mn_group_pg_collection"  AS "view_g_pgc"
+                      LEFT JOIN (
+                        SELECT
+                          include_pgc_id, exclude_pgc_id, campaign_id
+                        FROM
+                          "public"."mn_pg_collection_campaign"
+                      ) AS "view_pgc_c"
+                      ON (("view_g_pgc"."pgc_id") = ("view_pgc_c"."exclude_pgc_id"))
+                      WHERE "view_pgc_c"."campaign_id" IS NOT NULL
+                    ) AS "view_g_campaign"
+                    ON (("view_group"."id") = ("view_g_campaign"."group_id"))
+                  );
+                `,
+              },
+              productGroupPgcCampaignByPgc: {
+                customColumnNames: {
+                  group_id: 'group_id',
+                  campaign_id: 'campaign_id',
+                },
+                relationships: [
+                  {
+                    type: 'pg_create_array_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'campaignsWithPgcByPgc',
+                      table: {
+                        name: 'tbl_product_group',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'view_product_group_pgc_campaign_by_pgc',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            id: 'group_id',
+                          },
+                          insertion_order: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_object_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'group',
+                      table: {
+                        name: 'view_product_group_pgc_campaign_by_pgc',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'tbl_product_group',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            group_id: 'id',
+                          },
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_array_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'groupPgcCampaigns',
+                      table: {
+                        name: 'mn_group_pg_collection',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'view_product_group_pgc_campaign_by_pgc',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            id: 'g_pgc_id',
+                          },
+                          insertion_order: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_object_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'groupPgCollection',
+                      table: {
+                        name: 'view_product_group_pgc_campaign_by_pgc',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'mn_group_pg_collection',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            g_pgc_id: 'id',
+                          },
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_array_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'asGroupCampaignConnection',
+                      table: {
+                        name: 'tbl_pg_collection',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'view_product_group_pgc_campaign_by_pgc',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            id: 'pgc_id',
+                          },
+                          insertion_order: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_object_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'pgCollection',
+                      table: {
+                        name: 'view_product_group_pgc_campaign_by_pgc',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'tbl_pg_collection',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            pgc_id: 'id',
+                          },
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_array_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'groupPgcCampaigns',
+                      table: {
+                        name: 'mn_pg_collection_campaign',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'view_product_group_pgc_campaign_by_pgc',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            id: 'pgc_c_id',
+                          },
+                          insertion_order: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_object_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'pgCollectionCampaign',
+                      table: {
+                        name: 'view_product_group_pgc_campaign_by_pgc',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'mn_pg_collection_campaign',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            pgc_c_id: 'id',
+                          },
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_array_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'groupsWithPgcByPgc',
+                      table: {
+                        name: 'tbl_campaign',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'view_product_group_pgc_campaign_by_pgc',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            id: 'campaign_id',
+                          },
+                          insertion_order: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    type: 'pg_create_object_relationship',
+                    args: {
+                      // source: postgresDbName,
+                      name: 'campaign',
+                      table: {
+                        name: 'view_product_group_pgc_campaign_by_pgc',
+                        schema: 'public',
+                      },
+                      using: {
+                        manual_configuration: {
+                          remote_table: {
+                            name: 'tbl_campaign',
+                            schema: 'public',
+                          },
+                          column_mapping: {
+                            campaign_id: 'id',
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+                dropScript: 'DROP VIEW IF EXISTS view_product_group_pgc_campaign_by_pgc;',
+                createScript: `
+                  CREATE VIEW view_product_group_pgc_campaign_by_pgc AS (
+                    WITH g_pgc_c AS (
+                      SELECT
+                        "view_g_pgc"."group_id" as "group_id",
+                      "view_g_pgc"."id" as "g_pgc_id",
+                        "view_pgc_c"."include_pgc_id" as "include_pgc_id",
+                        "view_pgc_c"."exclude_pgc_id" as "exclude_pgc_id",
+                      "view_pgc_c"."id" as "pgc_c_id",
+                        "view_pgc_c"."campaign_id" as "campaign_id"
+                      FROM
+                        "public"."mn_group_pg_collection"  AS "view_g_pgc"
+                      LEFT JOIN (
+                        SELECT
+                        id, include_pgc_id, exclude_pgc_id, campaign_id
+                        FROM
+                        "public"."mn_pg_collection_campaign"
+                      ) AS "view_pgc_c"
+                      ON (("view_g_pgc"."pgc_id") = ("view_pgc_c"."include_pgc_id") OR ("view_g_pgc"."pgc_id") = ("view_pgc_c"."exclude_pgc_id"))
+                      WHERE "view_pgc_c"."campaign_id" IS NOT NULL
+                    )
+                    SELECT
+                      "view_g_gpc_c_2"."group_id",
+                      "view_g_gpc_c_2"."g_pgc_id",
+                      "view_g_gpc_c_2"."include_pgc_id" AS pgc_id,
+                      "view_g_gpc_c_2"."pgc_c_id",
+                      "view_g_gpc_c_2"."campaign_id"
+                    FROM(
+                      SELECT
+                        group_id,
+                        campaign_id
+                      FROM
+                        g_pgc_c
+                      WHERE include_pgc_id IS NOT NULL
+                      EXCEPT (
+                        SELECT
+                          group_id,
+                          campaign_id
+                        FROM
+                          g_pgc_c
+                        WHERE exclude_pgc_id IS NOT NULL
+                      )
+                    ) AS "view_ava_g_c"
+                    LEFT JOIN (
+                      SELECT
+                        group_id, g_pgc_id, include_pgc_id, exclude_pgc_id, pgc_c_id, campaign_id
+                      FROM
+                        g_pgc_c
+                    ) AS "view_g_gpc_c_2"
+                    ON (
+                        ("view_g_gpc_c_2"."group_id") = ("view_ava_g_c"."group_id")
+                      AND
+                        ("view_g_gpc_c_2"."campaign_id") = ("view_ava_g_c"."campaign_id"))
+                    WHERE (
+                        ("view_g_gpc_c_2"."campaign_id" IS NOT NULL)
+                      AND
+                        ("view_g_gpc_c_2"."include_pgc_id" IS NOT NULL)
+                    )
+                  );
+                `,
+              },
+            },
+          },
+        },
       },
     },
     userProject: {

@@ -24,6 +24,7 @@
     "start": "cross-env NODE_ENV=development NODE_OPTIONS=\"--no-experimental-fetch\" gulp library:watch:dev",
     "test": "eslint --ext .js ./test/library && cross-env NODE_ENV=test NODE_OPTIONS=\"--no-experimental-fetch\" mocha --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
     "test-watch": "eslint --ext .js ./test/library && cross-env NODE_ENV=test NODE_OPTIONS=\"--no-experimental-fetch\" mocha --watch ./test --watch-extensions js,ts --require ./test/babel-register.js './test/library/**/*.spec.{j,t}s'",
+    "test-file": "cross-env NODE_ENV=test NODE_OPTIONS=\"--no-experimental-fetch\" mocha --require ./test/babel-register.js",
     "start-db": "docker compose -f dev.yml up -d",
     "stop-db": "docker compose -f dev.yml down"
   },
