@@ -337,9 +337,18 @@ exports.typeConfigs = typeConfigs = {
           }],
           extraOptions: {}
         };
+        const targetModelMetadata = args.schemasMetadata.allModels[args.column.type[1]];
+
+        if (targetModelMetadata) {
+          targetModelMetadata.columns[ammTargetAs] = _objectSpread({}, targetModel.columns[ammTargetAs]);
+        }
 
         if (associationOptions.targetKey) {
           targetModel.columns[ammTargetAs].type[2].targetKey = associationOptions.targetKey;
+
+          if (targetModelMetadata) {
+            targetModelMetadata.columns[ammTargetAs].type[2].targetKey = associationOptions.targetKey;
+          }
         }
       }
 
@@ -439,6 +448,11 @@ exports.typeConfigs = typeConfigs = {
           }],
           extraOptions: {}
         };
+        const associationModelMetadata = args.schemasMetadata.allModels[throughTableName];
+
+        if (associationModelMetadata) {
+          associationModelMetadata.columns[ammThroughTableColumnAs] = _objectSpread({}, associationModel.columns[ammThroughTableColumnAs]);
+        }
       }
 
       return;
@@ -505,6 +519,11 @@ exports.typeConfigs = typeConfigs = {
           }],
           extraOptions: {}
         };
+        const associationModelMetadata = args.schemasMetadata.allModels[throughTableName];
+
+        if (associationModelMetadata) {
+          associationModelMetadata.columns[ammThroughTableColumnAs] = _objectSpread({}, associationModel.columns[ammThroughTableColumnAs]);
+        }
       }
 
       return _objectSpread(_objectSpread({}, args.column), {}, {

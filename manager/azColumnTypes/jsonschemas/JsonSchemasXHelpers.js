@@ -7,6 +7,7 @@ exports.forEachSchema = forEachSchema;
 exports.beforeNormalizeRawSchemas = beforeNormalizeRawSchemas;
 exports.normalizeRawSchemas = normalizeRawSchemas;
 exports.afterNormalizeRawSchemas = afterNormalizeRawSchemas;
+exports.enrichSchemasMetadata = enrichSchemasMetadata;
 exports.preParseRawSchemas = preParseRawSchemas;
 exports.parseRawSchemas = parseRawSchemas;
 exports.afterParseRawSchemas = afterParseRawSchemas;
@@ -97,10 +98,10 @@ function forEachSchema(tableType, models, modelCb, columnCb) {
   for (let i = 0; i < modelKeys.length; i++) {
     const tableName = modelKeys[i];
     const table = models[tableName];
-    let err;
+    let err = undefined;
 
     if (modelCb) {
-      modelCb(tableName, tableType, table);
+      err = modelCb(tableName, tableType, table);
     }
 
     if (err) return err;
@@ -250,7 +251,11 @@ function afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, sch
             },
             extraOptions: {}
           };
-          parsedTables[tableName].columns[foreignKey] = _objectSpread({}, column);
+          parsedTables[tableName].columns[foreignKey] = {
+            type: targetKeyColumn.type,
+            ammGeneratedBy: columnName,
+            ammReferences: table.columns[foreignKey].ammReferences
+          };
         }
       }
     } else if (column.type[0] === 'belongsToMany') {
@@ -314,27 +319,39 @@ function afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, sch
       metadata.associationModels[ammModelName].columns[foreignKey] = _objectSpread({}, associationModel.columns[ammThroughTableColumnAs]);
     }
   });
+}
+
+function enrichSchemasMetadata(schemasMetadata, rawSchemas, tableType, models) {
   forEachSchema(tableType, models, (tableName, tableType, table) => {
-    const columns = parsedTables[tableName].columns;
-    Object.keys(columns).forEach(k => {
-      const c = columns[k];
-      const columnNameInDb = getRealColumnName(k, c);
+    const modelMetadata = schemasMetadata.allModels[tableName];
+    if (!modelMetadata) return;
+    Object.keys(modelMetadata.columns).forEach(k => {
+      const c = modelMetadata.columns[k];
+      const rawColumn = table.columns[k];
+      const typeConfig = _typeConfigs.typeConfigs[c.type[0]];
+      const isAssociation = !!typeConfig.associationType;
+      c.isAssociationColumn = isAssociation;
+      c.isVirtual = isAssociation;
 
-      if (columnNameInDb) {
-        c.columnNameInDb = columnNameInDb;
-        c.isForeignKey = false;
-        c.isAssociationColumn = false;
-      } else {
-        const fk = getForeignKey(c);
+      if (!isAssociation) {
+        const columnNameInDb = getRealColumnName(k, c);
 
-        if (fk) {
-          c.columnNameInDb = fk;
-          c.isForeignKey = true;
-          c.isAssociationColumn = true;
+        if (columnNameInDb) {
+          c.columnNameInDb = columnNameInDb;
+          c.isForeignKey = !!(c.ammReferences || rawColumn && rawColumn.ammReferences);
+        } else {
+          const fk = getForeignKey(c);
+
+          if (fk) {
+            c.columnNameInDb = fk;
+            c.isForeignKey = true;
+          }
         }
+      } else {
+        c.isForeignKey = false;
       }
     });
-  }, (tableName, tableType, table, columnName, column) => {});
+  }, null);
 }
 
 function preParseRawSchemas(schemasMetadata, rawSchemas, tableType, models) {
@@ -376,6 +393,11 @@ function parseRawSchemas(schemasMetadata, rawSchemas, tableType, models) {
     }
 
     table.columns[columnName] = result;
+    const modelMetadata = schemasMetadata.allModels[tableName];
+
+    if (modelMetadata) {
+      modelMetadata.columns[columnName] = _objectSpread(_objectSpread({}, modelMetadata.columns[columnName]), result);
+    }
   });
 }
 

@@ -126,7 +126,9 @@ class JsonSchemasX {
     if (err) return err;
     err = (0, _JsonSchemasXHelpers.parseRawSchemas)(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     if (err) return err;
-    this.parsed = false;
+    this.parsed = true;
+    (0, _JsonSchemasXHelpers.enrichSchemasMetadata)(schemasMetadata, schemas, 'model', this.schemas.models);
+    (0, _JsonSchemasXHelpers.enrichSchemasMetadata)(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     err = this.afterParseRawSchemas();
     return err;
   }
