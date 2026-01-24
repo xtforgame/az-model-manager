@@ -2,12 +2,12 @@ import { Table, Column, Index, Db } from 'pg-structure';
 import { IJsonSchemas } from './IJsonSchemas';
 import { RawSchemas, ParsedTableInfo, SchemasMetadata } from './interfaces';
 import { AmmSchema, AmmSchemas } from '../../../core';
-export declare class JsonSchemasX {
+export declare class JsonSchemasX<ModelExtraOptions = any, ExtraOptions = any, CEO = any> {
     rawSchemas: RawSchemas;
     dbSchemaName: string;
     parsed: boolean;
     schemasMetadata: SchemasMetadata;
-    schemas: IJsonSchemas;
+    schemas: IJsonSchemas<ModelExtraOptions, ExtraOptions, CEO>;
     constructor(dbSchemaName: string, rawSchemas: RawSchemas);
     clear(): void;
     normalizeRawSchemas(): Error | void;

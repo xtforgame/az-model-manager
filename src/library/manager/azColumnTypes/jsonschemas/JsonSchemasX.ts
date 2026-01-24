@@ -73,14 +73,14 @@ const appRoot = appRootPath.resolve('./');
 
 // =======================
 
-export class JsonSchemasX {
+export class JsonSchemasX<ModelExtraOptions = any, ExtraOptions = any, CEO = any> {
   rawSchemas : RawSchemas; // from input
   dbSchemaName : string; // from db
 
   parsed!: boolean;
 
   schemasMetadata!: SchemasMetadata;
-  schemas!: IJsonSchemas;
+  schemas!: IJsonSchemas<ModelExtraOptions, ExtraOptions, CEO>;
 
   constructor(dbSchemaName : string, rawSchemas : RawSchemas) {
     this.dbSchemaName = dbSchemaName;
