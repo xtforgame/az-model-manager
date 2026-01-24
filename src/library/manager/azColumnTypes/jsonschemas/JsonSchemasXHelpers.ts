@@ -292,7 +292,11 @@ export function afterNormalizeRawSchemas(
               },
               extraOptions: {},
             };
-            parsedTables[tableName].columns[foreignKey] = { ...column };
+            parsedTables[tableName].columns[foreignKey] = { 
+              type: (<any>targetKeyColumn).type,
+              ammGeneratedBy: columnName,
+              ammReferences: (table.columns[foreignKey] as any).ammReferences
+            } as any;
           }
         }
       } else if (column.type[0] === 'belongsToMany') {
@@ -342,31 +346,47 @@ export function afterNormalizeRawSchemas(
       }
     },
   );
+}
 
+export function enrichSchemasMetadata(
+  schemasMetadata : SchemasMetadata,
+  rawSchemas : IJsonSchemas,
+  tableType : RawSchemaType,
+  models : { [s: string]: IJsonSchema; },
+) {
   forEachSchema(
     tableType,
     models,
     (tableName, tableType, table) => {
-      const columns = parsedTables[tableName].columns!;
-      Object.keys(columns).forEach((k) => {
-        const c = columns[k];
-        const columnNameInDb = getRealColumnName(k, c);
-        if (columnNameInDb) {
-          c.columnNameInDb = columnNameInDb;
-          c.isForeignKey = false;
-          c.isAssociationColumn = false;
-        } else {
-          const fk = getForeignKey(c);
-          if (fk) {
-            c.columnNameInDb = fk;
-            c.isForeignKey = true;
-            c.isAssociationColumn = true;
+      const modelMetadata = schemasMetadata.allModels[tableName];
+      if (!modelMetadata) return;
+      Object.keys(modelMetadata.columns).forEach((k) => {
+        const c = modelMetadata.columns[k];
+        const rawColumn = table.columns[k];
+        const typeConfig = typeConfigs[c.type[0]];
+        const isAssociation = !!typeConfig.associationType;
+        
+        c.isAssociationColumn = isAssociation;
+        c.isVirtual = isAssociation;
+
+        if (!isAssociation) {
+          const columnNameInDb = getRealColumnName(k, c);
+          if (columnNameInDb) {
+            c.columnNameInDb = columnNameInDb;
+            c.isForeignKey = !!(c.ammReferences || (rawColumn && (rawColumn as any).ammReferences));
+          } else {
+            const fk = getForeignKey(c);
+            if (fk) {
+              c.columnNameInDb = fk;
+              c.isForeignKey = true;
+            }
           }
+        } else {
+          c.isForeignKey = false;
         }
-      })
+      });
     },
-    (tableName, tableType, table, columnName, column) => {
-    },
+    null,
   );
 }
 

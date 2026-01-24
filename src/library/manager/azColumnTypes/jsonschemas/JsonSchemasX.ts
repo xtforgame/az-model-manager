@@ -63,6 +63,7 @@ import {
   afterParseRawSchemas,
   preParseRawSchemas,
   parseRawSchemas,
+  enrichSchemasMetadata,
   toCoreModels,
 } from './JsonSchemasXHelpers';
 
@@ -207,6 +208,9 @@ export class JsonSchemasX {
     err = parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     if (err) return err;
     this.parsed = true;
+
+    enrichSchemasMetadata(schemasMetadata, schemas, 'model', this.schemas.models);
+    enrichSchemasMetadata(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
 
     err = this.afterParseRawSchemas();
     return err;

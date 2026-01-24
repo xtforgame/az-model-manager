@@ -70,6 +70,8 @@ export type ParsedColumnInfo = JsonModelAttributeInOptionsForm & {
   columnNameInDb?: string;
   isForeignKey?: boolean;
   isAssociationColumn?: boolean;
+  isVirtual?: boolean;
+  ammGeneratedBy?: string;
 };
 
 export type ParsedIndexInfo = IndexesOptions & {
