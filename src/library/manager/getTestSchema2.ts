@@ -609,6 +609,11 @@ const getSchemas : () => IJsonSchemas = () => ({
           type: 'jsonb',
           defaultValue: {},
         },
+        parent: ['belongsTo', 'campaign', {
+          foreignKey: 'parent_id',
+          ammTargetAs: 'children',
+          ammTargetHasMany: true,
+        }],
         productGroups: ['belongsToMany', 'productGroup', {
           through: {
             unique: false,

@@ -120,9 +120,9 @@ export function forEachSchema<ColumnType = JsonModelAllAttributeType>(
   for (let i = 0; i < modelKeys.length; i++) {
     const tableName = modelKeys[i];
     const table = models[tableName];
-    let err : void | Error;
+    let err : void | Error = undefined;
     if (modelCb) {
-      modelCb(tableName, tableType, table);
+      err = modelCb(tableName, tableType, table);
     }
     if (err) return err;
     if (!columnCb) {
@@ -426,6 +426,13 @@ export function parseRawSchemas(
         return result;
       }
       table.columns[columnName] = result;
+      const modelMetadata = schemasMetadata.allModels[tableName];
+      if (modelMetadata) {
+        modelMetadata.columns[columnName] = { 
+          ...modelMetadata.columns[columnName], 
+          ...result 
+        } as any;
+      }
     },
   );
 }

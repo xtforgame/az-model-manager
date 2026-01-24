@@ -324,8 +324,15 @@ typeConfigs = {
           ],
           extraOptions: {},
         };
+        const targetModelMetadata = args.schemasMetadata.allModels[args.column.type[1]];
+        if (targetModelMetadata) {
+          targetModelMetadata.columns[ammTargetAs] = { ...targetModel.columns[ammTargetAs] } as any;
+        }
         if (associationOptions.targetKey) {
           targetModel.columns[ammTargetAs].type[2].targetKey = associationOptions.targetKey;
+          if (targetModelMetadata) {
+            (<any>targetModelMetadata.columns[ammTargetAs].type[2]).targetKey = associationOptions.targetKey;
+          }
         }
       }
       return;
@@ -413,6 +420,10 @@ typeConfigs = {
           ],
           extraOptions: {},
         };
+        const associationModelMetadata = args.schemasMetadata.allModels[throughTableName];
+        if (associationModelMetadata) {
+          associationModelMetadata.columns[ammThroughTableColumnAs] = { ...associationModel.columns[ammThroughTableColumnAs] } as any;
+        }
       }
       // console.log('associationModel :', associationModel.columns.id.type);
       // console.log('otherKey :', associationOptions.otherKey);
@@ -470,6 +481,10 @@ typeConfigs = {
           ],
           extraOptions: {},
         };
+        const associationModelMetadata = args.schemasMetadata.allModels[throughTableName];
+        if (associationModelMetadata) {
+          associationModelMetadata.columns[ammThroughTableColumnAs] = { ...associationModel.columns[ammThroughTableColumnAs] } as any;
+        }
       }
       return {
         ...args.column,

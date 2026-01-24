@@ -206,7 +206,7 @@ export class JsonSchemasX {
     if (err) return err;
     err = parseRawSchemas(schemasMetadata, schemas, 'associationModel', this.schemas.associationModels);
     if (err) return err;
-    this.parsed = false;
+    this.parsed = true;
 
     err = this.afterParseRawSchemas();
     return err;

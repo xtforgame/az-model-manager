@@ -64,51 +64,54 @@ JSON Schema 處理系統的設計目標是：
 輸入: RawSchemas (原始 JSON 格式)
          ↓
     ┌────────────────────────────────────────────┐
-    │     beforeNormalizeRawSchemas              │
-    │     - 設定預設 tablePrefix                  │
-    │     - model: 'tbl_', associationModel: 'mn_'│
+    │ 1. beforeNormalizeRawSchemas               │
+    │    - 設定預設 tablePrefix                  │
+    │    - model: 'tbl_', associationModel: 'mn_'│
     └────────────────────────────────────────────┘
          ↓
     ┌────────────────────────────────────────────┐
-    │     normalizeRawSchemas                    │
-    │     - 正規化表格選項 (tableName, timestamps)│
-    │     - 正規化欄位格式 (string → [string])   │
-    │     - 建立 ParsedTableInfo 元數據          │
-    │     - 呼叫每個類型的 normalize()           │
+    │ 2. normalizeRawSchemas                     │
+    │    - 正規化表格選項 (tableName, timestamps)│
+    │    - 正規化欄位格式 (string → [string])   │
+    │    - 建立 ParsedTableInfo 元數據          │
+    │    - 呼叫每個類型的 normalize()           │
     └────────────────────────────────────────────┘
          ↓
     ┌────────────────────────────────────────────┐
-    │     afterNormalizeRawSchemas               │
-    │     - 處理 belongsTo 外鍵欄位自動生成      │
-    │     - 處理 belongsToMany 目標關聯生成      │
-    │     - 設定 columnNameInDb                  │
+    │ 3. afterNormalizeRawSchemas                │
+    │    - [重要] 處理 cross-model 欄位生成      │
+    │    - 處理 belongsTo 外鍵欄位自動生成      │
+    │    - 處理 belongsToMany 目標關聯生成      │
+    │    - 設定 columnNameInDb                  │
     └────────────────────────────────────────────┘
          ↓
     ┌────────────────────────────────────────────┐
-    │     preParseRawSchemas                     │
-    │     - 呼叫每個類型的 preParse()            │
-    │     - belongsTo: 生成反向關聯              │
-    │     - belongsToMany: 生成中間表關聯        │
+    │ 4. preParseRawSchemas                      │
+    │    - [重要] 處理反向關聯生成 (ammTargetAs)  │
+    │    - 呼叫每個類型的 preParse()            │
+    │    - belongsTo: 生成反向關聯              │
+    │    - belongsToMany: 生成中間表關聯        │
     └────────────────────────────────────────────┘
          ↓
     ┌────────────────────────────────────────────┐
-    │     parseRawSchemas                        │
-    │     - 呼叫每個類型的 parse()               │
-    │     - 正規化關聯選項                       │
-    │     - 轉換欄位格式                         │
+    │ 5. parseRawSchemas                         │
+    │    - 呼叫每個類型的 parse()               │
+    │    - 正規化關聯選項                       │
+    │    - 轉換欄位格式                         │
+    │    - [重要] 解析結果同步回 schemasMetadata  │
     └────────────────────────────────────────────┘
          ↓
     ┌────────────────────────────────────────────┐
-    │     afterParseRawSchemas                   │
-    │     - 自動生成索引（時間戳、外鍵）         │
-    │     - 建立索引元數據                       │
+    │ 6. afterParseRawSchemas                    │
+    │    - 自動生成索引（時間戳、外鍵）         │
+    │    - 建立索引元數據                       │
     └────────────────────────────────────────────┘
          ↓
     ┌────────────────────────────────────────────┐
-    │     toCoreModels                           │
-    │     - 呼叫每個類型的 toCoreColumn()        │
-    │     - 轉換為 Sequelize 類型                │
-    │     - 處理 ammReferences                   │
+    │ 7. toCoreModels                            │
+    │    - 呼叫每個類型的 toCoreColumn()        │
+    │    - 轉換為 Sequelize 類型                │
+    │    - 處理 ammReferences                   │
     └────────────────────────────────────────────┘
          ↓
 輸出: AmmSchemas (Core 格式)
@@ -168,6 +171,56 @@ function normalizeRawSchemas(parsedTables, tableType, models, ...) {
   });
 }
 ```
+
+#### 2.2.3 afterNormalizeRawSchemas
+
+此階段處理「跨模型」(Cross-model) 的欄位自動生成，特別是那些本來不存在但因為關聯而需要的欄位。
+
+- **外鍵自動生成**：如果 `belongsTo` 指向一個模型但本表沒定義外鍵，則自動建立外鍵欄位。
+- **belongsToMany 目標關聯**：如果設定了 `ammTargetOptions`，在目標模型建立對應的 `belongsToMany`。
+
+> [!IMPORTANT]
+> 此階段會直接修改 `schemas` 物件，並確保新生成的欄位也被加入到 `schemasMetadata` 中。
+
+#### 2.2.4 preParseRawSchemas
+
+此階段負責解析之前的「預處理」，最重要的任務是處理 **反向關聯 (Reverse Associations)**。
+
+- **belongsTo 反向關聯**：如果設定了 `ammTargetAs`，這是在目標模型自動生成 `hasOne` 或 `hasMany` 的時機。
+- **belongsToMany 中間表處理**：自動在中間表中生成對應的兩個 `belongsTo` 關聯。
+
+#### 2.2.5 parseRawSchemas
+
+這是最核心的解析階段，會遍歷所有模型和欄位，呼叫對應類型的 `parse()` 函數。
+
+- **解析邏輯**：將型別定義從選項形式轉換為最終的內部表示。
+- **元數據同步**：**[重要修復]** 為了確保之後生成的代碼（如 TypeScript 介面）包含所有自動生成的欄位，解析後的結果會同步回 `schemasMetadata`。
+
+```typescript
+// JsonSchemasXHelpers.ts: parseRawSchemas
+forEachSchema(tableType, models, null, (tableName, tableType, table, columnName, column) => {
+  const result = config.parse({ ...args });
+  table.columns[columnName] = result;
+  // 同步回元數據
+  const modelMetadata = schemasMetadata.allModels[tableName];
+  if (modelMetadata) {
+    modelMetadata.columns[columnName] = { ...result } as any;
+  }
+});
+```
+
+---
+
+### 2.3 schemas 與 schemasMetadata 的關係
+
+在系統中存在兩個核心物件：
+
+1.  **`schemas` (RawSchemas)**：這是目前解析過程中的「實際數據工作區」。它會被不斷修改，新增欄位或修改關聯選項。
+2.  **`schemasMetadata` (SchemasMetadata)**：這是「型別與元數據視圖」。它主要用於資料庫結構比較、TypeScript 定義生成、前端元數據導出等。
+
+> [!TIP]
+> **為什麼要同步？**
+> 許多欄位（如反向關聯、外鍵、中間表關聯）是在處理過程中動態新增到 `schemas` 中的。如果沒有同步回 `schemasMetadata`，則生成的 TypeScript 定義或元數據 JSON 就會缺少這些欄位。
 
 ---
 
