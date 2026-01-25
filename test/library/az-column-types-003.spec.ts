@@ -63,10 +63,22 @@ describe('JsonSchemasX Investigation with getTestSchema2', () => {
     expect(pgCollections.isForeignKey, 'pgCollections should NOT be foreign key').to.be.false;
 
     // 4. Regular Physical Column (id/name)
+    const id = campaignMetadata.columns.id;
+    expect(id.primaryKey, 'id should be primaryKey').to.be.true;
+    expect(id.allowNull, 'primaryKey id should default to allowNull: false').to.be.false;
+
     const name = campaignMetadata.columns.name;
     expect(name.isVirtual, 'name should NOT be virtual').to.be.false;
     expect(name.isAssociationColumn, 'name should NOT be association column').to.be.false;
     expect(name.isForeignKey, 'name should NOT be foreign key').to.be.false;
+    expect(name.allowNull, 'name should default to allowNull: true').to.be.true;
+
+    // Check in raw schemas too
+    const rawCampaignName = jx.schemas.models.campaign.columns.name as any;
+    expect(rawCampaignName.allowNull, 'raw campaign name should have allowNull: true').to.be.true;
+
+    // Association should NOT have allowNull: true added by this logic
+    expect((parent as any).allowNull, 'parent association should NOT have allowNull').to.be.undefined;
   });
 
   it('should have children in pgCollection schemasMetadata (self-reference)', () => {

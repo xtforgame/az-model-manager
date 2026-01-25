@@ -138,7 +138,14 @@ function beforeNormalizeRawSchemas(metadata, schemas, rawSchemas) {
 
 #### normalizeRawSchemas
 
+#### 2.2.2 normalizeRawSchemas
+
 正規化每個模型和欄位：
+
+- **欄位格式標準化**：將字串形式（如 `'string'`) 轉換為物件形式。
+- **預設 `allowNull`**：**[重要]** 對於所有「物理欄位」（非虛擬關聯），如果沒有明確設定 `allowNull`，系統會自動補上預設值：
+    - `primaryKey: true` 的欄位：`allowNull: false`。
+    - 其他物理欄位：`allowNull: true`。
 
 ```typescript
 // 來源: JsonSchemasXHelpers.ts:167-236

@@ -4,12 +4,14 @@
       "primaryKey": true,
       "autoIncrement": true,
       "extraOptions": {},
+      "allowNull": false,
       "type": [
         "bigint"
       ]
     },
     "name": {
       "extraOptions": {},
+      "allowNull": true,
       "type": [
         "string",
         900
@@ -17,6 +19,7 @@
     },
     "type": {
       "extraOptions": {},
+      "allowNull": true,
       "type": [
         "string",
         191
@@ -24,6 +27,7 @@
     },
     "durationType": {
       "extraOptions": {},
+      "allowNull": true,
       "type": [
         "string",
         900
@@ -31,18 +35,21 @@
     },
     "start": {
       "extraOptions": {},
+      "allowNull": true,
       "type": [
         "date"
       ]
     },
     "end": {
       "extraOptions": {},
+      "allowNull": true,
       "type": [
         "date"
       ]
     },
     "state": {
       "extraOptions": {},
+      "allowNull": true,
       "type": [
         "string",
         255
@@ -51,6 +58,7 @@
     "data": {
       "defaultValue": {},
       "extraOptions": {},
+      "allowNull": true,
       "type": [
         "jsonb"
       ]

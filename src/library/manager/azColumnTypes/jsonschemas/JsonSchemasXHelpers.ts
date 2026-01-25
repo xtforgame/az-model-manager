@@ -210,6 +210,12 @@ export function normalizeRawSchemas(
       if (!typeConfig) {
         return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
       }
+      
+      // If it's not an association and allowNull is not set, apply defaults
+      if (!typeConfig.associationType && column.allowNull === undefined) {
+        column.allowNull = !column.primaryKey;
+      }
+
       parsedTables[tableName].columns[columnName] = { ...column };
     },
   );
