@@ -184,6 +184,7 @@
       "type": [
         "bigint"
       ],
+      "allowNull": true,
       "ammGeneratedBy": "parent",
       "ammReferences": {
         "model": "campaign",

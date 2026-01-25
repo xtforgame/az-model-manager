@@ -103,6 +103,7 @@
       "extraOptions": {}
     },
     "parent_id": {
+      "allowNull": true,
       "ammReferences": {
         "model": "campaign",
         "key": "id",
