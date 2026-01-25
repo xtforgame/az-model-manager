@@ -248,6 +248,7 @@ function afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, sch
           const targetKeyColumn = refTable.columns[targetKey];
           table.columns[foreignKey] = {
             type: targetKeyColumn.type,
+            allowNull: true,
             ammReferences: {
               model: column.type[1],
               key: targetKey,
@@ -257,6 +258,7 @@ function afterNormalizeRawSchemas(parsedTables, tableType, models, metadata, sch
           };
           parsedTables[tableName].columns[foreignKey] = {
             type: targetKeyColumn.type,
+            allowNull: true,
             ammGeneratedBy: columnName,
             ammReferences: table.columns[foreignKey].ammReferences
           };
