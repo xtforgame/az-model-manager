@@ -189,6 +189,10 @@ function normalizeRawSchemas(parsedTables, tableType, models, schemas, rawSchema
       return Error(`unknown type name: table(${tableName}), column(${columnName}), type(${typeName})`);
     }
 
+    if (!typeConfig.associationType && column.allowNull === undefined) {
+      column.allowNull = !column.primaryKey;
+    }
+
     parsedTables[tableName].columns[columnName] = _objectSpread({}, column);
   });
   if (error) return error;
