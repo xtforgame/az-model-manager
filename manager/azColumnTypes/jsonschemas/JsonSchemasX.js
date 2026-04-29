@@ -239,11 +239,15 @@ class JsonSchemasX {
       minifyAliases: true
     });
     const tableNameInDb = modelMetadata.tableNameInDb;
-    const indexNameInDb = modelMetadata.indexes[indexName].name;
+    const indexDef = modelMetadata.indexes[indexName];
     const queryInterface = sequelizeDb.getQueryInterface();
     const queryGenerator = queryInterface.queryGenerator;
-    const q = queryGenerator.addIndexQuery(tableNameInDb, modelMetadata.indexes[indexName].fields, {
-      name: indexNameInDb
+    const q = queryGenerator.addIndexQuery(tableNameInDb, indexDef.fields, {
+      name: indexDef.name,
+      unique: indexDef.unique,
+      where: indexDef.where,
+      using: indexDef.using,
+      concurrently: indexDef.concurrently
     }, tableNameInDb);
     return q;
   }
