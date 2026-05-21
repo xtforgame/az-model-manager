@@ -296,19 +296,24 @@ ${query};
       });
       Object.keys(modelMetadata.indexes).forEach(indexName => {
         const indexFromSchema = modelMetadata.indexes[indexName];
+        const schemaColumns = indexFromSchema.columns ?? [];
         const index = table.indexes.find(ind => {
+          if (ind.name === indexName) {
+            return true;
+          }
+
           if (ind.isUnique !== !!indexFromSchema.unique) {
             return false;
           }
 
-          const columns = ind.columns.map(c => c.name);
+          const dbColumns = ind.columns.map(c => c.name);
 
-          if (columns.length !== indexFromSchema.fields?.length) {
+          if (dbColumns.length !== schemaColumns.length) {
             return false;
           }
 
-          for (let i = 0; i < columns.length; i++) {
-            if (indexFromSchema.fields[i] !== columns[i]) {
+          for (let i = 0; i < dbColumns.length; i++) {
+            if (schemaColumns[i] !== dbColumns[i]) {
               return false;
             }
           }
