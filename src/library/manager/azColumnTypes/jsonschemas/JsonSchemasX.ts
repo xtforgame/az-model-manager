@@ -398,16 +398,29 @@ ${query};
 
       Object.keys(modelMetadata.indexes).forEach((indexName) => {
         const indexFromSchema = modelMetadata.indexes[indexName];
+        // `modelMetadata.indexes` is keyed by the SQL index name, and
+        // `indexFromSchema.columns` is the pre-normalized string array of
+        // column names (see JsonSchemasXHelpers.ts where it's built). Use
+        // those instead of the raw `fields` — `fields` can contain object
+        // entries like `{ name, order: 'DESC' }`, which never `===` a
+        // string and would cause false "missing" reports.
+        const schemaColumns = indexFromSchema.columns ?? [];
         const index = table.indexes.find((ind) => {
+          // Same SQL name → the index already exists. A CREATE would
+          // conflict regardless of column/order drift, so it's never
+          // "missing" in the sense this report cares about.
+          if (ind.name === indexName) {
+            return true;
+          }
           if (ind.isUnique !== !!indexFromSchema.unique) {
             return false;
           }
-          const columns = ind.columns.map(c => c.name);
-          if (columns.length !== indexFromSchema.fields?.length) {
+          const dbColumns = ind.columns.map(c => c.name);
+          if (dbColumns.length !== schemaColumns.length) {
             return false;
           }
-          for (let i = 0; i < columns.length; i++) {
-            if (indexFromSchema.fields![i] !== columns[i]) {
+          for (let i = 0; i < dbColumns.length; i++) {
+            if (schemaColumns[i] !== dbColumns[i]) {
               return false;
             }
           }
